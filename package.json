@@ -1,0 +1,26 @@
+{
+  "name": "presidium-websocket",
+  "version": "0.0.0",
+  "description": "Presidium WebSocket Client and Server for Node.js",
+  "author": "Richard Tong",
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "github:richytong/presidium-websocket"
+  },
+  "homepage": "https://github.com/richytong/presidium-websocket",
+  "keywords": [
+    "node",
+    "nodejs",
+    "javascript",
+    "presidium",
+    "websocket",
+    "websocket-server",
+    "websocket-client",
+    "rfc-6455"
+  ],
+  "scripts": {
+    "test": "node test.js"
+  }
+}
