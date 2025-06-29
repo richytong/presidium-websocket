@@ -1,5 +1,5 @@
 # presidium-websocket
-Presidium WebSocket Client and Server for Node.js
+Presidium WebSocket Client and Server for [Node.js](https://nodejs.org/en).
 
 ```javascript
 const WebSocket = require('presidium-websocket')
