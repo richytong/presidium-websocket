@@ -1,11 +1,6 @@
 # presidium-websocket
 Presidium WebSocket Client and Server for Node.js
 
-Features:
-  * Simple
-  * Minimal
-  * Performant
-
 ```javascript
 const WebSocket = require('presidium-websocket')
 
