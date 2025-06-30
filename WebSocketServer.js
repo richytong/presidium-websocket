@@ -13,30 +13,64 @@ const sleep = require('./_internal/sleep')
  * Presidium WebSocket server.
  *
  * ```coffeescript [specscript]
- * new WebSocketServer(handler (websocket WebSocket)=>()) -> server WebSocket.Server
+ * websocketHandler (websocket WebSocket)=>()
+ * httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
  *
- * new WebSocketServer(
- *   handler (websocket WebSocket)=>(),
- *   options {
- *     httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
- *   }
- * ) -> server WebSocket.Server
+ * new WebSocketServer(websocketHandler) -> server WebSocket.Server
+ *
+ * new WebSocketServer(websocketHandler, options {
+ *   httpHandler: httpHandler,
+ *   ssl: boolean,
+ *   key: string,
+ *   cert: string
+ * }) -> server WebSocket.Server
+ *
+ * new WebSocketServer(options {
+ *   websocketHandler: websocketHandler,
+ *   httpHandler: httpHandler,
+ *   ssl: boolean,
+ *   key: string,
+ *   cert: string
+ * }) -> server WebSocket.Server
  * ```
  */
 class WebSocketServer extends events.EventEmitter {
-  constructor(handler, options = {}) {
+  constructor(websocketHandler, options = {}) {
     super()
 
-    this._handler = handler
+    if (websocketHandler == null) {
+      this._websocketHandler = noop
+    } else if (typeof websocketHandler == 'object') {
+      options = websocketHandler
+      this._websocketHandler = options.websocketHandler ?? noop
+    } else if (typeof websocketHandler == 'function') {
+      this._websocketHandler = websocketHandler
+    } else {
+      this._websocketHandler = options.websocketHandler ?? noop
+    }
+
     this._httpHandler = options.httpHandler ?? defaultHttpHandler
-    this._server = http.createServer((request, response) => {
-      this.emit('request', request)
-      this._httpHandler(request, response)
-    })
+
+    if (options.ssl) {
+      this._server = https.createServer({
+        key: options.key,
+        cert: options.cert
+      }, (request, response) => {
+        this.emit('request', request)
+        this._httpHandler(request, response)
+      })
+    } else {
+      this._server = http.createServer((request, response) => {
+        this.emit('request', request)
+        this._httpHandler(request, response)
+      })
+    }
+
     this._server.on('upgrade', (request, socket, head) => {
       this.emit('upgrade', request, socket, head)
       this._handleUpgrade(request, socket, head)
     })
+
     this.clients = new Set()
   }
 
@@ -95,7 +129,7 @@ class WebSocketServer extends events.EventEmitter {
 
     const websocket = new ServerWebSocket(socket)
 
-    this._handler(websocket)
+    this._websocketHandler(websocket)
     this.clients.add(websocket)
 
     websocket.on('close', () => {
@@ -223,6 +257,19 @@ class WebSocketServer extends events.EventEmitter {
     })
     this.emit('close')
   }
+}
+
+/**
+ * @name noop
+ *
+ * @docs
+ * Function that doesn't do anything
+ *
+ * ```coffeescript [specscript]
+ * noop() -> ()
+ * ```
+ */
+function noop() {
 }
 
 /**
