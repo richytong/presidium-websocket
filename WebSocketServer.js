@@ -1,5 +1,6 @@
 const http = require('http')
 const crypto = require('crypto')
+const events = require('events')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./_internal/ServerWebSocket')
 const Byte = require('./_internal/Byte')
@@ -22,11 +23,20 @@ const sleep = require('./_internal/sleep')
  * ) -> server WebSocket.Server
  * ```
  */
-class WebSocketServer {
+class WebSocketServer extends events.EventEmitter {
   constructor(handler, options = {}) {
+    super()
+
     this._handler = handler
-    this._server = http.createServer(options.httpHandler ?? defaultHttpHandler)
-    this._server.on('upgrade', this._handleUpgrade.bind(this))
+    this._httpHandler = options.httpHandler ?? defaultHttpHandler
+    this._server = http.createServer((request, response) => {
+      this.emit('request', request)
+      this._httpHandler(request, response)
+    })
+    this._server.on('upgrade', (request, socket, head) => {
+      this.emit('upgrade', request, socket, head)
+      this._handleUpgrade(request, socket, head)
+    })
     this.clients = new Set()
   }
 
@@ -61,8 +71,6 @@ class WebSocketServer {
 
       socket.write(headers.join('\r\n') + '\r\n\r\n')
 
-      console.log('WebSocket connection established!')
-
       this._handleDataFrames(socket)
 
     } else {
@@ -94,8 +102,10 @@ class WebSocketServer {
       this.clients.delete(websocket)
     })
 
+    let continuationPayloads = []
+
     setImmediate(async () => {
-      while (!this.closed && !socket.destroyed) {
+      while (!this.closed && !websocket.closed) {
 
         if (chunks.length == 0) {
           await sleep(0)
@@ -116,48 +126,84 @@ class WebSocketServer {
 
         const { fin, opcode, payload, remaining, masked } = decodeResult
 
+        // The server must close the connection upon receiving a frame that is not masked
         if (!masked) {
           websocket.sendClose()
+          // websocket.close()
+          break
         }
 
         if (remaining.length > 0) {
           chunks.unshift(remaining)
         }
 
-        switch (opcode) {
-          case 0x0: // continuation frame
-          case 0x1: // text frame
-          case 0x2: // binary frame
-            websocket.emit('message', payload)
-            break
-          case 0x3: // non-control frame
-          case 0x4: // non-control frame
-          case 0x5: // non-control frame
-          case 0x6: // non-control frame
-          case 0x7: // non-control frame
-            break
-          case 0x8: // close frame
-            websocket.sendClose()
-            websocket.close()
-            break
-          case 0x9: // ping frame
-            websocket.sendPong(payload)
-            break
-          case 0xA: // pong frame
-            websocket.emit('pong', payload)
-            break
-          case 0xB: // control frame
-          case 0xC: // control frame
-          case 0xD: // control frame
-          case 0xE: // control frame
-          case 0xF: // control frame
-            break
+        if (opcode === 0x0) { // continuation frame
+          continuationPayloads.push(payload)
+          if (fin) { // last continuation frame
+            websocket.emit('message', Buffer.concat(continuationPayloads))
+            continuationPayloads = []
+          }
+        } else if (fin) { // unfragmented message
+
+          switch (opcode) {
+            case 0x0: // continuation frame
+              continuationPayloads.push(payload)
+              websocket.emit('message', Buffer.concat(continuationPayloads))
+              continuationPayloads = []
+              break
+            case 0x1: // text frame
+            case 0x2: // binary frame
+              websocket.emit('message', payload)
+              break
+            case 0x3: // non-control frame
+            case 0x4: // non-control frame
+            case 0x5: // non-control frame
+            case 0x6: // non-control frame
+            case 0x7: // non-control frame
+              break
+            case 0x8: // close frame
+              if (websocket.sentClose) {
+                websocket.destroy()
+              } else {
+                websocket.sendClose()
+                websocket.destroy()
+              }
+              break
+            case 0x9: // ping frame
+              websocket.sendPong(payload)
+              break
+            case 0xA: // pong frame
+              websocket.emit('pong', payload)
+              break
+            case 0xB: // control frame
+            case 0xC: // control frame
+            case 0xD: // control frame
+            case 0xE: // control frame
+            case 0xF: // control frame
+              break
+          }
+
+        } else { // fragmented message, wait for continuation frames
+          continuationPayloads.push(payload)
         }
 
         await sleep(0)
       }
+
     })
 
+  }
+
+  /**
+   * @name close
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * server.listen(port number, callback? function) -> ()
+   * ```
+   */
+  listen(...args) {
+    this._server.listen(...args)
   }
 
   /**
@@ -169,22 +215,15 @@ class WebSocketServer {
    * ```
    */
   close() {
+    this._server.close()
     this.closed = true
-    this.clients.forEach(client => client.close())
+    this.clients.forEach(client => {
+      client.sendClose()
+      client.close()
+    })
+    this.emit('close')
   }
 }
-
-/**
- * @name noop
- *
- * @docs
- * Does not do anything.
- *
- * ```coffeescript [specscript]
- * noop() -> ()
- * ```
- */
-function noop() {}
 
 /**
  * @name defaultHttpHandler

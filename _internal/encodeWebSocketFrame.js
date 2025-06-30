@@ -1,17 +1,27 @@
+const crypto = require('crypto')
+
 /**
  * @name encodeWebSocketFrame
  *
  * @synopsis
  * ```coffeescript [specscript]
- * encodeWebSocketFrame(payload Buffer, opcode number, mask? boolean) -> Buffer
+ * encodeWebSocketFrame(
+ *   payload Buffer,
+ *   opcode number,
+ *   mask? boolean,
+ *   fin? boolean
+ * ) -> Buffer
  * ```
  */
 
-function encodeWebSocketFrame(payload, opcode, mask = false) {
+function encodeWebSocketFrame(payload, opcode, mask = false, fin = true) {
+  if (!Buffer.isBuffer(payload)) {
+    throw new TypeError('payload must be a buffer')
+  }
   const payloadLen = payload.length
   let header = []
 
-  const firstByte = 0x80 | opcode
+  const firstByte = (fin ? 0x80 : 0x00) | opcode
   header.push(firstByte)
 
   let secondByte = mask ? 0x80 : 0x00

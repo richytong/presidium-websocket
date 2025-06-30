@@ -1,7 +1,7 @@
 /**
  * @name decodeWebSocketFrame
  *
- * @synopsis
+ * @docs
  * ```coffeescript [specscript]
  * decodeWebSocketFrame(buffer Buffer) -> decodeResult? {
  *   fin: boolean,
