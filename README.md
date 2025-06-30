@@ -7,7 +7,7 @@ const WebSocket = require('presidium-websocket')
 // server
 const server = new WebSocket.Server(websocket => {
   websocket.on('message', message => {
-    console.log('Message from client:', message) // Message from client: Hello from client!
+    console.log('Message from client:', message)
     websocket.send('Hello from server!')
   })
   websocket.on('close', () => {
@@ -26,6 +26,6 @@ websocket.on('open', () => {
   websocket.send('Hello from client!')
 })
 websocket.on('message', message => {
-  console.log('Message from server:', message) // Message from server: Hello from server!
+  console.log('Message from server:', message)
 })
 ```
