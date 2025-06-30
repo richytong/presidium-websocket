@@ -7,8 +7,8 @@ const WebSocket = require('presidium-websocket')
 // server
 const server = new WebSocket.Server(websocket => {
   websocket.on('message', message => {
-    console.log('Message from client:', message)
-    websocket.send('pong')
+    console.log('Message from client:', message) // Message from client: Hello from client!
+    websocket.send('Hello from server!')
   })
   websocket.on('close', () => {
     console.log('websocket closed')
@@ -23,9 +23,9 @@ server.listen(1337, () => {
 const websocket = new WebSocket('ws://localhost:1337/')
 
 websocket.on('open', () => {
-  websocket.send('ping')
+  websocket.send('Hello from client!')
 })
 websocket.on('message', message => {
-  console.log('Message from server:', message)
+  console.log('Message from server:', message) // Message from server: Hello from server!
 })
 ```
