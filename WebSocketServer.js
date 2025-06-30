@@ -1,4 +1,5 @@
 const http = require('http')
+const https = require('https')
 const crypto = require('crypto')
 const events = require('events')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
