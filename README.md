@@ -1,5 +1,5 @@
 # presidium-websocket
-Presidium WebSocket Client and Server for [Node.js](https://nodejs.org/en).
+Presidium WebSocket: WebSocket client and server for [Node.js](https://nodejs.org/en).
 
 ![Node.js CI](https://github.com/richytong/presidium-websocket/workflows/Node.js%20CI/badge.svg)
 [![codecov](https://codecov.io/gh/richytong/presidium-websocket/branch/master/graph/badge.svg)](https://codecov.io/gh/richytong/presidium-websocket)
@@ -47,7 +47,7 @@ npm run bench
 ```
 
 ## License
-`presidium-websocket` is [MIT Licensed](https://github.com/richytong/presidium-websocket/blob/master/LICENSE).
+Presidium WebSocket is [MIT Licensed](https://github.com/richytong/presidium-websocket/blob/master/LICENSE).
 
 ## Support
  * minimum Node.js version: 16
