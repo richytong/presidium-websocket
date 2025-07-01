@@ -808,6 +808,85 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
+  it('WebSocket catches errors emitted on underlying socket', async () => {
+    const server = new WebSocket.Server(websocket => {
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const errors = []
+    websocket.on('error', error => {
+      errors.push(error)
+      websocket.close()
+      resolve()
+    })
+
+    websocket.on('open', () => {
+      websocket._socket.emit('error', new Error('test'))
+    })
+
+    await promise
+
+    assert.equal(errors.length, 1)
+    assert.deepEqual(errors[0], new Error('test'))
+
+    await sleep(100)
+  })
+
+  it('WebSocket.Server WebSocket catches errors emitted on underlying socket', async () => {
+    const errors = []
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const server = new WebSocket.Server(websocket => {
+      websocket.on('ping', () => {
+        websocket._socket.emit('error', new Error('test2'))
+      })
+
+      websocket.on('error', error => {
+        errors.push(error)
+        websocket.close()
+      })
+
+      websocket.on('close', () => {
+        server.close()
+        resolve()
+      })
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('close', () => {
+      resolve()
+    })
+
+    websocket.on('open', () => {
+      websocket.sendPing()
+    })
+
+    await promise
+
+    assert.equal(errors.length, 1)
+    assert.deepEqual(errors[0], new Error('test2'))
+
+    await sleep(100)
+  })
+
   it('WebSocket error when wrong protocol', async () => {
     assert.throws(
       () => new WebSocket('http://localhost:4507/'),
