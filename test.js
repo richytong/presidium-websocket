@@ -83,7 +83,6 @@ describe('WebSocketServer, WebSocket', () => {
     })
 
     websocket.on('error', error => {
-      console.log('got error', error)
       websocket.destroy()
       resolve()
     })
