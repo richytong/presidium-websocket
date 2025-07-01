@@ -2,7 +2,7 @@ const events = require('events')
 const encodeWebSocketFrame = require('./encodeWebSocketFrame')
 const unhandledErrorListener = require('./unhandledErrorListener')
 
-const MESSAGE_MAX_LENGTH_BYTES = 1000000
+const MESSAGE_MAX_LENGTH_BYTES = 1024 * 1024
 
 /**
  * @name ServerWebsocket

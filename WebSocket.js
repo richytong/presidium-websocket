@@ -7,7 +7,7 @@ const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const decodeWebSocketHandshakeResponse = require('./_internal/decodeWebSocketHandshakeResponse')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
 
-const MESSAGE_MAX_LENGTH_BYTES = 1000000
+const MESSAGE_MAX_LENGTH_BYTES = 1024 * 1024
 
 /**
  * @name WebSocket
