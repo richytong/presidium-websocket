@@ -132,6 +132,7 @@ class WebSocketServer extends events.EventEmitter {
 
     const websocket = new ServerWebSocket(socket)
 
+    this.emit('connection', websocket)
     this._websocketHandler(websocket)
     this.clients.add(websocket)
 

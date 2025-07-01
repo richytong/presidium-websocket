@@ -1,17 +1,16 @@
 const assert = require('assert')
 const Http = require('presidium/Http')
 const net = require('net')
+const fs = require('fs')
 const http = require('http')
 const sleep = require('./_internal/sleep')
-const WebSocketServer = require('./WebSocketServer')
-const WebSocket = require('./WebSocket')
-const index = require('.')
+const WebSocket = require('.')
 
-describe('WebSocketServer, WebSocket', () => {
-  it('Handles HTTP with 200 OK by default', async () => {
+describe('WebSocket.Server, WebSocket', () => {
+  it('WebSocket.Server handles HTTP with 200 OK by default', async () => {
     let didRequest = false
 
-    const server = new WebSocketServer()
+    const server = new WebSocket.Server()
     assert.equal(server._websocketHandler.name, 'noop')
     assert.equal(server._httpHandler.name, 'defaultHttpHandler')
     server.listen(7357)
@@ -29,23 +28,23 @@ describe('WebSocketServer, WebSocket', () => {
 
     // coverage
     const testHandler = () => {}
-    const server2 = new WebSocketServer(undefined, {
+    const server2 = new WebSocket.Server(undefined, {
       httpHandler: testHandler
     })
     assert.equal(server2._websocketHandler.name, 'noop')
     assert.equal(server2._httpHandler, testHandler)
 
-    const server3 = new WebSocketServer(undefined, {})
+    const server3 = new WebSocket.Server(undefined, {})
     assert.equal(server3._websocketHandler.name, 'noop')
     assert.equal(server3._httpHandler.name, 'defaultHttpHandler')
 
     await sleep(100)
   }).timeout(10000)
 
-  it('Handles HTTP with an optional httpHandler', async () => {
+  it('WebSocket.Server handles HTTP with an optional httpHandler', async () => {
     let didRequest = false
 
-    const server = new WebSocketServer({
+    const server = new WebSocket.Server({
       httpHandler(request, response) {
         response.writeHead(426, {
           'Content-Type': 'text/plain',
@@ -65,7 +64,103 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   })
 
-  xit('Handles HTTPS with ssl, key, and cert options', async () => {
+  it('WebSocket.Server handles wss with secure, key, and cert options', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const server = new WebSocket.Server({
+      secure: true,
+      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+      key: fs.readFileSync('./test/fixtures/key.pem')
+    })
+
+    server.listen(7357)
+
+    const messages = []
+
+    server.on('connection', websocket => {
+      websocket.on('message', message => {
+        messages.push(message.toString('utf8'))
+        websocket.send('pong')
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    const websocket = new WebSocket('wss://127.0.0.1:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', () => {
+      websocket.send('ping')
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    await promise
+    assert.strictEqual(messages.length, 2)
+    assert.strictEqual(messages[0].toString('utf8'), 'ping')
+    assert.strictEqual(messages[1].toString('utf8'), 'pong')
+
+    await sleep(100)
+  })
+
+  it('WebSocket.SecureServer handles wss with key, and cert options', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const server = new WebSocket.SecureServer({
+      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+      key: fs.readFileSync('./test/fixtures/key.pem')
+    })
+
+    server.listen(7357)
+
+    const messages = []
+
+    server.on('connection', websocket => {
+      websocket.on('message', message => {
+        messages.push(message.toString('utf8'))
+        websocket.send('pong')
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    const websocket = new WebSocket('wss://127.0.0.1:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', () => {
+      websocket.send('ping')
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    await promise
+    assert.strictEqual(messages.length, 2)
+    assert.strictEqual(messages[0].toString('utf8'), 'ping')
+    assert.strictEqual(messages[1].toString('utf8'), 'pong')
+
+    await sleep(100)
   })
 
   it('Bad WebSocket server', async () => {
@@ -95,7 +190,7 @@ describe('WebSocketServer, WebSocket', () => {
   })
 
   it('Bad WebSocket', async () => {
-    const server = new WebSocketServer()
+    const server = new WebSocket.Server()
     server.listen(7357)
 
     const socket = net.createConnection(7357, 'localhost', async () => {
@@ -128,7 +223,7 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   })
 
-  it('Minimal WebSocketServer and WebSocket text exchange', async () => {
+  it('Minimal WebSocket.Server and WebSocket text exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -138,7 +233,7 @@ describe('WebSocketServer, WebSocket', () => {
     let didUpgrade = false
     const messages = []
 
-    const server = new WebSocketServer(websocket => {
+    const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
         messages.push(message)
@@ -188,7 +283,7 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('Minimal WebSocketServer and WebSocket buffer exchange', async () => {
+  it('Minimal WebSocket.Server and WebSocket buffer exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -198,7 +293,7 @@ describe('WebSocketServer, WebSocket', () => {
     let didUpgrade = false
     const messages = []
 
-    const server = new WebSocketServer(websocket => {
+    const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
         messages.push(message)
@@ -248,7 +343,7 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('Minimal WebSocketServer and WebSocket ping/pong exchange', async () => {
+  it('Minimal WebSocket.Server and WebSocket ping/pong exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -263,7 +358,7 @@ describe('WebSocketServer, WebSocket', () => {
       clientGotPong: false,
     }
 
-    const server = new WebSocketServer(websocket => {
+    const server = new WebSocket.Server(websocket => {
       websocket.on('ping', () => {
         pingPongResults.serverGotPing = true
         websocket.sendPing()
@@ -309,7 +404,7 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('Minimal WebSocketServer and WebSocket 3MB buffer exchange', async () => {
+  it('Minimal WebSocket.Server and WebSocket 3MB buffer exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -319,7 +414,7 @@ describe('WebSocketServer, WebSocket', () => {
     let didUpgrade = false
     const messages = []
 
-    const server = new WebSocketServer(websocket => {
+    const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
         messages.push(message)
@@ -369,7 +464,7 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('Minimal WebSocketServer and WebSocket 65535 byte buffer exchange', async () => {
+  it('Minimal WebSocket.Server and WebSocket 65535 byte buffer exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -379,7 +474,7 @@ describe('WebSocketServer, WebSocket', () => {
     let didUpgrade = false
     const messages = []
 
-    const server = new WebSocketServer(websocket => {
+    const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
         messages.push(message)
@@ -429,7 +524,7 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('Minimal WebSocketServer and WebSocket uint8Array exchange', async () => {
+  it('Minimal WebSocket.Server and WebSocket uint8Array exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -439,7 +534,7 @@ describe('WebSocketServer, WebSocket', () => {
     let didUpgrade = false
     const messages = []
 
-    const server = new WebSocketServer(websocket => {
+    const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
         messages.push(message)
@@ -504,7 +599,7 @@ describe('WebSocketServer, WebSocket', () => {
     const messages = []
     const errors = []
 
-    const server = new WebSocketServer(websocket => {
+    const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
         messages.push(message)
@@ -568,7 +663,7 @@ describe('WebSocketServer, WebSocket', () => {
     const messages = []
     const errors = []
 
-    const server = new WebSocketServer(websocket => {
+    const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
         messages.push(message)
@@ -632,11 +727,6 @@ describe('WebSocketServer, WebSocket', () => {
       () => new WebSocket('http://localhost:4507/'),
       new Error('URL protocol must be "ws" or "wss"'),
     )
-  })
-
-  it('index.js', async () => {
-    assert.equal(index, WebSocket)
-    assert.equal(index.Server, WebSocketServer)
   })
 
 })

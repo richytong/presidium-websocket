@@ -18,7 +18,11 @@
     "websocket",
     "websocket-server",
     "websocket-client",
-    "rfc-6455"
+    "rfc-6455",
+    "ssl",
+    "tls",
+    "ws",
+    "wss"
   ],
   "scripts": {
     "test": "mocha test.js **/*test.js",
