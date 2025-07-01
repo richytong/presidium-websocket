@@ -39,6 +39,7 @@ Serve WebSocket Secure (WSS) connections.
 
 ```javascript
 const WebSocket = require('presidium-websocket')
+const fs = require('fs')
 
 const server = new WebSocket.SecureServer({
   key: fs.readFileSync('/path/to/my-key'),
