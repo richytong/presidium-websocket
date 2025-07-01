@@ -48,7 +48,7 @@ class ServerWebsocket extends events.EventEmitter {
         const buffer = Buffer.from(payload, 'utf8')
         this._socket.write(encodeWebSocketFrame(buffer, 0x1)) // text frame
       } else {
-        throw new TypeError('send can only process binary or text frames')
+        this.emit('error', new TypeError('send can only process binary or text frames'))
       }
     } else { // fragmented
       let index = 0
@@ -66,7 +66,7 @@ class ServerWebsocket extends events.EventEmitter {
         const buffer = Buffer.from(fragment, 'utf8')
         this._socket.write(encodeWebSocketFrame(fragment, 0x1, false, false))
       } else {
-        throw new TypeError('send can only process binary or text frames')
+        this.emit('error', new TypeError('send can only process binary or text frames'))
       }
 
       // continuation frames
@@ -88,7 +88,7 @@ class ServerWebsocket extends events.EventEmitter {
           const buffer = Buffer.from(fragment, 'utf8')
           this._socket.write(encodeWebSocketFrame(fragment, 0x0, false, fin))
         } else {
-          throw new TypeError('send can only process binary or text frames')
+          this.emit('error', new TypeError('send can only process binary or text frames'))
         }
 
         index += MESSAGE_MAX_LENGTH_BYTES

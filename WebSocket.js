@@ -107,7 +107,7 @@ class WebSocket extends events.EventEmitter {
         const { handshakeSucceeded, message, remaining } = decodeResult
 
         if (!handshakeSucceeded) {
-          throw new Error(message)
+          this.emit('error', new Error(message))
         }
 
         if (remaining.length > 0) {
@@ -230,7 +230,7 @@ class WebSocket extends events.EventEmitter {
         const buffer = Buffer.from(payload, 'utf8')
         this._socket.write(encodeWebSocketFrame(buffer, 0x1, true)) // text frame
       } else {
-        throw new TypeError('send can only process binary or text frames')
+        this.emit('error', new TypeError('send can only process binary or text frames'))
       }
     } else { // fragmented
       let index = 0
@@ -248,7 +248,7 @@ class WebSocket extends events.EventEmitter {
         const buffer = Buffer.from(fragment, 'utf8')
         this._socket.write(encodeWebSocketFrame(fragment, 0x1, true, false))
       } else {
-        throw new TypeError('send can only process binary or text frames')
+        this.emit('error', new TypeError('send can only process binary or text frames'))
       }
 
       // continuation frames
@@ -270,7 +270,7 @@ class WebSocket extends events.EventEmitter {
           const buffer = Buffer.from(fragment, 'utf8')
           this._socket.write(encodeWebSocketFrame(fragment, 0x0, true, fin))
         } else {
-          throw new TypeError('send can only process binary or text frames')
+          this.emit('error', new TypeError('send can only process binary or text frames'))
         }
 
         index += MESSAGE_MAX_LENGTH_BYTES
