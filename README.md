@@ -47,7 +47,7 @@ npm run bench
 ```
 
 ## License
-presidium-websocket is [MIT Licensed](https://github.com/richytong/presidium-websocket/blob/master/LICENSE).
+`presidium-websocket` is [MIT Licensed](https://github.com/richytong/presidium-websocket/blob/master/LICENSE).
 
 ## Support
  * minimum Node.js version: 16
