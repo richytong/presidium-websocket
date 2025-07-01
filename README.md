@@ -1,10 +1,12 @@
 # presidium-websocket
-Presidium WebSocket: WebSocket client and server for [Node.js](https://nodejs.org/en).
+Presidium WebSocket
 
 ![Node.js CI](https://github.com/richytong/presidium-websocket/workflows/Node.js%20CI/badge.svg)
 [![codecov](https://codecov.io/gh/richytong/presidium-websocket/branch/master/graph/badge.svg)](https://codecov.io/gh/richytong/presidium-websocket)
 [![npm version](https://img.shields.io/npm/v/presidium-websocket.svg?style=flat)](https://www.npmjs.com/package/presidium-websocket)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+WebSocket client and server for [Node.js](https://nodejs.org/en).
 
 ```javascript
 const WebSocket = require('presidium-websocket')
