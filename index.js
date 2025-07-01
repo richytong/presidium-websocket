@@ -1,3 +1,10 @@
+/**
+ * presidium-websocket v0.0.3
+ * https://github.com/richytong/presidium-websocket
+ * (c) 2025 Richard Tong
+ * presidium-websocket may be freely distributed under the MIT license.
+ */
+
 const WebSocket = require('./WebSocket')
 const WebSocketServer = require('./WebSocketServer')
 const WebSocketSecureServer = require('./WebSocketSecureServer')
