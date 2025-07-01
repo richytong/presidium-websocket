@@ -64,7 +64,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
-  it('WebSocket.Server handles wss with secure, key, and cert options', async () => {
+  it('WebSocket.Server handles WSS with secure, key, and cert options', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -114,7 +114,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
-  it('WebSocket.SecureServer handles wss with key, and cert options', async () => {
+  it('WebSocket.SecureServer handles WSS with key, and cert options', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
