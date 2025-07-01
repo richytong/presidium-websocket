@@ -69,7 +69,7 @@ describe('WebSocketServer, WebSocket', () => {
   xit('Handles HTTPS with ssl, key, and cert options', async () => {
   })
 
-  it('Minimal WebSocket message exchange', async () => {
+  it('Minimal WebSocketServer and WebSocket text exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -82,7 +82,7 @@ describe('WebSocketServer, WebSocket', () => {
     const server = new WebSocketServer(websocket => {
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
-        messages.push(message.toString('utf8'))
+        messages.push(message)
         websocket.send('pong')
       })
 
@@ -99,7 +99,9 @@ describe('WebSocketServer, WebSocket', () => {
       didUpgrade = true
     })
 
-    server.on('close', resolve)
+    server.on('close', () => {
+      resolve()
+    })
 
     server.listen(7357, () => {
       console.log('server listening on port 7357')
@@ -120,10 +122,20 @@ describe('WebSocketServer, WebSocket', () => {
     assert(!didRequest)
     assert(didUpgrade)
     assert.equal(messages.length, 2)
-    assert.equal(messages[0], 'ping')
-    assert.equal(messages[1], 'pong')
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0].toString('utf8'), 'ping')
+    assert.equal(messages[1].toString('utf8'), 'pong')
     server.close()
 
     await sleep(100)
   }).timeout(5000)
+
+  it('WebSocket error when wrong protocol', async () => {
+    assert.throws(
+      () => new WebSocket('http://localhost:4507/'),
+      new Error('URL protocol must be "ws" or "wss"'),
+    )
+  })
+
 })
