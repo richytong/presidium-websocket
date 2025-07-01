@@ -4,7 +4,6 @@ const crypto = require('crypto')
 const events = require('events')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./_internal/ServerWebSocket')
-const Byte = require('./_internal/Byte')
 const sleep = require('./_internal/sleep')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
 
