@@ -5,6 +5,7 @@ const http = require('http')
 const sleep = require('./_internal/sleep')
 const WebSocketServer = require('./WebSocketServer')
 const WebSocket = require('./WebSocket')
+const index = require('.')
 
 describe('WebSocketServer, WebSocket', () => {
   it('Handles HTTP with 200 OK by default', async () => {
@@ -631,6 +632,11 @@ describe('WebSocketServer, WebSocket', () => {
       () => new WebSocket('http://localhost:4507/'),
       new Error('URL protocol must be "ws" or "wss"'),
     )
+  })
+
+  it('index.js', async () => {
+    assert.equal(index, WebSocket)
+    assert.equal(index.Server, WebSocketServer)
   })
 
 })
