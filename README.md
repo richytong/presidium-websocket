@@ -45,3 +45,9 @@ Please find the published benchmark output inside the [benchmark-output](https:/
 ```
 npm run bench
 ```
+
+## License
+presidium-websocket is [MIT Licensed](https://github.com/richytong/presidium-websocket/blob/master/LICENSE).
+
+## Support
+ * minimum Node.js version: 16
