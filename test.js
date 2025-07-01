@@ -193,7 +193,7 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it.only('Minimal WebSocketServer and WebSocket 3MB buffer exchange', async () => {
+  it('Minimal WebSocketServer and WebSocket 3MB buffer exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
