@@ -47,7 +47,8 @@ class WebSocket extends events.EventEmitter {
   constructor(url, options = {}) {
     super()
 
-    const { port, hostname, protocol, pathname } = new URL(url)
+    this.url = new URL(url)
+    const { port, hostname, protocol, pathname } = this.url
 
     if (protocol != 'ws:' && protocol != 'wss:') {
       throw new Error('URL protocol must be "ws" or "wss"')
