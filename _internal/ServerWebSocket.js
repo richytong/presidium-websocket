@@ -15,6 +15,16 @@ class ServerWebsocket extends events.EventEmitter {
   constructor(socket) {
     super()
     this._socket = socket
+
+    const errorListener = error => {
+      const errorListenerCount = this.listenerCount('error')
+      const errorListeners = this.listeners('error')
+      if (errorListenerCount == 1 && errorListeners[0] == errorListener) {
+        console.error(error)
+        process.exit(1)
+      }
+    }
+    this.on('error', errorListener)
   }
 
   /**

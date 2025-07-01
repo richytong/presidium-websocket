@@ -15,9 +15,6 @@ const crypto = require('crypto')
  */
 
 function encodeWebSocketFrame(payload, opcode, mask = false, fin = true) {
-  if (!Buffer.isBuffer(payload)) {
-    throw new TypeError('payload must be a buffer')
-  }
   const payloadLen = payload.length
   let header = []
 
