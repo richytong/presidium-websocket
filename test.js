@@ -3,6 +3,7 @@ const Http = require('presidium/Http')
 const net = require('net')
 const fs = require('fs')
 const http = require('http')
+const https = require('https')
 const sleep = require('./_internal/sleep')
 const WebSocket = require('.')
 
@@ -19,7 +20,7 @@ describe('WebSocket.Server, WebSocket', () => {
     })
 
     const http = new Http('http://localhost:7357')
-    const response = await http.get('http://localhost:7357')
+    const response = await http.get('/')
 
     assert(didRequest)
     assert.equal(response.status, 200)
@@ -41,6 +42,87 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(10000)
 
+  it('WebSocket.SecureServer handles HTTPS with 200 OK by default', async () => {
+    let didRequest = false
+
+    const server = new WebSocket.SecureServer({
+      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+      key: fs.readFileSync('./test/fixtures/key.pem')
+    })
+    assert.equal(server._websocketHandler.name, 'noop')
+    assert.equal(server._httpHandler.name, 'defaultHttpHandler')
+
+    let resolve0
+    const promise0 = new Promise(_resolve => {
+      resolve0 = _resolve
+    })
+    server.listen(7357, () => {
+      resolve0()
+    })
+    await promise0
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    let resolve1
+    const promise1 = new Promise(_resolve => {
+      resolve1 = _resolve
+    })
+
+    const request = https.request({
+      hostname: 'localhost',
+      protocol: 'https:',
+      port: 7357,
+      path: '/',
+      method: 'GET',
+      rejectUnauthorized: false
+    }, resolve1)
+    request.end()
+
+    const response = await promise1
+
+    let resolve2
+    const promise2 = new Promise(_resolve => {
+      resolve2 = _resolve
+    })
+
+    const chunks = []
+    response.on('data', chunk => {
+      chunks.push(chunk)
+    })
+    response.on('end', () => {
+      resolve2(chunks.map(chunk => chunk.toString('utf8')).join(''))
+    })
+
+    const responseBodyText = await promise2
+
+    assert.equal(response.statusCode, 200)
+    assert.equal(responseBodyText, 'OK')
+    assert(didRequest)
+
+    server.close()
+
+    // coverage
+    const testHandler = () => {}
+    const server2 = new WebSocket.SecureServer(undefined, {
+      httpHandler: testHandler,
+      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+      key: fs.readFileSync('./test/fixtures/key.pem')
+    })
+    assert.equal(server2._websocketHandler.name, 'noop')
+    assert.equal(server2._httpHandler, testHandler)
+
+    const server3 = new WebSocket.Server(undefined, {
+      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+      key: fs.readFileSync('./test/fixtures/key.pem')
+    })
+    assert.equal(server3._websocketHandler.name, 'noop')
+    assert.equal(server3._httpHandler.name, 'defaultHttpHandler')
+
+    await sleep(100)
+  }).timeout(10000)
+
   it('WebSocket.Server handles HTTP with an optional httpHandler', async () => {
     let didRequest = false
 
@@ -55,7 +137,7 @@ describe('WebSocket.Server, WebSocket', () => {
     server.listen(7357)
 
     const http = new Http('http://localhost:7357')
-    const response = await http.get('http://localhost:7357')
+    const response = await http.get('/')
 
     assert.equal(response.status, 426)
     assert.equal(await response.text(), 'Upgrade Required')
@@ -91,7 +173,9 @@ describe('WebSocket.Server, WebSocket', () => {
       })
     })
 
-    const websocket = new WebSocket('wss://127.0.0.1:7357')
+    const websocket = new WebSocket('wss://127.0.0.1:7357', {
+      rejectUnauthorized: false
+    })
 
     websocket.on('message', message => {
       messages.push(message)
@@ -140,7 +224,9 @@ describe('WebSocket.Server, WebSocket', () => {
       })
     })
 
-    const websocket = new WebSocket('wss://127.0.0.1:7357')
+    const websocket = new WebSocket('wss://127.0.0.1:7357', {
+      rejectUnauthorized: false
+    })
 
     websocket.on('message', message => {
       messages.push(message)

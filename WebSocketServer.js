@@ -52,7 +52,7 @@ class WebSocketServer extends events.EventEmitter {
 
     this._httpHandler = options.httpHandler ?? defaultHttpHandler
 
-    if (options.ssl) {
+    if (options.secure) {
       this._server = https.createServer({
         key: options.key,
         cert: options.cert

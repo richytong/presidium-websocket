@@ -38,7 +38,7 @@ class WebSocketSecureServer extends WebSocketServer {
       : options?.websocketHandler ? options.websocketHandler
       : undefined
 
-    super(websocketHandler, options)
+    super(websocketHandler, { ...options, secure: true })
   }
 }
 

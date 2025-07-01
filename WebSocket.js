@@ -1,4 +1,5 @@
 const net = require('net')
+const tls = require('tls')
 const events = require('events')
 const crypto = require('crypto')
 const sleep = require('./_internal/sleep')
@@ -17,22 +18,26 @@ const MESSAGE_MAX_LENGTH_BYTES = 1024 * 1024
  *
  * ```coffeescript [specscript]
  * new WebSocket(url string) -> websocket WebSocket
+ *
+ * new WebSocket(url string, options {
+ *   rejectUnauthorized: boolean
+ * }) -> websocket WebSocket
  * ```
  *
  * ```javascript
  * const myWebsocket = new WebSocket('wss://echo.websocket.org/')
  *
- * myWebsocket.addEventListener('open', function (event) {
+ * myWebsocket.on('open', () => {
  *   myWebsocket.send('Hello Server!')
  * })
  *
- * myWebsocket.addEventListener('message', function (event) {
- *   console.log('Message from server:', event.data)
+ * myWebsocket.on('message', message => {
+ *   console.log('Message from server:', message)
  * })
  * ```
  */
 class WebSocket extends events.EventEmitter {
-  constructor(url) {
+  constructor(url, options = {}) {
     super()
 
     const { port, hostname, protocol, pathname } = new URL(url)
@@ -41,8 +46,11 @@ class WebSocket extends events.EventEmitter {
       throw new Error('URL protocol must be "ws" or "wss"')
     }
 
-    this._socket = net.createConnection(port, hostname, async () => {
-
+    this._socket = (protocol == 'wss:' ? tls : net).connect({
+      port,
+      hostname,
+      rejectUnauthorized: options.rejectUnauthorized ?? true,
+    }, async () => {
       const key = crypto.randomBytes(16).toString('base64')
 
       const headers = [
