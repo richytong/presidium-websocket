@@ -21,7 +21,7 @@
     "rfc-6455"
   ],
   "scripts": {
-    "test": "mocha test.js"
+    "test": "mocha test.js **/*test.js"
   },
   "devDependencies": {
     "mocha": "^11.7.1",
