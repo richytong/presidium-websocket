@@ -179,6 +179,7 @@ class WebSocket extends events.EventEmitter {
               }
               break
             case 0x9: // ping frame
+              this.emit('ping', payload)
               this.sendPong(payload)
               break
             case 0xA: // pong frame

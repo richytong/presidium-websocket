@@ -247,6 +247,67 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
+  it('Minimal WebSocketServer and WebSocket ping/pong exchange', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const messages = []
+
+    const pingPongResults = {
+      serverGotPing: false,
+      serverGotPong: false,
+      clientGotPing: false,
+      clientGotPong: false,
+    }
+
+    const server = new WebSocketServer(websocket => {
+      websocket.on('ping', () => {
+        pingPongResults.serverGotPing = true
+        websocket.sendPing()
+      })
+
+      websocket.on('pong', () => {
+        pingPongResults.serverGotPong = true
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('ping', () => {
+      pingPongResults.clientGotPing = true
+    })
+
+    websocket.on('pong', () => {
+      pingPongResults.clientGotPong = true
+      websocket.close()
+    })
+
+    websocket.on('open', () => {
+      websocket.sendPing()
+    })
+
+    await promise
+    assert(pingPongResults.clientGotPing)
+    assert(pingPongResults.clientGotPong)
+    assert(pingPongResults.serverGotPing)
+    assert(pingPongResults.serverGotPong)
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
   it('Minimal WebSocketServer and WebSocket 3MB buffer exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
@@ -307,7 +368,7 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('Minimal WebSocketServer and WebSocket 65535 Byte buffer exchange', async () => {
+  it('Minimal WebSocketServer and WebSocket 65535 byte buffer exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
