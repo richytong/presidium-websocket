@@ -162,7 +162,9 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const messages = []
 
-    server.on('connection', websocket => {
+    server.on('connection', (websocket, request, head) => {
+      assert.equal(typeof request, 'object')
+      assert(Buffer.isBuffer(head))
       websocket.on('message', message => {
         messages.push(message.toString('utf8'))
         websocket.send('pong')

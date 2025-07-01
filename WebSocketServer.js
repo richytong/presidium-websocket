@@ -115,7 +115,7 @@ class WebSocketServer extends events.EventEmitter {
 
       socket.write(headers.join('\r\n') + '\r\n\r\n')
 
-      this._handleDataFrames(socket)
+      this._handleDataFrames(socket, request, head)
 
     } else {
       socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
@@ -127,10 +127,14 @@ class WebSocketServer extends events.EventEmitter {
    *
    * @docs
    * ```coffeescript [specscript]
-   * server._handleDataFrames(socket net.Socket) -> ()
+   * server._handleDataFrames(
+   *   socket net.Socket,
+   *   request http.ClientRequest,
+   *   head Buffer
+   * ) -> ()
    * ```
    */
-  _handleDataFrames(socket) {
+  _handleDataFrames(socket, request, head) {
     const chunks = []
 
     socket.on('data', chunk => {
@@ -139,8 +143,8 @@ class WebSocketServer extends events.EventEmitter {
 
     const websocket = new ServerWebSocket(socket)
 
-    this.emit('connection', websocket)
-    this._websocketHandler(websocket)
+    this.emit('connection', websocket, request, head)
+    this._websocketHandler(websocket, request, head)
     this.clients.add(websocket)
 
     websocket.on('close', () => {
