@@ -21,13 +21,14 @@
     "rfc-6455"
   ],
   "scripts": {
-    "test": "mocha test.js **/*test.js",
+    "test": "mocha test.js **/*test.js && node **/*test.js",
     "bench": "./bench"
   },
   "devDependencies": {
     "mocha": "^11.7.1",
     "nyc": "^17.1.0",
     "presidium": "^0.29.13",
+    "thunk-test": "^1.3.5",
     "ws": "^8.18.3"
   }
 }

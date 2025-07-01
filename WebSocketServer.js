@@ -6,6 +6,7 @@ const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./_internal/ServerWebSocket')
 const sleep = require('./_internal/sleep')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
+const LinkedList = require('./_internal/LinkedList')
 
 /**
  * @name WebSocketServer
@@ -124,10 +125,12 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleDataFrames(socket) {
-    const chunks = []
+    // const chunks = []
+    const chunks = new LinkedList()
 
     socket.on('data', chunk => {
-      chunks.push(chunk)
+      // chunks.push(chunk)
+      chunks.append(chunk)
     })
 
     const websocket = new ServerWebSocket(socket)
@@ -149,6 +152,7 @@ class WebSocketServer extends events.EventEmitter {
           continue
         }
 
+        // let chunk = chunks.shift()
         let chunk = chunks.shift()
         let decodeResult = decodeWebSocketFrame(chunk)
         while (decodeResult == null && chunks.length > 0) {
@@ -156,7 +160,8 @@ class WebSocketServer extends events.EventEmitter {
           decodeResult = decodeWebSocketFrame(chunk)
         }
         if (decodeResult == null) {
-          chunks.unshift(chunk)
+          // chunks.unshift(chunk)
+          chunks.prepend(chunk)
           await sleep(0)
           continue
         }
@@ -171,7 +176,8 @@ class WebSocketServer extends events.EventEmitter {
         }
 
         if (remaining.length > 0) {
-          chunks.unshift(remaining)
+          // chunks.unshift(remaining)
+          chunks.prepend(remaining)
         }
 
         if (opcode === 0x0) { // continuation frame
