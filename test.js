@@ -346,17 +346,31 @@ describe('WebSocket.Server, WebSocket', () => {
     server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
+    assert.strictEqual(websocket.readyState, 0)
 
     websocket.on('message', message => {
       messages.push(message)
       websocket.close()
+      assert.strictEqual(websocket.readyState, 2)
     })
 
     websocket.on('open', () => {
+      assert.strictEqual(websocket.readyState, 1)
       websocket.send('ping')
     })
 
+    let resolve2
+    const promise2 = new Promise(_resolve => {
+      resolve2 = _resolve
+    })
+
+    websocket.on('close', () => {
+      assert.strictEqual(websocket.readyState, 3)
+      resolve2()
+    })
+
     await promise
+    await promise2
     assert(!didRequest)
     assert(didUpgrade)
     assert.equal(messages.length, 2)

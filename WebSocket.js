@@ -53,6 +53,8 @@ class WebSocket extends events.EventEmitter {
       throw new Error('URL protocol must be "ws" or "wss"')
     }
 
+    this.readyState = 0 // CONNECTING
+
     this._socket = (protocol == 'wss:' ? tls : net).connect({
       port,
       hostname,
@@ -127,7 +129,9 @@ class WebSocket extends events.EventEmitter {
           chunks.unshift(remaining)
         }
 
+        this.readyState = 1 // OPEN
         this.emit('open')
+
         await sleep(0)
         break
       }
@@ -190,6 +194,7 @@ class WebSocket extends events.EventEmitter {
             case 0x7: // non-control frame
               break
             case 0x8: // close frame
+              this.readyState = 2 // CLOSING
               if (this.sentClose) {
                 this.destroy()
               } else {
@@ -326,6 +331,7 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   close(payload = Buffer.from([])) {
+    this.readyState = 2 // CLOSING
     this.sendClose(payload)
   }
 
@@ -341,6 +347,7 @@ class WebSocket extends events.EventEmitter {
    */
   destroy() {
     this._socket.destroy()
+    this.readyState = 3 // CLOSED
     this.closed = true
     this.emit('close')
   }
