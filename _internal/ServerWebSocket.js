@@ -36,38 +36,30 @@ class ServerWebsocket extends events.EventEmitter {
    * ```
    */
   send(payload) {
-    if (payload == null) {
-      // noop
-    } else if (payload.length < MESSAGE_MAX_LENGTH_BYTES) { // unfragmented
-      if (Buffer.isBuffer(payload)) {
-        this._socket.write(encodeWebSocketFrame(payload, 0x2)) // binary frame
-      } else if (ArrayBuffer.isView(payload)) {
-        const buffer = Buffer.from(payload.buffer)
-        this._socket.write(encodeWebSocketFrame(buffer, 0x2)) // binary frame
-      } else if (typeof payload == 'string') {
-        const buffer = Buffer.from(payload, 'utf8')
-        this._socket.write(encodeWebSocketFrame(buffer, 0x1)) // text frame
-      } else {
-        this.emit('error', new TypeError('send can only process binary or text frames'))
-      }
+    let buffer = null
+    let opcode = null
+
+    if (Buffer.isBuffer(payload)) {
+      buffer = payload
+      opcode = 0x2
+    } else if (ArrayBuffer.isView(buffer)) {
+      buffer = Buffer.from(payload.buffer)
+      opcode = 0x2
+    } else if (typeof payload == 'string') {
+      buffer = Buffer.from(payload, 'utf8')
+      opcode = 0x1
+    } else {
+      console.log('emit error')
+      this.emit('error', new TypeError('send can only process binary or text frames'))
+      return undefined
+    }
+
+    if (buffer.length < MESSAGE_MAX_LENGTH_BYTES) { // unfragmented
+      this._socket.write(encodeWebSocketFrame(buffer, opcode))
     } else { // fragmented
       let index = 0
-      let fragment = payload.slice(0, MESSAGE_MAX_LENGTH_BYTES)
-
-      if (Buffer.isBuffer(fragment)) {
-        // binary first frame
-        this._socket.write(encodeWebSocketFrame(fragment, 0x2, false, false))
-      } else if (ArrayBuffer.isView(fragment)) {
-        // binary first frame
-        const buffer = Buffer.from(fragment.buffer)
-        this._socket.write(encodeWebSocketFrame(fragment, 0x2, false, false))
-      } else if (typeof fragment == 'string') {
-        // text first frame
-        const buffer = Buffer.from(fragment, 'utf8')
-        this._socket.write(encodeWebSocketFrame(fragment, 0x1, false, false))
-      } else {
-        this.emit('error', new TypeError('send can only process binary or text frames'))
-      }
+      let fragment = buffer.slice(0, MESSAGE_MAX_LENGTH_BYTES)
+      this._socket.write(encodeWebSocketFrame(fragment, opcode, false, false))
 
       // continuation frames
       index += MESSAGE_MAX_LENGTH_BYTES
@@ -76,24 +68,13 @@ class ServerWebsocket extends events.EventEmitter {
         const fin = index + MESSAGE_MAX_LENGTH_BYTES >= payload.length
         fragment = payload.slice(index, index + MESSAGE_MAX_LENGTH_BYTES)
 
-        if (Buffer.isBuffer(fragment)) {
-          // binary continuation frame
-          this._socket.write(encodeWebSocketFrame(fragment, 0x0, false, fin))
-        } else if (ArrayBuffer.isView(fragment)) {
-          // binary continuation frame
-          const buffer = Buffer.from(fragment.buffer)
-          this._socket.write(encodeWebSocketFrame(fragment, 0x0, false, fin))
-        } else if (typeof fragment == 'string') {
-          // text continuation frame
-          const buffer = Buffer.from(fragment, 'utf8')
-          this._socket.write(encodeWebSocketFrame(fragment, 0x0, false, fin))
-        } else {
-          this.emit('error', new TypeError('send can only process binary or text frames'))
-        }
+        this._socket.write(encodeWebSocketFrame(fragment, 0x0, false, fin))
 
         index += MESSAGE_MAX_LENGTH_BYTES
       }
     }
+
+    return undefined
   }
 
   /**
