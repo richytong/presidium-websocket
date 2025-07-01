@@ -101,6 +101,7 @@ class WebSocket extends events.EventEmitter {
 
         if (!handshakeSucceeded) {
           this.emit('error', new Error(message))
+          break
         }
 
         if (remaining.length > 0) {
