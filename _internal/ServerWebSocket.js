@@ -42,14 +42,13 @@ class ServerWebsocket extends events.EventEmitter {
     if (Buffer.isBuffer(payload)) {
       buffer = payload
       opcode = 0x2
-    } else if (ArrayBuffer.isView(buffer)) {
+    } else if (ArrayBuffer.isView(payload)) {
       buffer = Buffer.from(payload.buffer)
       opcode = 0x2
     } else if (typeof payload == 'string') {
       buffer = Buffer.from(payload, 'utf8')
       opcode = 0x1
     } else {
-      console.log('emit error')
       this.emit('error', new TypeError('send can only process binary or text frames'))
       return undefined
     }

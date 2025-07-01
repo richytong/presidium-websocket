@@ -224,7 +224,7 @@ class WebSocket extends events.EventEmitter {
     if (Buffer.isBuffer(payload)) {
       buffer = payload
       opcode = 0x2
-    } else if (ArrayBuffer.isView(buffer)) {
+    } else if (ArrayBuffer.isView(payload)) {
       buffer = Buffer.from(payload.buffer)
       opcode = 0x2
     } else if (typeof payload == 'string') {

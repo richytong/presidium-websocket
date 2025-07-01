@@ -131,6 +131,272 @@ describe('WebSocketServer, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
+  it('Minimal WebSocketServer and WebSocket buffer exchange', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocketServer(websocket => {
+      websocket.on('message', message => {
+        assert.equal(server.clients.size, 1)
+        messages.push(message)
+        websocket.send(Buffer.from('pong'))
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357, () => {
+      console.log('server listening on port 7357')
+    })
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', () => {
+      websocket.send(Buffer.from('ping'))
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 2)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0].toString('utf8'), 'ping')
+    assert.equal(messages[1].toString('utf8'), 'pong')
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
+  it('Minimal WebSocketServer and WebSocket uint8Array exchange', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocketServer(websocket => {
+      websocket.on('message', message => {
+        assert.equal(server.clients.size, 1)
+        messages.push(message)
+        websocket.send(new Uint8Array([4, 5, 6]))
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357, () => {
+      console.log('server listening on port 7357')
+    })
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', () => {
+      websocket.send(new Uint8Array([1, 2, 3]))
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 2)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0][0], 1)
+    assert.equal(messages[0][1], 2)
+    assert.equal(messages[0][2], 3)
+    assert.equal(messages[1][0], 4)
+    assert.equal(messages[1][1], 5)
+    assert.equal(messages[1][2], 6)
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
+  it('WebSocket error: Send can only process binary or text frames', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+    const errors = []
+
+    const server = new WebSocketServer(websocket => {
+      websocket.on('message', message => {
+        assert.equal(server.clients.size, 1)
+        messages.push(message)
+        websocket.send(new Uint8Array([4, 5, 6]))
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357, () => {
+      console.log('server listening on port 7357')
+    })
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('error', error => {
+      errors.push(error)
+      resolve()
+    })
+
+    websocket.on('open', () => {
+      websocket.send(1)
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 0)
+    assert.equal(errors.length, 1)
+    assert.deepEqual(errors[0], new TypeError('send can only process binary or text frames'))
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
+  it('Server WebSocket error: Send can only process binary or text frames', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+    const errors = []
+
+    const server = new WebSocketServer(websocket => {
+      websocket.on('message', message => {
+        assert.equal(server.clients.size, 1)
+        messages.push(message)
+        websocket.send(1)
+      })
+
+      websocket.on('error', error => {
+        errors.push(error)
+        resolve()
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357, () => {
+      console.log('server listening on port 7357')
+    })
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('error', error => {
+      errors.push(error)
+      resolve()
+    })
+
+    websocket.on('open', () => {
+      websocket.send('abc')
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 1)
+    assert.equal(messages[0].toString('utf8'), 'abc')
+    assert.equal(errors.length, 1)
+    assert.deepEqual(errors[0], new TypeError('send can only process binary or text frames'))
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
   it('WebSocket error when wrong protocol', async () => {
     assert.throws(
       () => new WebSocket('http://localhost:4507/'),
