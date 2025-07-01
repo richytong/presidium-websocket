@@ -32,3 +32,16 @@ websocket.on('message', message => {
   console.log('Message from server:', message)
 })
 ```
+
+## Installation
+
+with `npm`
+```bash
+npm i presidium-websocket
+```
+
+## Benchmarks
+Please find the published benchmark output inside the [benchmark-output](https://github.com/a-synchronous/rubico/tree/master/benchmark-output) folder. You can run the benchmarks on your own system with the following command:
+```
+npm run bench
+```

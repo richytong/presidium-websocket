@@ -1,0 +1,94 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const PresidiumWebSocket = require('./WebSocket')
+const PresidiumWebSocketServer = require('./WebSocketServer')
+const WSWebSocket = require('ws')
+const WSWebSocketServer = WSWebSocket.WebSocketServer
+const sleep = require('./_internal/sleep')
+const package = require('./package.json')
+const wsPackage = require('./node_modules/ws/package.json')
+
+let presidiumStart = null
+let wsStart = null
+const presidiumMessages = []
+const wsMessages = []
+
+{ // Presidium
+
+  const server = new PresidiumWebSocketServer(websocket => {
+    websocket.on('message', message => {
+      websocket.send(message)
+    })
+  })
+  server.listen(1337)
+
+  const websocket = new PresidiumWebSocket('ws://localhost:1337')
+
+  websocket.on('message', message => {
+    presidiumMessages.push(message)
+  })
+
+  websocket.on('open', async () => {
+    presidiumStart = performance.now()
+    while (true) {
+      websocket.send('small-message-16')
+      await sleep(0)
+    }
+  })
+
+}
+
+{ // ws
+
+  const server = new WSWebSocketServer({ port: 1338 })
+  server.on('connection', ws => {
+    ws.on('message', message => {
+      ws.send(message)
+    })
+  })
+
+  const ws = new WSWebSocket('ws://localhost:1338')
+
+  ws.on('message', message => {
+    wsMessages.push(message)
+  })
+
+  ws.on('open', async () => {
+    wsStart = performance.now()
+    while (true) {
+      ws.send('small-message-16')
+      await sleep(0)
+    }
+  })
+
+}
+
+setImmediate(async () => {
+  const writeStream = fs.createWriteStream(`benchmark-output/v${package.version}`, {
+    flags: 'w'
+  })
+
+
+  function write(s) {
+    writeStream.write(s)
+    process.stdout.write(s)
+  }
+
+  write(`presidium-websocket@${package.version}`)
+  write('\n')
+  write(`ws@${wsPackage.version}`)
+  write('\n\n')
+  while (true) {
+    const now = performance.now()
+    const logMessage = `
+Time: ${now / 1000} seconds
+Presidium throughput: ${presidiumMessages.length / (now - presidiumStart) * 1000} messages/s
+ws throughput: ${wsMessages.length / (now - wsStart) * 1000} messages/s
+    `.trim()
+    write(logMessage)
+    write('\n\n')
+
+    await sleep(1000)
+  }
+})
