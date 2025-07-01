@@ -8,6 +8,9 @@ const sleep = require('./_internal/sleep')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
 const LinkedList = require('./_internal/LinkedList')
 const ProcessChunks = require('./_internal/ProcessChunks')
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
+const append = require('./_internal/append')
 
 /**
  * @name WebSocketServer
@@ -129,10 +132,7 @@ class WebSocketServer extends events.EventEmitter {
     // const chunks = []
     const chunks = new LinkedList()
 
-    socket.on('data', chunk => {
-      // chunks.push(chunk)
-      chunks.append(chunk)
-    })
+    socket.on('data', curry2(append, chunks, __))
 
     const websocket = new ServerWebSocket(socket)
 
