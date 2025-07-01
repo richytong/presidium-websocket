@@ -5,6 +5,7 @@ const sleep = require('./_internal/sleep')
 const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const decodeWebSocketHandshakeResponse = require('./_internal/decodeWebSocketHandshakeResponse')
+const unhandledErrorListener = require('./_internal/unhandledErrorListener')
 
 const MESSAGE_MAX_LENGTH_BYTES = 1000000
 
@@ -58,15 +59,7 @@ class WebSocket extends events.EventEmitter {
 
     this._handleDataFrames()
 
-    const errorListener = error => {
-      const errorListenerCount = this.listenerCount('error')
-      const errorListeners = this.listeners('error')
-      if (errorListenerCount == 1 && errorListeners[0] == errorListener) {
-        console.error(error)
-        process.exit(1)
-      }
-    }
-    this.on('error', errorListener)
+    this.on('error', unhandledErrorListener.bind(this))
   }
 
   /**
