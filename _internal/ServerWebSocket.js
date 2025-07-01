@@ -18,6 +18,10 @@ class ServerWebsocket extends events.EventEmitter {
     this._socket = socket
 
     this.on('error', unhandledErrorListener.bind(this))
+
+    this._socket.on('error', error => {
+      this.emit('error', error)
+    })
   }
 
   /**

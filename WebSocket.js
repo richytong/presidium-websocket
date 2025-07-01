@@ -75,6 +75,10 @@ class WebSocket extends events.EventEmitter {
     this._handleDataFrames()
 
     this.on('error', unhandledErrorListener.bind(this))
+
+    this._socket.on('error', error => {
+      this.emit('error', error)
+    })
   }
 
   /**
