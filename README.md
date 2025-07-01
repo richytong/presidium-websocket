@@ -35,6 +35,40 @@ websocket.on('message', message => {
 })
 ```
 
+Serve WebSocket Secure (WSS) connections.
+
+```javascript
+const WebSocket = require('presidium-websocket')
+
+const server = new WebSocket.SecureServer({
+  key: fs.readFileSync('/path/to/my-key'),
+  cert: fs.readFileSync('/path/to/my-cert')
+})
+
+server.on('connection', websocket => {
+  websocket.on('message', message => {
+    console.log('Secure message from client:', message)
+    websocket.send('Hello from server!')
+  })
+  websocket.on('close', () => {
+    console.log('websocket closed')
+  })
+})
+
+server.listen(1337, () => {
+  console.log('WebSocket Secure server listening on port 1337')
+})
+
+const websocket = new WebSocket('wss://localhost:1337/')
+
+websocket.on('open', () => {
+  websocket.send('Hello from client!')
+})
+websocket.on('message', message => {
+  console.log('Message from server:', message)
+})
+```
+
 ## Installation
 
 with `npm`
