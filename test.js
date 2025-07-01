@@ -13,9 +13,7 @@ describe('WebSocketServer, WebSocket', () => {
     const server = new WebSocketServer()
     assert.equal(server._websocketHandler.name, 'noop')
     assert.equal(server._httpHandler.name, 'defaultHttpHandler')
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
     server.on('request', () => {
       didRequest = true
     })
@@ -54,9 +52,7 @@ describe('WebSocketServer, WebSocket', () => {
         response.end('Upgrade Required')
       }
     })
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
 
     const http = new Http('http://localhost:7357')
     const response = await http.get('http://localhost:7357')
@@ -77,9 +73,7 @@ describe('WebSocketServer, WebSocket', () => {
     server.on('upgrade', (request, socket, head) => {
       socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
     })
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
 
@@ -97,6 +91,40 @@ describe('WebSocketServer, WebSocket', () => {
     await promise
     server.close()
 
+    await sleep(100)
+  })
+
+  it('Bad WebSocket', async () => {
+    const server = new WebSocketServer()
+    server.listen(7357)
+
+    const socket = net.createConnection(7357, 'localhost', async () => {
+      const headers = [
+        `GET / HTTP/1.1`,
+        `Host: localhost:7357`,
+        'Upgrade: websocket',
+        'Connection: Upgrade',
+        // `Sec-WebSocket-Key: ${key}`, // no key
+        'Sec-WebSocket-Version: 13'
+      ]
+      socket.write(headers.join('\r\n') + '\r\n\r\n')
+    })
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const chunks = []
+    socket.on('data', chunk => {
+      chunks.push(chunk)
+    })
+    socket.on('end', resolve)
+
+    await promise
+    assert.equal(Buffer.concat(chunks).toString('utf8'), 'HTTP/1.1 400 Bad Request\r\n\r\n')
+
+    server.close()
     await sleep(100)
   })
 
@@ -134,9 +162,7 @@ describe('WebSocketServer, WebSocket', () => {
       resolve()
     })
 
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
 
@@ -196,9 +222,7 @@ describe('WebSocketServer, WebSocket', () => {
       resolve()
     })
 
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
 
@@ -258,9 +282,7 @@ describe('WebSocketServer, WebSocket', () => {
       resolve()
     })
 
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
 
@@ -320,9 +342,7 @@ describe('WebSocketServer, WebSocket', () => {
       resolve()
     })
 
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
 
@@ -382,9 +402,7 @@ describe('WebSocketServer, WebSocket', () => {
       resolve()
     })
 
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
 
@@ -449,9 +467,7 @@ describe('WebSocketServer, WebSocket', () => {
       resolve()
     })
 
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
 
@@ -520,9 +536,7 @@ describe('WebSocketServer, WebSocket', () => {
       resolve()
     })
 
-    server.listen(7357, () => {
-      console.log('server listening on port 7357')
-    })
+    server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
 

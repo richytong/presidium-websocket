@@ -12,13 +12,16 @@ describe('unhandledErrorListener', () => {
       }
     }
     const originalProcessExit = process.exit
+    const originalConsoleError = console.error
     let processExitCalledWithExitCode = null
     process.exit = exitCode => {
       processExitCalledWithExitCode = exitCode
     }
+    console.error = () => {}
     unhandledErrorListener.call(mockEmitter, new Error('test'))
     assert.equal(processExitCalledWithExitCode, 1)
     process.exit = originalProcessExit
+    console.error = originalConsoleError
   })
 
   it('Noops if there are other error event listeners', async () => {
