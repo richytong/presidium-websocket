@@ -281,6 +281,23 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
+  it('WebSocket.SecureServer bad options', async () => {
+    assert.throws(
+      () => new WebSocket.SecureServer(),
+      new TypeError('invalid key and cert options')
+    )
+
+    assert.throws(
+      () => new WebSocket.SecureServer({}),
+      new TypeError('invalid key and cert options')
+    )
+
+    assert.throws(
+      () => new WebSocket.SecureServer({ key: '' }),
+      new TypeError('invalid key and cert options')
+    )
+  })
+
   it('Bad WebSocket server', async () => {
     const server = http.createServer()
 
