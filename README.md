@@ -78,7 +78,7 @@ const server = new WebSocket.Server({ perMessageDeflate: true })
 
 ## Installation
 
-with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
 ```bash
 npm i presidium-websocket
 ```
