@@ -170,7 +170,7 @@ class WebSocketServer extends events.EventEmitter {
       this.clients.delete(websocket)
     })
 
-    const _processChunksPromise = this._processChunks(chunks, websocket)
+    this._processChunks(chunks, websocket)
   }
 
   /**
