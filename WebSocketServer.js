@@ -43,18 +43,26 @@ const unhandledErrorListener = require('./_internal/unhandledErrorListener')
  * ```
  */
 class WebSocketServer extends events.EventEmitter {
-  constructor(websocketHandler, options = {}) {
+  constructor(...args) {
     super()
 
-    if (websocketHandler == null) {
+    let options
+    if (args.length == 0) {
       this._websocketHandler = noop
-    } else if (typeof websocketHandler == 'object') {
-      options = websocketHandler
-      this._websocketHandler = options.websocketHandler ?? noop
-    } else if (typeof websocketHandler == 'function') {
-      this._websocketHandler = websocketHandler
+      options = {}
+    } else if (args.length == 1) {
+      if (typeof args[0] == 'function') {
+        this._websocketHandler = args[0]
+        options = {}
+      } else if (typeof args[0] == 'object') {
+        options = args[0] ?? {}
+        this._websocketHandler = noop
+      } else {
+        throw new TypeError('invalid arguments')
+      }
     } else {
-      this._websocketHandler = options.websocketHandler ?? noop
+      this._websocketHandler = args[0] ?? noop
+      options = args[1] ?? {}
     }
 
     this._httpHandler = options.httpHandler ?? defaultHttpHandler

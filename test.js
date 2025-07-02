@@ -278,6 +278,24 @@ describe('WebSocket.Server, WebSocket', () => {
     assert.strictEqual(messages[0].toString('utf8'), 'ping')
     assert.strictEqual(messages[1].toString('utf8'), 'pong')
 
+    // coverage
+    const testHandler = () => {}
+
+    const server2 = new WebSocket.SecureServer(testHandler, {
+      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+      key: fs.readFileSync('./test/fixtures/key.pem')
+    })
+    assert.equal(server2._websocketHandler, testHandler)
+    assert.equal(server2._httpHandler.name, 'defaultHttpHandler')
+
+    const server3 = new WebSocket.SecureServer({
+      websocketHandler: testHandler,
+      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+      key: fs.readFileSync('./test/fixtures/key.pem')
+    })
+    assert.equal(server3._websocketHandler, testHandler)
+    assert.equal(server3._httpHandler.name, 'defaultHttpHandler')
+
     await sleep(100)
   })
 
