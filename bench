@@ -65,9 +65,10 @@ const wsMessages = []
 }
 
 setImmediate(async () => {
-  const writeStream = fs.createWriteStream(`benchmark-output/v${package.version}`, {
-    flags: 'w'
-  })
+  const writeStream = fs.createWriteStream(
+    `${__dirname}/benchmark-output/v${package.version}`,
+    { flags: 'w' }
+  )
 
 
   function write(s) {
