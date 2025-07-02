@@ -269,6 +269,13 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
+  it('WebSocket.Server bad options', async () => {
+    assert.throws(
+      () => new WebSocket.Server(1),
+      new TypeError('bad options')
+    )
+  })
+
   it('WebSocket.SecureServer bad options', async () => {
     assert.throws(
       () => new WebSocket.SecureServer(),

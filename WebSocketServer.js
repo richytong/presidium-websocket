@@ -58,7 +58,7 @@ class WebSocketServer extends events.EventEmitter {
         options = args[0] ?? {}
         this._websocketHandler = noop
       } else {
-        throw new TypeError('invalid arguments')
+        throw new TypeError('bad options')
       }
     } else {
       this._websocketHandler = args[0] ?? noop
