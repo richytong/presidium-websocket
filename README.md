@@ -76,6 +76,22 @@ Supports compression with `perMessageDeflate` (uses zlib [default options](https
 const server = new WebSocket.Server({ perMessageDeflate: true })
 ```
 
+Initiate new connections using the same websocket instance.
+
+```javascript
+const websocket = new WebSocket('ws://localhost:1337/')
+
+// reconnect websocket on broken connections
+while (true) {
+  if (websocket.readyState === 1) {
+    // websocket is open
+  } else { // reconnect
+    websocket.connect()
+  }
+  await sleep(10000)
+}
+```
+
 ## Installation
 
 with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):

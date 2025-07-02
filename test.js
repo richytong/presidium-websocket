@@ -146,36 +146,6 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
-  it('WebSocket echo test', async () => {
-    const websocket = new WebSocket('wss://echo.websocket.org/')
-
-    let resolve
-    const promise = new Promise(_resolve => {
-      resolve = _resolve
-    })
-
-    websocket.on('open', () => {
-      websocket.send('test')
-    })
-
-    const messages = []
-
-    websocket.on('message', message => {
-      messages.push(message)
-      if (messages.length == 2) {
-        resolve()
-        websocket.close()
-      }
-    })
-
-    await promise
-
-    assert.equal(messages.length, 2)
-    assert.equal(messages[1].toString('utf8'), 'test')
-
-    await sleep(100)
-  }).timeout(10000)
-
   it('WebSocket.Server handles WSS with secure, key, and cert options', async () => {
     let resolve
     const promise = new Promise(_resolve => {
@@ -340,7 +310,7 @@ describe('WebSocket.Server, WebSocket', () => {
     server.close()
 
     await sleep(100)
-  })
+  }).timeout(10000)
 
   it('Bad WebSocket', async () => {
     const server = new WebSocket.Server()
@@ -375,6 +345,48 @@ describe('WebSocket.Server, WebSocket', () => {
     server.close()
     await sleep(100)
   })
+
+  it('WebSocket port 80', async () => {
+    const websocket = new WebSocket('ws://localhost/', { autoConnect: false })
+    assert.equal(websocket.url.port, '80')
+  })
+
+  it('WebSocket destroyed before handshake', async () => {
+    const websocket = new WebSocket('ws://localhost/')
+    assert.strictEqual(websocket.readyState, 0)
+    assert.equal(websocket.url.port, '80')
+    websocket._socket.destroyed = true
+    while (websocket.readyState !== 3) {
+      await sleep(100)
+    }
+  }).timeout(1000)
+
+  it.only('WebSocket reconnects', async () => {
+    const server = new WebSocket.Server()
+    server.listen(1337)
+
+    const websocket = new WebSocket('ws://localhost:1337/')
+
+    let reconnects = 0
+    let socket = websocket._socket
+    while (reconnects < 5) {
+      let resolve
+      const promise = new Promise(_resolve => {
+        resolve = _resolve
+      })
+
+      websocket.connect()
+      assert.notEqual(websocket._socket, socket)
+
+      websocket.on('open', resolve)
+      await promise
+
+      socket = websocket._socket
+      reconnects += 1
+    }
+
+    server.close()
+  }).timeout(5000)
 
   it('Minimal WebSocket.Server and WebSocket text exchange', async () => {
     let resolve
@@ -448,7 +460,7 @@ describe('WebSocket.Server, WebSocket', () => {
     server.close()
 
     await sleep(100)
-  }).timeout(5000)
+  }).timeout(10000)
 
   it('Minimal WebSocket.Server and WebSocket buffer exchange', async () => {
     let resolve

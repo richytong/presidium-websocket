@@ -68,13 +68,39 @@ class WebSocket extends events.EventEmitter {
 
     this.readyState = 0 // CONNECTING
 
+    this._connectOptions = {
+      rejectUnauthorized: options.rejectUnauthorized ?? true,
+      servername: net.isIP(this.url.hostname) ? '' : this.url.hostname
+    }
+
+    this.on('error', unhandledErrorListener.bind(this))
+
+    this._autoConnect = options.autoConnect ?? true
+    if (this._autoConnect) {
+      this.connect()
+    }
+  }
+
+  /**
+   * @name connect
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * websocket.connect() -> ()
+   * ```
+   */
+  connect() {
+    if (this._socket) { // dispose existing
+      this._socket.destroy()
+    }
+
     if (this.url.protocol == 'wss:') {
       this._socket = tls.connect(
         {
           port: this.url.port,
           host: this.url.hostname,
-          rejectUnauthorized: options.rejectUnauthorized ?? true,
-          servername: net.isIP(this.url.hostname) ? '' : this.url.hostname,
+          rejectUnauthorized: this._connectOptions.rejectUnauthorized,
+          servername: this._connectOptions.servername
         },
         this._handleTCPConnection.bind(this)
       )
@@ -86,13 +112,11 @@ class WebSocket extends events.EventEmitter {
       )
     }
 
-    this._handleDataFrames()
-
-    this.on('error', unhandledErrorListener.bind(this))
-
     this._socket.on('error', error => {
       this.emit('error', error)
     })
+
+    this._handleDataFrames()
   }
 
   /**
@@ -100,7 +124,7 @@ class WebSocket extends events.EventEmitter {
    *
    * @docs
    * ```coffeescript [specscript]
-   * _handleTCPConnection() -> ()
+   * websocket._handleTCPConnection() -> ()
    * ```
    */
   _handleTCPConnection() {
@@ -126,7 +150,6 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   _handleDataFrames() {
-
     const chunks = []
 
     this._socket.on('data', chunk => {
@@ -134,8 +157,14 @@ class WebSocket extends events.EventEmitter {
     })
 
     setImmediate(async () => {
-      while (!this.closed) { // handle handshake response
+      while (!this.closed) {
+        // handle handshake response
+
         if (chunks.length == 0) {
+          if (this._socket.destroyed) {
+            this.readyState = 3 // CLOSED
+            break
+          }
           await sleep(0)
           continue
         }
@@ -182,9 +211,14 @@ class WebSocket extends events.EventEmitter {
 
       let continuationPayloads = []
 
-      while (!this.closed) { // handle data frames
+      while (!this.closed) {
+        // handle data frames
 
         if (chunks.length == 0) {
+          if (this._socket.destroyed) {
+            this.readyState = 3 // CLOSED
+            break
+          }
           await sleep(0)
           continue
         }
