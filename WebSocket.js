@@ -47,33 +47,44 @@ class WebSocket extends events.EventEmitter {
   constructor(url, options = {}) {
     super()
 
-    this.url = new URL(url)
-    const { port, hostname, protocol, pathname } = this.url
+    const parsedUrl = new URL(url)
 
-    if (protocol != 'ws:' && protocol != 'wss:') {
-      throw new Error('URL protocol must be "ws" or "wss"')
+    if (parsedUrl.protocol != 'ws:' && parsedUrl.protocol != 'wss:') {
+      throw new TypeError('URL protocol must be "ws" or "wss"')
+    }
+
+    this.url = {
+      hostname: parsedUrl.hostname,
+      protocol: parsedUrl.protocol,
+      pathname: parsedUrl.pathname,
+    }
+    if (parsedUrl.port.length > 0) {
+      this.url.port = Number(parsedUrl.port)
+    } else if (parsedUrl.protocol == 'wss:') {
+      this.url.port = 443
+    } else {
+      this.url.port = 80
     }
 
     this.readyState = 0 // CONNECTING
 
-    this._socket = (protocol == 'wss:' ? tls : net).connect({
-      port,
-      hostname,
-      rejectUnauthorized: options.rejectUnauthorized ?? true,
-    }, async () => {
-      const key = crypto.randomBytes(16).toString('base64')
-
-      const headers = [
-        `GET ${pathname} HTTP/1.1`,
-        `Host: ${hostname}:${port}`,
-        'Upgrade: websocket',
-        'Connection: Upgrade',
-        `Sec-WebSocket-Key: ${key}`,
-        'Sec-WebSocket-Version: 13'
-      ]
-
-      this._socket.write(headers.join('\r\n') + '\r\n\r\n')
-    })
+    if (this.url.protocol == 'wss:') {
+      this._socket = tls.connect(
+        {
+          port: this.url.port,
+          host: this.url.hostname,
+          rejectUnauthorized: options.rejectUnauthorized ?? true,
+          servername: net.isIP(this.url.hostname) ? '' : this.url.hostname,
+        },
+        this._handleTCPConnection.bind(this)
+      )
+    } else {
+      this._socket = net.connect(
+        this.url.port,
+        this.url.hostname,
+        this._handleTCPConnection.bind(this)
+      )
+    }
 
     this._handleDataFrames()
 
@@ -82,6 +93,27 @@ class WebSocket extends events.EventEmitter {
     this._socket.on('error', error => {
       this.emit('error', error)
     })
+  }
+
+  /**
+   * @name _handleTCPConnection
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * _handleTCPConnection() -> ()
+   * ```
+   */
+  _handleTCPConnection() {
+    const key = crypto.randomBytes(16).toString('base64')
+    const headers = [
+      `GET ${this.url.pathname} HTTP/1.1`,
+      `Host: ${this.url.hostname}:${this.url.port}`,
+      'Upgrade: websocket',
+      'Connection: Upgrade',
+      `Sec-WebSocket-Key: ${key}`,
+      'Sec-WebSocket-Version: 13'
+    ]
+    this._socket.write(headers.join('\r\n') + '\r\n\r\n')
   }
 
   /**

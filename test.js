@@ -146,6 +146,36 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
+  it('WebSocket echo test', async () => {
+    const websocket = new WebSocket('wss://echo.websocket.org/')
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    websocket.on('open', () => {
+      websocket.send('test')
+    })
+
+    const messages = []
+
+    websocket.on('message', message => {
+      messages.push(message)
+      if (messages.length == 2) {
+        resolve()
+        websocket.close()
+      }
+    })
+
+    await promise
+
+    assert.equal(messages.length, 2)
+    assert.equal(messages[1].toString('utf8'), 'test')
+
+    await sleep(100)
+  }).timeout(10000)
+
   it('WebSocket.Server handles WSS with secure, key, and cert options', async () => {
     let resolve
     const promise = new Promise(_resolve => {
@@ -906,7 +936,7 @@ describe('WebSocket.Server, WebSocket', () => {
   it('WebSocket error when wrong protocol', async () => {
     assert.throws(
       () => new WebSocket('http://localhost:4507/'),
-      new Error('URL protocol must be "ws" or "wss"'),
+      new TypeError('URL protocol must be "ws" or "wss"')
     )
   })
 
