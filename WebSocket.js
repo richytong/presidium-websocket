@@ -238,10 +238,10 @@ class WebSocket extends events.EventEmitter {
       }
 
       let chunk = chunks.shift()
-      let decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+      let decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
       while (decodeResult == null && chunks.length > 0) {
         chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+        decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
       }
 
       if (decodeResult == null) {
@@ -329,7 +329,8 @@ class WebSocket extends events.EventEmitter {
     }
 
     if (buffer.length < MESSAGE_MAX_LENGTH_BYTES) { // unfragmented
-      this._socket.write(encodeWebSocketFrame(
+      this._socket.write(encodeWebSocketFrame.call(
+        this,
         buffer,
         opcode,
         true,
@@ -339,7 +340,8 @@ class WebSocket extends events.EventEmitter {
     } else { // fragmented
       let index = 0
       let fragment = buffer.slice(0, MESSAGE_MAX_LENGTH_BYTES)
-      this._socket.write(encodeWebSocketFrame(
+      this._socket.write(encodeWebSocketFrame.call(
+        this,
         fragment,
         opcode,
         true,
@@ -354,7 +356,8 @@ class WebSocket extends events.EventEmitter {
         const fin = index + MESSAGE_MAX_LENGTH_BYTES >= payload.length
         fragment = payload.slice(index, index + MESSAGE_MAX_LENGTH_BYTES)
 
-        this._socket.write(encodeWebSocketFrame(
+        this._socket.write(encodeWebSocketFrame.call(
+          this,
           fragment,
           0x0,
           true,
@@ -380,7 +383,7 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   sendClose(payload = Buffer.from([])) {
-    this._socket.write(encodeWebSocketFrame(payload, 0x8, true)) // close frame
+    this._socket.write(encodeWebSocketFrame.call(this, payload, 0x8, true)) // close frame
     this.sentClose = true
   }
 
@@ -395,7 +398,7 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   sendPing(payload = Buffer.from([])) {
-    this._socket.write(encodeWebSocketFrame(payload, 0x9, true)) // ping frame
+    this._socket.write(encodeWebSocketFrame.call(this, payload, 0x9, true)) // ping frame
   }
 
   /**
@@ -409,7 +412,7 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   sendPong(payload = Buffer.from([])) {
-    this._socket.write(encodeWebSocketFrame(payload, 0xA, true)) // pong frame
+    this._socket.write(encodeWebSocketFrame.call(this, payload, 0xA, true)) // pong frame
   }
 
   /**

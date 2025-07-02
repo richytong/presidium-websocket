@@ -67,9 +67,13 @@ function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
   }
 
   if (perMessageDeflate && rsv1 && payload.length > 0) {
-    const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
-    const compressed = Buffer.concat([payload, tail])
-    payload = zlib.inflateRawSync(compressed)
+    try {
+      const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
+      const compressed = Buffer.concat([payload, tail])
+      payload = zlib.inflateRawSync(compressed)
+    } catch (error) {
+      this.emit('error', error)
+    }
   }
 
   const remaining = buffer.slice(offset + payloadLen)

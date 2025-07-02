@@ -23,23 +23,23 @@ function encodeWebSocketFrame(
   fin = true,
   perMessageDeflate = false
 ) {
-  if (!Buffer.isBuffer(payload)) {
-    payload = Buffer.from(payload)
-  }
-
   let compressed = false
 
   if (perMessageDeflate && payload.length > 0) {
-    const compressedPayload = zlib.deflateRawSync(payload)
-    if (
-      compressedPayload.length >= 4 &&
-      compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))
-    ) {
-      payload = compressedPayload.slice(0, -4)
-    } else {
-      payload = compressedPayload
+    try {
+      const compressedPayload = zlib.deflateRawSync(payload)
+      if (
+        compressedPayload.length >= 4 &&
+        compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))
+      ) {
+        payload = compressedPayload.slice(0, -4)
+      } else {
+        payload = compressedPayload
+      }
+      compressed = true
+    } catch (error) {
+      this.emit('error', error)
     }
-    compressed = true
   }
 
   const payloadLen = payload.length
