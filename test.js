@@ -351,6 +351,11 @@ describe('WebSocket.Server, WebSocket', () => {
     assert.equal(websocket.url.port, '80')
   })
 
+  it('WebSocket port 443', async () => {
+    const websocket = new WebSocket('wss://localhost/', { autoConnect: false })
+    assert.equal(websocket.url.port, '443')
+  })
+
   it('WebSocket destroyed before handshake', async () => {
     const websocket = new WebSocket('ws://localhost/')
     assert.strictEqual(websocket.readyState, 0)
