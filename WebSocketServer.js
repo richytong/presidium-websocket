@@ -225,6 +225,19 @@ class WebSocketServer extends events.EventEmitter {
 
   }
 
+  /**
+   * @name _handleSend
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * websocket._handleSend(
+   *   websocket ServerWebSocket,
+   *   payload Buffer,
+   *   opcode number,
+   *   fin boolean
+   * ) -> ()
+   * ```
+   */
   _handleSend(websocket, payload, opcode, fin) {
     if (opcode === 0x0) { // continuation frame
       websocket._continuationPayloads.push(payload)

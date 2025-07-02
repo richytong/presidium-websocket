@@ -166,7 +166,7 @@ class WebSocket extends events.EventEmitter {
    *
    * @docs
    * ```coffeescript [specscript]
-   * server._processChunks(chunks Array<Buffer>) -> ()
+   * websocket._processChunks(chunks Array<Buffer>) -> ()
    * ```
    */
   async _processChunks(chunks) {
@@ -266,6 +266,14 @@ class WebSocket extends events.EventEmitter {
 
   }
 
+  /**
+   * @name _handleSend
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * websocket._handleSend(payload Buffer, opcode number, fin boolean) -> ()
+   * ```
+   */
   _handleSend(payload, opcode, fin) {
     if (opcode === 0x0) { // continuation frame
       this._continuationPayloads.push(payload)
