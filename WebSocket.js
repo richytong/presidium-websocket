@@ -125,7 +125,6 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   _handleDataFrames() {
-
     let buffer = Buffer.from([])
 
     this._socket.on('data', chunk => {

@@ -135,10 +135,10 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleDataFrames(socket, request, head) {
-    const chunks = []
+    let buffer = Buffer.from([])
 
     socket.on('data', chunk => {
-      chunks.push(chunk)
+      buffer = Buffer.concat([buffer, chunk])
     })
 
     const websocket = new ServerWebSocket(socket)
@@ -156,19 +156,13 @@ class WebSocketServer extends events.EventEmitter {
     setImmediate(async () => {
       while (!this.closed && !websocket.closed) {
 
-        if (chunks.length == 0) {
+        if (buffer.length == 0) {
           await sleep(0)
           continue
         }
 
-        let chunk = chunks.shift()
-        let decodeResult = decodeWebSocketFrame(chunk)
-        while (decodeResult == null && chunks.length > 0) {
-          chunk = Buffer.concat([chunk, chunks.shift()])
-          decodeResult = decodeWebSocketFrame(chunk)
-        }
+        const decodeResult = decodeWebSocketFrame(buffer)
         if (decodeResult == null) {
-          chunks.unshift(chunk)
           await sleep(0)
           continue
         }
@@ -182,9 +176,7 @@ class WebSocketServer extends events.EventEmitter {
           break
         }
 
-        if (remaining.length > 0) {
-          chunks.unshift(remaining)
-        }
+        buffer = remaining
 
         if (opcode === 0x0) { // continuation frame
           continuationPayloads.push(payload)
