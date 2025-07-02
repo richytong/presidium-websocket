@@ -168,12 +168,20 @@ class WebSocketServer extends events.EventEmitter {
           continue
         }
 
-        let chunk = chunks.shift()
-        let decodeResult = decodeWebSocketFrame(chunk)
-        while (decodeResult == null && chunks.length > 0) {
-          chunk = Buffer.concat([chunk, chunks.shift()])
-          decodeResult = decodeWebSocketFrame(chunk)
+        let chunk
+        let decodeResult
+        try {
+          chunk = chunks.shift()
+          decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+          while (decodeResult == null && chunks.length > 0) {
+            chunk = Buffer.concat([chunk, chunks.shift()])
+            decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+          }
+        } catch (error) {
+          this.emit('error', error)
+          break
         }
+
         if (decodeResult == null) {
           chunks.unshift(chunk)
           await sleep(0)

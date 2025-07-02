@@ -1,9 +1,14 @@
+const zlib = require('zlib')
+
 /**
  * @name decodeWebSocketFrame
  *
  * @docs
  * ```coffeescript [specscript]
- * decodeWebSocketFrame(buffer Buffer) -> decodeResult? {
+ * decodeWebSocketFrame(
+ *   buffer Buffer,
+ *   perMessageDeflate? boolean
+ * ) -> decodeResult? {
  *   fin: boolean,
  *   opcode: number,
  *   payload: Buffer,
@@ -12,16 +17,19 @@
  * }
  * ```
  */
-function decodeWebSocketFrame(buffer) {
+
+function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
   if (buffer.length < 2) {
     return undefined
   }
 
   const firstByte = buffer[0]
   const fin = (firstByte & 0x80) !== 0
+  const rsv1 = (firstByte & 0x40) !== 0
   const opcode = firstByte & 0x0f
   const secondByte = buffer[1]
   const masked = (secondByte & 0x80) !== 0
+
   let payloadLen = secondByte & 0x7f
   let offset = 2
 
@@ -58,9 +66,22 @@ function decodeWebSocketFrame(buffer) {
     }
   }
 
+  if (perMessageDeflate && rsv1 && payload.length > 0) {
+    const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
+    const compressed = Buffer.concat([payload, tail])
+    payload = zlib.inflateRawSync(compressed)
+  }
+
   const remaining = buffer.slice(offset + payloadLen)
 
-  return { fin, opcode, payload, remaining, masked }
+  return {
+    fin,
+    opcode,
+    payload,
+    remaining,
+    masked,
+    compressed: perMessageDeflate && rsv1
+  }
 }
 
 module.exports = decodeWebSocketFrame

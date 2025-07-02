@@ -152,11 +152,21 @@ class WebSocket extends events.EventEmitter {
           continue
         }
 
-        const { handshakeSucceeded, message, remaining } = decodeResult
+        const {
+          handshakeSucceeded,
+          perMessageDeflate,
+          message,
+          remaining
+        } = decodeResult
 
         if (!handshakeSucceeded) {
           this.emit('error', new Error(message))
           break
+        }
+
+        if (perMessageDeflate) {
+          this.perMessageDeflate = true
+          this._socket.perMessageDeflate = true
         }
 
         if (remaining.length > 0) {
@@ -179,12 +189,20 @@ class WebSocket extends events.EventEmitter {
           continue
         }
 
-        let chunk = chunks.shift()
-        let decodeResult = decodeWebSocketFrame(chunk)
-        while (decodeResult == null && chunks.length > 0) {
-          chunk = Buffer.concat([chunk, chunks.shift()])
-          decodeResult = decodeWebSocketFrame(chunk)
+        let chunk
+        let decodeResult
+        try {
+          chunk = chunks.shift()
+          decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+          while (decodeResult == null && chunks.length > 0) {
+            chunk = Buffer.concat([chunk, chunks.shift()])
+            decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+          }
+        } catch (error) {
+          this.emit('error', error)
+          break
         }
+
         if (decodeResult == null) {
           chunks.unshift(chunk)
           await sleep(0)
@@ -289,11 +307,23 @@ class WebSocket extends events.EventEmitter {
     }
 
     if (buffer.length < MESSAGE_MAX_LENGTH_BYTES) { // unfragmented
-      this._socket.write(encodeWebSocketFrame(buffer, opcode, true))
+      this._socket.write(encodeWebSocketFrame(
+        buffer,
+        opcode,
+        true,
+        true,
+        this.perMessageDeflate
+      ))
     } else { // fragmented
       let index = 0
       let fragment = buffer.slice(0, MESSAGE_MAX_LENGTH_BYTES)
-      this._socket.write(encodeWebSocketFrame(fragment, opcode, true, false))
+      this._socket.write(encodeWebSocketFrame(
+        fragment,
+        opcode,
+        true,
+        false,
+        this.perMessageDeflate
+      ))
 
       // continuation frames
       index += MESSAGE_MAX_LENGTH_BYTES
@@ -302,7 +332,13 @@ class WebSocket extends events.EventEmitter {
         const fin = index + MESSAGE_MAX_LENGTH_BYTES >= payload.length
         fragment = payload.slice(index, index + MESSAGE_MAX_LENGTH_BYTES)
 
-        this._socket.write(encodeWebSocketFrame(fragment, 0x0, true, fin))
+        this._socket.write(encodeWebSocketFrame(
+          fragment,
+          0x0,
+          true,
+          fin,
+          this.perMessageDeflate
+        ))
 
         index += MESSAGE_MAX_LENGTH_BYTES
       }
