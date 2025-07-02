@@ -170,87 +170,88 @@ class WebSocketServer extends events.EventEmitter {
       this.clients.delete(websocket)
     })
 
+    this._processChunks(chunks, websocket)
+  }
+
+  async _processChunks(chunks, websocket) {
     let continuationPayloads = []
 
-    setImmediate(async () => {
-      while (!this.closed && !websocket.closed) {
+    while (!this.closed && !websocket.closed) {
 
-        if (chunks.length == 0) {
-          await sleep(0)
-          continue
-        }
-
-        let chunk
-        let decodeResult
-        try {
-          chunk = chunks.shift()
-          decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-          while (decodeResult == null && chunks.length > 0) {
-            chunk = Buffer.concat([chunk, chunks.shift()])
-            decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-          }
-        } catch (error) {
-          this.emit('error', error)
-          break
-        }
-
-        if (decodeResult == null) {
-          chunks.unshift(chunk)
-          await sleep(0)
-          continue
-        }
-
-        const { fin, opcode, payload, remaining, masked } = decodeResult
-
-        // The server must close the connection upon receiving a frame that is not masked
-        if (!masked) {
-          websocket.sendClose()
-          // websocket.close()
-          break
-        }
-
-        if (remaining.length > 0) {
-          chunks.unshift(remaining)
-        }
-
-        if (opcode === 0x0) { // continuation frame
-          continuationPayloads.push(payload)
-          if (fin) { // last continuation frame
-            websocket.emit('message', Buffer.concat(continuationPayloads))
-            continuationPayloads = []
-          }
-        } else if (fin) { // unfragmented message
-
-          switch (opcode) {
-            case 0x1: // text frame
-            case 0x2: // binary frame
-              websocket.emit('message', payload)
-              break
-            case 0x8: // close frame
-              if (websocket.sentClose) {
-                websocket.destroy()
-              } else {
-                websocket.sendClose()
-                websocket.destroy()
-              }
-              break
-            case 0x9: // ping frame
-              websocket.emit('ping', payload)
-              websocket.sendPong(payload)
-              break
-            case 0xA: // pong frame
-              websocket.emit('pong', payload)
-              break
-          }
-
-        } else { // fragmented message, wait for continuation frames
-          continuationPayloads.push(payload)
-        }
-
+      if (chunks.length == 0) {
         await sleep(0)
+        continue
       }
 
-    })
+      let chunk
+      let decodeResult
+      try {
+        chunk = chunks.shift()
+        decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+        while (decodeResult == null && chunks.length > 0) {
+          chunk = Buffer.concat([chunk, chunks.shift()])
+          decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+        }
+      } catch (error) {
+        this.emit('error', error)
+        break
+      }
+
+      if (decodeResult == null) {
+        chunks.unshift(chunk)
+        await sleep(0)
+        continue
+      }
+
+      const { fin, opcode, payload, remaining, masked } = decodeResult
+
+      // The server must close the connection upon receiving a frame that is not masked
+      if (!masked) {
+        websocket.sendClose()
+        // websocket.close()
+        break
+      }
+
+      if (remaining.length > 0) {
+        chunks.unshift(remaining)
+      }
+
+      if (opcode === 0x0) { // continuation frame
+        continuationPayloads.push(payload)
+        if (fin) { // last continuation frame
+          websocket.emit('message', Buffer.concat(continuationPayloads))
+          continuationPayloads = []
+        }
+      } else if (fin) { // unfragmented message
+
+        switch (opcode) {
+          case 0x1: // text frame
+          case 0x2: // binary frame
+            websocket.emit('message', payload)
+            break
+          case 0x8: // close frame
+            if (websocket.sentClose) {
+              websocket.destroy()
+            } else {
+              websocket.sendClose()
+              websocket.destroy()
+            }
+            break
+          case 0x9: // ping frame
+            websocket.emit('ping', payload)
+            websocket.sendPong(payload)
+            break
+          case 0xA: // pong frame
+            websocket.emit('pong', payload)
+            break
+        }
+
+      } else { // fragmented message, wait for continuation frames
+        continuationPayloads.push(payload)
+      }
+
+      await sleep(0)
+    }
 
   }
 
