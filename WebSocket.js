@@ -156,7 +156,10 @@ class WebSocket extends events.EventEmitter {
       chunks.push(chunk)
     })
 
-    this._processChunks(chunks)
+    const _processChunksPromise = this._processChunks(chunks)
+    _processChunksPromise.catch(error => {
+      this.emit('error', error)
+    })
   }
 
   /**
@@ -234,18 +237,11 @@ class WebSocket extends events.EventEmitter {
         continue
       }
 
-      let chunk
-      let decodeResult
-      try {
-        chunk = chunks.shift()
+      let chunk = chunks.shift()
+      let decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+      while (decodeResult == null && chunks.length > 0) {
+        chunk = Buffer.concat([chunk, chunks.shift()])
         decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-        while (decodeResult == null && chunks.length > 0) {
-          chunk = Buffer.concat([chunk, chunks.shift()])
-          decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-        }
-      } catch (error) {
-        this.emit('error', error)
-        break
       }
 
       if (decodeResult == null) {

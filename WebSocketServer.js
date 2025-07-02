@@ -170,7 +170,10 @@ class WebSocketServer extends events.EventEmitter {
       this.clients.delete(websocket)
     })
 
-    this._processChunks(chunks, websocket)
+    const _processChunksPromise = this._processChunks(chunks, websocket)
+    _processChunksPromise.catch(error => {
+      this.emit('error', error)
+    })
   }
 
   /**
@@ -194,18 +197,11 @@ class WebSocketServer extends events.EventEmitter {
         continue
       }
 
-      let chunk
-      let decodeResult
-      try {
-        chunk = chunks.shift()
+      let chunk = chunks.shift()
+      let decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+      while (decodeResult == null && chunks.length > 0) {
+        chunk = Buffer.concat([chunk, chunks.shift()])
         decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-        while (decodeResult == null && chunks.length > 0) {
-          chunk = Buffer.concat([chunk, chunks.shift()])
-          decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-        }
-      } catch (error) {
-        this.emit('error', error)
-        break
       }
 
       if (decodeResult == null) {
