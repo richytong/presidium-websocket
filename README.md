@@ -86,6 +86,7 @@ while (true) {
   if (websocket.readyState === 1) {
     // websocket is open
   } else {
+    // reconnect
     websocket.connect()
   }
   await sleep(10000)
