@@ -230,20 +230,9 @@ class WebSocket extends events.EventEmitter {
         } else if (fin) { // unfragmented message
 
           switch (opcode) {
-            case 0x0: // continuation frame
-              continuationPayloads.push(payload)
-              this.emit('message', Buffer.concat(continuationPayloads))
-              continuationPayloads = []
-              break
             case 0x1: // text frame
             case 0x2: // binary frame
               this.emit('message', payload)
-              break
-            case 0x3: // non-control frame
-            case 0x4: // non-control frame
-            case 0x5: // non-control frame
-            case 0x6: // non-control frame
-            case 0x7: // non-control frame
               break
             case 0x8: // close frame
               this.readyState = 2 // CLOSING
@@ -260,12 +249,6 @@ class WebSocket extends events.EventEmitter {
               break
             case 0xA: // pong frame
               this.emit('pong', payload)
-              break
-            case 0xB: // control frame
-            case 0xC: // control frame
-            case 0xD: // control frame
-            case 0xE: // control frame
-            case 0xF: // control frame
               break
           }
 
