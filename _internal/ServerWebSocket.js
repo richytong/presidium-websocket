@@ -16,6 +16,7 @@ class ServerWebsocket extends events.EventEmitter {
   constructor(socket) {
     super()
     this._socket = socket
+    this.perMessageDeflate = socket._perMessageDeflate
 
     this.on('error', unhandledErrorListener.bind(this))
 
@@ -51,11 +52,23 @@ class ServerWebsocket extends events.EventEmitter {
     }
 
     if (buffer.length < MESSAGE_MAX_LENGTH_BYTES) { // unfragmented
-      this._socket.write(encodeWebSocketFrame(buffer, opcode))
+      this._socket.write(encodeWebSocketFrame(
+        buffer,
+        opcode,
+        false,
+        true,
+        this.perMessageDeflate
+      ))
     } else { // fragmented
       let index = 0
       let fragment = buffer.slice(0, MESSAGE_MAX_LENGTH_BYTES)
-      this._socket.write(encodeWebSocketFrame(fragment, opcode, false, false))
+      this._socket.write(encodeWebSocketFrame(
+        fragment,
+        opcode,
+        false,
+        false,
+        this.perMessageDeflate
+      ))
 
       // continuation frames
       index += MESSAGE_MAX_LENGTH_BYTES
@@ -64,7 +77,13 @@ class ServerWebsocket extends events.EventEmitter {
         const fin = index + MESSAGE_MAX_LENGTH_BYTES >= payload.length
         fragment = payload.slice(index, index + MESSAGE_MAX_LENGTH_BYTES)
 
-        this._socket.write(encodeWebSocketFrame(fragment, 0x0, false, fin))
+        this._socket.write(encodeWebSocketFrame(
+          fragment,
+          0x0,
+          false,
+          fin,
+          this.perMessageDeflate
+        ))
 
         index += MESSAGE_MAX_LENGTH_BYTES
       }

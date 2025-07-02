@@ -1,4 +1,5 @@
 const crypto = require('crypto')
+const zlib = require('zlib')
 
 /**
  * @name encodeWebSocketFrame
@@ -9,16 +10,42 @@ const crypto = require('crypto')
  *   payload Buffer,
  *   opcode number,
  *   mask? boolean,
- *   fin? boolean
+ *   fin? boolean,
+ *   perMessageDeflate? boolean
  * ) -> Buffer
  * ```
  */
 
-function encodeWebSocketFrame(payload, opcode, mask = false, fin = true) {
+function encodeWebSocketFrame(
+  payload,
+  opcode,
+  mask = false,
+  fin = true,
+  perMessageDeflate = false
+) {
+  if (!Buffer.isBuffer(payload)) {
+    payload = Buffer.from(payload)
+  }
+
+  let compressed = false
+
+  if (perMessageDeflate && payload.length > 0) {
+    const compressedPayload = zlib.deflateRawSync(payload)
+    if (
+      compressedPayload.length >= 4 &&
+      compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))
+    ) {
+      payload = compressedPayload.slice(0, -4)
+    } else {
+      payload = compressedPayload
+    }
+    compressed = true
+  }
+
   const payloadLen = payload.length
   let header = []
 
-  const firstByte = (fin ? 0x80 : 0x00) | opcode
+  let firstByte = (fin ? 0x80 : 0x00) | (compressed ? 0x40 : 0x00) | opcode
   header.push(firstByte)
 
   let secondByte = mask ? 0x80 : 0x00

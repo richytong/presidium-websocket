@@ -596,6 +596,70 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
+  it('Minimal WebSocket.Server and WebSocket 3MB buffer exchange with perMessageDeflate', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocket.Server(websocket => {
+      assert.strictEqual(websocket.perMessageDeflate, true)
+      websocket.on('message', message => {
+        assert.equal(server.clients.size, 1)
+        messages.push(message)
+        websocket.send(Buffer.alloc(3 * 1024 * 1024))
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    }, { perMessageDeflate: true })
+
+    assert.strictEqual(server.perMessageDeflate, true)
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', () => {
+      assert.strictEqual(websocket.perMessageDeflate, true)
+      websocket.send(Buffer.alloc(3 * 1024 * 1024))
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 2)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0].length, 3 * 1024 * 1024)
+    assert.equal(messages[1].length, 3 * 1024 * 1024)
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
   it('Minimal WebSocket.Server and WebSocket 65535 byte buffer exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {

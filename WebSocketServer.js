@@ -59,6 +59,10 @@ class WebSocketServer extends events.EventEmitter {
 
     this._httpHandler = options.httpHandler ?? defaultHttpHandler
 
+    if (options.perMessageDeflate) {
+      this.perMessageDeflate = options.perMessageDeflate
+    }
+
     if (options.secure) {
       this._server = https.createServer({
         key: options.key,
@@ -75,6 +79,9 @@ class WebSocketServer extends events.EventEmitter {
     }
 
     this._server.on('upgrade', (request, socket, head) => {
+      if (this.perMessageDeflate) {
+        socket._perMessageDeflate = true
+      }
       this.emit('upgrade', request, socket, head)
       this._handleUpgrade(request, socket, head)
     })
@@ -110,7 +117,11 @@ class WebSocketServer extends events.EventEmitter {
         'HTTP/1.1 101 Switching Protocols',
         'Upgrade: websocket',
         'Connection: Upgrade',
-        `Sec-WebSocket-Accept: ${acceptKey}`
+        `Sec-WebSocket-Accept: ${acceptKey}`,
+
+        ...socket._perMessageDeflate
+          ? ['Sec-WebSocket-Extensions: permessage-deflate']
+          : []
       ]
 
       socket.write(headers.join('\r\n') + '\r\n\r\n')
@@ -161,12 +172,20 @@ class WebSocketServer extends events.EventEmitter {
           continue
         }
 
-        let chunk = chunks.shift()
-        let decodeResult = decodeWebSocketFrame(chunk)
-        while (decodeResult == null && chunks.length > 0) {
-          chunk = Buffer.concat([chunk, chunks.shift()])
-          decodeResult = decodeWebSocketFrame(chunk)
+        let chunk
+        let decodeResult
+        try {
+          chunk = chunks.shift()
+          decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+          while (decodeResult == null && chunks.length > 0) {
+            chunk = Buffer.concat([chunk, chunks.shift()])
+            decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+          }
+        } catch (error) {
+          this.emit('error', error)
+          break
         }
+
         if (decodeResult == null) {
           chunks.unshift(chunk)
           await sleep(0)
