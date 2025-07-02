@@ -361,7 +361,7 @@ describe('WebSocket.Server, WebSocket', () => {
     }
   }).timeout(1000)
 
-  it.only('WebSocket reconnects', async () => {
+  it('WebSocket reconnects', async () => {
     const server = new WebSocket.Server()
     server.listen(1337)
 
