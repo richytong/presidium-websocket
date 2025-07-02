@@ -126,27 +126,21 @@ class WebSocket extends events.EventEmitter {
    */
   _handleDataFrames() {
 
-    const chunks = []
+    let buffer = Buffer.from([])
 
     this._socket.on('data', chunk => {
-      chunks.push(chunk)
+      buffer = Buffer.concat([buffer, chunk])
     })
 
     setImmediate(async () => {
       while (!this.closed) { // handle handshake response
-        if (chunks.length == 0) {
+        if (buffer.length == 0) {
           await sleep(0)
           continue
         }
 
-        let chunk = chunks.shift()
-        let decodeResult = decodeWebSocketHandshakeResponse(chunk)
-        while (decodeResult == null && chunks.length > 0) {
-          chunk = Buffer.concat([chunk, chunks.shift()])
-          decodeResult = decodeWebSocketHandshakeResponse(chunk)
-        }
+        const decodeResult = decodeWebSocketHandshakeResponse(buffer)
         if (decodeResult == null) {
-          chunks.unshift(chunk)
           await sleep(0)
           continue
         }
@@ -158,9 +152,7 @@ class WebSocket extends events.EventEmitter {
           break
         }
 
-        if (remaining.length > 0) {
-          chunks.unshift(remaining)
-        }
+        buffer = remaining
 
         this.readyState = 1 // OPEN
         this.emit('open')
@@ -173,19 +165,13 @@ class WebSocket extends events.EventEmitter {
 
       while (!this.closed) { // handle data frames
 
-        if (chunks.length == 0) {
+        if (buffer.length == 0) {
           await sleep(0)
           continue
         }
 
-        let chunk = chunks.shift()
-        let decodeResult = decodeWebSocketFrame(chunk)
-        while (decodeResult == null && chunks.length > 0) {
-          chunk = Buffer.concat([chunk, chunks.shift()])
-          decodeResult = decodeWebSocketFrame(chunk)
-        }
+        const decodeResult = decodeWebSocketFrame(buffer)
         if (decodeResult == null) {
-          chunks.unshift(chunk)
           await sleep(0)
           continue
         }
@@ -198,9 +184,7 @@ class WebSocket extends events.EventEmitter {
           break
         }
 
-        if (remaining.length > 0) {
-          chunks.unshift(remaining)
-        }
+        buffer = remaining
 
         if (opcode === 0x0) { // continuation frame
           continuationPayloads.push(payload)
