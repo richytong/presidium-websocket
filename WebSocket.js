@@ -159,6 +159,14 @@ class WebSocket extends events.EventEmitter {
     this._processChunks(chunks)
   }
 
+  /**
+   * @name _processChunks
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * server._processChunks(chunks Array<Buffer>) -> ()
+   * ```
+   */
   async _processChunks(chunks) {
     while (!this.closed) {
       // handle handshake response

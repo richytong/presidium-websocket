@@ -173,6 +173,17 @@ class WebSocketServer extends events.EventEmitter {
     this._processChunks(chunks, websocket)
   }
 
+  /**
+   * @name _processChunks
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * server._processChunks(
+   *   chunks Array<Buffer>,
+   *   websocket ServerWebSocket
+   * ) -> ()
+   * ```
+   */
   async _processChunks(chunks, websocket) {
     let continuationPayloads = []
 
