@@ -474,6 +474,89 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(10000)
 
+  xit('Byte-by-byte WebSocket.Server and WebSocket text exchange', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocket.Server(websocket => {
+      websocket.on('message', message => {
+        assert.equal(server.clients.size, 1)
+        messages.push(message)
+        websocket.send('pong')
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+    assert.strictEqual(websocket.readyState, 0)
+
+    websocket.on('message', message => {
+      console.log('message', message.toString('utf8'))
+      messages.push(message)
+      websocket.close()
+      assert.strictEqual(websocket.readyState, 2)
+    })
+
+    websocket.on('open', () => {
+      assert.strictEqual(websocket.readyState, 1)
+      websocket.send('ping')
+      // <Buffer 81 04 70 6f 6e 67>
+      // websocket._socket.write(Buffer.from([0x81, 0x04, 0x70, 0x6f, 0x6e, 0x67]))
+      // websocket._socket.write(Buffer.from([0x81]))
+      // websocket._socket.write(Buffer.from([0x04]))
+      // websocket._socket.write(Buffer.from([0x70]))
+      // websocket._socket.write(Buffer.from([0x6f]))
+      // websocket._socket.write(Buffer.from([0x6e]))
+      // websocket._socket.write(Buffer.from([0x67]))
+    })
+
+    let resolve2
+    const promise2 = new Promise(_resolve => {
+      resolve2 = _resolve
+    })
+
+    websocket.on('close', () => {
+      assert.strictEqual(websocket.readyState, 3)
+      resolve2()
+    })
+
+    await promise
+    await promise2
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 2)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0].toString('utf8'), 'ping')
+    assert.equal(messages[1].toString('utf8'), 'pong')
+    server.close()
+
+    await sleep(100)
+  }).timeout(10000)
+
   it('Minimal WebSocket.Server and WebSocket buffer exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
