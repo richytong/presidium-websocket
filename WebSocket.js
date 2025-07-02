@@ -14,6 +14,9 @@ const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const decodeWebSocketHandshakeResponse = require('./_internal/decodeWebSocketHandshakeResponse')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
+const append = require('./_internal/append')
 
 const MESSAGE_MAX_LENGTH_BYTES = 1024 * 1024
 
@@ -154,9 +157,7 @@ class WebSocket extends events.EventEmitter {
   _handleDataFrames() {
     const chunks = []
 
-    this._socket.on('data', chunk => {
-      chunks.push(chunk)
-    })
+    this._socket.on('data', curry2(append, chunks, __))
 
     this._processChunks(chunks)
   }

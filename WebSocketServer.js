@@ -13,6 +13,9 @@ const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./_internal/ServerWebSocket')
 const sleep = require('./_internal/sleep')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
+const append = require('./_internal/append')
 
 /**
  * @name WebSocketServer
@@ -156,9 +159,7 @@ class WebSocketServer extends events.EventEmitter {
   _handleDataFrames(socket, request, head) {
     const chunks = []
 
-    socket.on('data', chunk => {
-      chunks.push(chunk)
-    })
+    socket.on('data', curry2(append, chunks, __))
 
     const websocket = new ServerWebSocket(socket)
 
