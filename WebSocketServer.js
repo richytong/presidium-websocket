@@ -75,6 +75,9 @@ class WebSocketServer extends events.EventEmitter {
     }
 
     this._server.on('upgrade', (request, socket, head) => {
+      if (options.perMessageDeflate) {
+        socket._perMessageDeflate = true
+      }
       this.emit('upgrade', request, socket, head)
       this._handleUpgrade(request, socket, head)
     })
@@ -110,7 +113,11 @@ class WebSocketServer extends events.EventEmitter {
         'HTTP/1.1 101 Switching Protocols',
         'Upgrade: websocket',
         'Connection: Upgrade',
-        `Sec-WebSocket-Accept: ${acceptKey}`
+        `Sec-WebSocket-Accept: ${acceptKey}`,
+
+        ...socket._perMessageDeflate
+          ? ['Sec-WebSocket-Extensions: permessage-deflate']
+          : []
       ]
 
       socket.write(headers.join('\r\n') + '\r\n\r\n')

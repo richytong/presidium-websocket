@@ -111,7 +111,8 @@ class WebSocket extends events.EventEmitter {
       'Upgrade: websocket',
       'Connection: Upgrade',
       `Sec-WebSocket-Key: ${key}`,
-      'Sec-WebSocket-Version: 13'
+      'Sec-WebSocket-Version: 13',
+      'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits'
     ]
     this._socket.write(headers.join('\r\n') + '\r\n\r\n')
   }
