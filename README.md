@@ -76,7 +76,7 @@ Supports compression with `perMessageDeflate` (uses zlib [default options](https
 const server = new WebSocket.Server({ perMessageDeflate: true })
 ```
 
-Initiate new connections using the same websocket instance.
+Initiate new connections on the same websocket instance.
 
 ```javascript
 const websocket = new WebSocket('ws://localhost:1337/')
