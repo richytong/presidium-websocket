@@ -56,8 +56,8 @@ server.on('connection', websocket => {
   })
 })
 
-server.listen(1337, () => {
-  console.log('WebSocket Secure server listening on port 1337')
+server.listen(443, () => {
+  console.log('WebSocket Secure server listening on port 443')
 })
 ```
 
