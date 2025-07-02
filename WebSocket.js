@@ -157,9 +157,6 @@ class WebSocket extends events.EventEmitter {
     })
 
     const _processChunksPromise = this._processChunks(chunks)
-    _processChunksPromise.catch(error => {
-      this.emit('error', error)
-    })
   }
 
   /**
