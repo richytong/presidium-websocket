@@ -70,7 +70,7 @@ websocket.on('message', message => {
 })
 ```
 
-Supports compression with `perMessageDeflate`.
+Supports compression with `perMessageDeflate` (uses zlib [default options](https://nodejs.org/api/zlib.html#class-options)).
 
 ```javascript
 const server = new WebSocket.Server({ perMessageDeflate: true })
