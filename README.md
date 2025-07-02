@@ -56,8 +56,17 @@ server.on('connection', websocket => {
   })
 })
 
-server.listen(443, () => {
-  console.log('WebSocket Secure server listening on port 443')
+server.listen(4443, () => {
+  console.log('WebSocket Secure server listening on port 4443')
+})
+
+const websocket = new WebSocket('wss://localhost:4443/')
+
+websocket.on('open', () => {
+  websocket.send('Hello from client!')
+})
+websocket.on('message', message => {
+  console.log('Message from server:', message)
 })
 ```
 
