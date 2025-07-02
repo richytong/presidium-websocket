@@ -79,6 +79,8 @@ class WebSocket extends events.EventEmitter {
     if (this._autoConnect) {
       this.connect()
     }
+
+    this._continuationPayloads = []
   }
 
   /**
@@ -220,8 +222,6 @@ class WebSocket extends events.EventEmitter {
       break
     }
 
-    let continuationPayloads = []
-
     while (!this.closed) {
       // handle data frames
 
@@ -259,44 +259,48 @@ class WebSocket extends events.EventEmitter {
         chunks.unshift(remaining)
       }
 
-      if (opcode === 0x0) { // continuation frame
-        continuationPayloads.push(payload)
-        if (fin) { // last continuation frame
-          this.emit('message', Buffer.concat(continuationPayloads))
-          continuationPayloads = []
-        }
-      } else if (fin) { // unfragmented message
-
-        switch (opcode) {
-          case 0x1: // text frame
-          case 0x2: // binary frame
-            this.emit('message', payload)
-            break
-          case 0x8: // close frame
-            this.readyState = 2 // CLOSING
-            if (this.sentClose) {
-              this.destroy()
-            } else {
-              this.sendClose()
-              this.destroy()
-            }
-            break
-          case 0x9: // ping frame
-            this.emit('ping', payload)
-            this.sendPong(payload)
-            break
-          case 0xA: // pong frame
-            this.emit('pong', payload)
-            break
-        }
-
-      } else { // fragmented message, wait for continuation frames
-        continuationPayloads.push(payload)
-      }
+      this._handleSend(payload, opcode, fin)
 
       await sleep(0)
     }
 
+  }
+
+  _handleSend(payload, opcode, fin) {
+    if (opcode === 0x0) { // continuation frame
+      this._continuationPayloads.push(payload)
+      if (fin) { // last continuation frame
+        this.emit('message', Buffer.concat(this._continuationPayloads))
+        this._continuationPayloads = []
+      }
+    } else if (fin) { // unfragmented message
+
+      switch (opcode) {
+        case 0x1: // text frame
+        case 0x2: // binary frame
+          this.emit('message', payload)
+          break
+        case 0x8: // close frame
+          this.readyState = 2 // CLOSING
+          if (this.sentClose) {
+            this.destroy()
+          } else {
+            this.sendClose()
+            this.destroy()
+          }
+          break
+        case 0x9: // ping frame
+          this.emit('ping', payload)
+          this.sendPong(payload)
+          break
+        case 0xA: // pong frame
+          this.emit('pong', payload)
+          break
+      }
+
+    } else { // fragmented message, wait for continuation frames
+      this._continuationPayloads.push(payload)
+    }
   }
 
   /**
