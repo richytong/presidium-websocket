@@ -59,15 +59,6 @@ server.on('connection', websocket => {
 server.listen(1337, () => {
   console.log('WebSocket Secure server listening on port 1337')
 })
-
-const websocket = new WebSocket('wss://localhost:1337/')
-
-websocket.on('open', () => {
-  websocket.send('Hello from client!')
-})
-websocket.on('message', message => {
-  console.log('Message from server:', message)
-})
 ```
 
 Supports compression with `perMessageDeflate` (uses zlib [default options](https://nodejs.org/api/zlib.html#class-options)).
