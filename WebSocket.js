@@ -79,6 +79,9 @@ class WebSocket extends events.EventEmitter {
     if (this._autoConnect) {
       this.connect()
     }
+
+    this._continuationPayloads = []
+
   }
 
   /**
@@ -150,25 +153,32 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   _handleDataFrames() {
-    const chunks = []
+    // const chunks = []
+    let buffer = Buffer.from([])
 
-    this._socket.on('data', chunk => {
-      chunks.push(chunk)
-    })
+    this._socket.on('data', chunk0 => {
 
-    setImmediate(async () => {
-      while (!this.closed) {
+      if (this.readyState === 0) {
         // handle handshake response
 
+        // chunks.push(chunk0)
+        buffer = Buffer.concat([buffer, chunk0])
+
+        /*
         if (chunks.length == 0) {
           if (this._socket.destroyed) {
             this.readyState = 3 // CLOSED
-            break
           }
-          await sleep(0)
-          continue
+          return undefined
+        }
+        */
+
+        const decodeResult = decodeWebSocketHandshakeResponse(buffer)
+        if (decodeResult == null) {
+          return undefined
         }
 
+        /*
         let chunk = chunks.shift()
         let decodeResult = decodeWebSocketHandshakeResponse(chunk)
         while (decodeResult == null && chunks.length > 0) {
@@ -177,9 +187,9 @@ class WebSocket extends events.EventEmitter {
         }
         if (decodeResult == null) {
           chunks.unshift(chunk)
-          await sleep(0)
-          continue
+          return undefined
         }
+        */
 
         const {
           handshakeSucceeded,
@@ -190,7 +200,7 @@ class WebSocket extends events.EventEmitter {
 
         if (!handshakeSucceeded) {
           this.emit('error', new Error(message))
-          break
+          return undefined
         }
 
         if (perMessageDeflate) {
@@ -198,103 +208,142 @@ class WebSocket extends events.EventEmitter {
           this._socket.perMessageDeflate = true
         }
 
-        if (remaining.length > 0) {
-          chunks.unshift(remaining)
-        }
+        buffer = remaining
 
         this.readyState = 1 // OPEN
         this.emit('open')
 
-        await sleep(0)
-        break
+        return undefined
       }
 
-      let continuationPayloads = []
+      // handle data frames
 
-      while (!this.closed) {
-        // handle data frames
+      // chunks.push(chunk0)
+      buffer = Buffer.concat([buffer, chunk0])
 
-        if (chunks.length == 0) {
-          if (this._socket.destroyed) {
-            this.readyState = 3 // CLOSED
-            break
-          }
-          await sleep(0)
-          continue
+      /*
+      if (chunks.length == 0) {
+        if (this._socket.destroyed) {
+          this.readyState = 3 // CLOSED
         }
+        return undefined
+      }
+      */
 
-        let chunk
-        let decodeResult
-        try {
-          chunk = chunks.shift()
+      const decodeResult = decodeWebSocketFrame(buffer)
+      if (decodeResult == null) {
+        return undefined
+      }
+
+      /*
+      let chunk
+      let decodeResult
+      try {
+        chunk = chunks.shift()
+        decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
+        while (decodeResult == null && chunks.length > 0) {
+          chunk = Buffer.concat([chunk, chunks.shift()])
           decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-          while (decodeResult == null && chunks.length > 0) {
-            chunk = Buffer.concat([chunk, chunks.shift()])
-            decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-          }
-        } catch (error) {
-          this.emit('error', error)
-          break
         }
-
-        if (decodeResult == null) {
-          chunks.unshift(chunk)
-          await sleep(0)
-          continue
-        }
-
-        const { fin, opcode, payload, remaining, masked } = decodeResult
-
-        // The client must close the connection upon receiving a frame that is masked
-        if (masked) {
-          this.close()
-          break
-        }
-
-        if (remaining.length > 0) {
-          chunks.unshift(remaining)
-        }
-
-        if (opcode === 0x0) { // continuation frame
-          continuationPayloads.push(payload)
-          if (fin) { // last continuation frame
-            this.emit('message', Buffer.concat(continuationPayloads))
-            continuationPayloads = []
-          }
-        } else if (fin) { // unfragmented message
-
-          switch (opcode) {
-            case 0x1: // text frame
-            case 0x2: // binary frame
-              this.emit('message', payload)
-              break
-            case 0x8: // close frame
-              this.readyState = 2 // CLOSING
-              if (this.sentClose) {
-                this.destroy()
-              } else {
-                this.sendClose()
-                this.destroy()
-              }
-              break
-            case 0x9: // ping frame
-              this.emit('ping', payload)
-              this.sendPong(payload)
-              break
-            case 0xA: // pong frame
-              this.emit('pong', payload)
-              break
-          }
-
-        } else { // fragmented message, wait for continuation frames
-          continuationPayloads.push(payload)
-        }
-
-        await sleep(0)
+      } catch (error) {
+        this.emit('error', error)
+        return undefined
       }
 
+      if (decodeResult == null) {
+        chunks.unshift(chunk)
+        return undefined
+      }
+      */
+
+      const { fin, opcode, payload, remaining, masked } = decodeResult
+
+      // The client must close the connection upon receiving a frame that is masked
+      if (masked) {
+        this.close()
+        return undefined
+      }
+
+      buffer = remaining
+
+      // this._handleSend(payload, opcode, fin)
+
+      if (opcode === 0x0) { // continuation frame
+        this._continuationPayloads.push(payload)
+        if (fin) { // last continuation frame
+          this.emit('message', Buffer.concat(this._continuationPayloads))
+          this._continuationPayloads = []
+        }
+      } else if (fin) { // unfragmented message
+
+        switch (opcode) {
+          case 0x1: // text frame
+          case 0x2: // binary frame
+            this.emit('message', payload)
+            break
+          case 0x8: // close frame
+            this.readyState = 2 // CLOSING
+            if (this.sentClose) {
+              this.destroy()
+            } else {
+              this.sendClose()
+              this.destroy()
+            }
+            break
+          case 0x9: // ping frame
+            this.emit('ping', payload)
+            this.sendPong(payload)
+            break
+          case 0xA: // pong frame
+            this.emit('pong', payload)
+            break
+        }
+
+      } else { // fragmented message, wait for continuation frames
+        this._continuationPayloads.push(payload)
+      }
+
+
+      return undefined
     })
 
+  }
+
+  _handleSend(payload, opcode, fin) {
+    if (opcode === 0x0) { // continuation frame
+      this._continuationPayloads.push(payload)
+      if (fin) { // last continuation frame
+        this.emit('message', Buffer.concat(this._continuationPayloads))
+        this._continuationPayloads = []
+      }
+    } else if (fin) { // unfragmented message
+
+      switch (opcode) {
+        case 0x1: // text frame
+        case 0x2: // binary frame
+          this.emit('message', payload)
+          break
+        case 0x8: // close frame
+          this.readyState = 2 // CLOSING
+          if (this.sentClose) {
+            this.destroy()
+          } else {
+            this.sendClose()
+            this.destroy()
+          }
+          break
+        case 0x9: // ping frame
+          this.emit('ping', payload)
+          this.sendPong(payload)
+          break
+        case 0xA: // pong frame
+          this.emit('pong', payload)
+          break
+      }
+
+    } else { // fragmented message, wait for continuation frames
+      this._continuationPayloads.push(payload)
+    }
   }
 
   /**

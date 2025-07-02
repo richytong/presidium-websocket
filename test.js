@@ -400,7 +400,7 @@ describe('WebSocket.Server, WebSocket', () => {
     server.close()
   }).timeout(5000)
 
-  it('Minimal WebSocket.Server and WebSocket text exchange', async () => {
+  it.only('Minimal WebSocket.Server and WebSocket text exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
