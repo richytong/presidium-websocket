@@ -70,6 +70,12 @@ websocket.on('message', message => {
 })
 ```
 
+Supports compression with `perMessageDeflate`.
+
+```javascript
+const server = new WebSocket.Server({ perMessageDeflate: true })
+```
+
 ## Installation
 
 with `npm`
