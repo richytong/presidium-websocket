@@ -85,7 +85,7 @@ const websocket = new WebSocket('ws://localhost:1337/')
 while (true) {
   if (websocket.readyState === 1) {
     // websocket is open
-  } else { // reconnect
+  } else {
     websocket.connect()
   }
   await sleep(10000)
