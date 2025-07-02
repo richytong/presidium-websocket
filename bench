@@ -85,7 +85,7 @@ setImmediate(async () => {
     const logMessage = `
 Time: ${now / 1000} seconds
 Presidium throughput: ${presidiumMessages.length / (now - presidiumStart) * 1000} messages/s
-ws throughput: ${wsMessages.length / (now - wsStart) * 1000} messages/s
+ws throughput:        ${wsMessages.length / (now - wsStart) * 1000} messages/s
     `.trim()
     write(logMessage)
     write('\n\n')
