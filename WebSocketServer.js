@@ -59,6 +59,10 @@ class WebSocketServer extends events.EventEmitter {
 
     this._httpHandler = options.httpHandler ?? defaultHttpHandler
 
+    if (options.perMessageDeflate) {
+      this.perMessageDeflate = options.perMessageDeflate
+    }
+
     if (options.secure) {
       this._server = https.createServer({
         key: options.key,
@@ -75,7 +79,7 @@ class WebSocketServer extends events.EventEmitter {
     }
 
     this._server.on('upgrade', (request, socket, head) => {
-      if (options.perMessageDeflate) {
+      if (this.perMessageDeflate) {
         socket._perMessageDeflate = true
       }
       this.emit('upgrade', request, socket, head)
