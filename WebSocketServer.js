@@ -218,7 +218,7 @@ class WebSocketServer extends events.EventEmitter {
         chunks.unshift(remaining)
       }
 
-      this._handleSend(websocket, payload, opcode, fin)
+      this._handleDataFrame(websocket, payload, opcode, fin)
 
       await sleep(0)
     }
@@ -226,11 +226,11 @@ class WebSocketServer extends events.EventEmitter {
   }
 
   /**
-   * @name _handleSend
+   * @name _handleDataFrame
    *
    * @docs
    * ```coffeescript [specscript]
-   * websocket._handleSend(
+   * server._handleDataFrame(
    *   websocket ServerWebSocket,
    *   payload Buffer,
    *   opcode number,
@@ -238,7 +238,7 @@ class WebSocketServer extends events.EventEmitter {
    * ) -> ()
    * ```
    */
-  _handleSend(websocket, payload, opcode, fin) {
+  _handleDataFrame(websocket, payload, opcode, fin) {
     if (opcode === 0x0) { // continuation frame
       websocket._continuationPayloads.push(payload)
       if (fin) { // last continuation frame
@@ -275,7 +275,7 @@ class WebSocketServer extends events.EventEmitter {
   }
 
   /**
-   * @name close
+   * @name listen
    *
    * @docs
    * ```coffeescript [specscript]
