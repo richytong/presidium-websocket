@@ -18,7 +18,10 @@ const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
 const append = require('./_internal/append')
 const call = require('./_internal/call')
+const thunkify1 = require('./_internal/thunkify1')
+const thunkify3 = require('./_internal/thunkify3')
 const thunkify4 = require('./_internal/thunkify4')
+const functionConcatSync = require('./_internal/functionConcatSync')
 
 /**
  * @name WebSocketServer
@@ -169,21 +172,20 @@ class WebSocketServer extends events.EventEmitter {
     this._websocketHandler(websocket, request, head)
     this.clients.add(websocket)
 
-    websocket.on('close', () => {
-      this.clients.delete(websocket)
-    })
+    websocket.on('close', thunkify3(
+      call,
+      this.clients.delete,
+      this.clients,
+      websocket
+    ))
 
-    // socket.on('data', curry2(append, chunks, __))
-    socket.on('data', chunk => {
-      // console.log(`WebSocketServer append chunk`)
-
-      chunks.append(chunk)
-
-      process.nextTick(thunkify4(call, this._processChunk, this, chunks, websocket))
-      // this._processChunk(chunks, websocket)
-    })
-
-    // this._processChunks(chunks, websocket)
+    socket.on('data', functionConcatSync(
+      curry2(append, chunks, __),
+      thunkify1(
+        process.nextTick,
+        thunkify4(call, this._processChunk, this, chunks, websocket)
+      )
+    ))
   }
 
   /**

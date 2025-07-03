@@ -19,7 +19,9 @@ const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
 const append = require('./_internal/append')
 const call = require('./_internal/call')
+const thunkify1 = require('./_internal/thunkify1')
 const thunkify3 = require('./_internal/thunkify3')
+const functionConcatSync = require('./_internal/functionConcatSync')
 
 const MESSAGE_MAX_LENGTH_BYTES = 1024 * 1024
 
@@ -154,17 +156,13 @@ class WebSocket extends events.EventEmitter {
   async _handleDataFrames() {
     const chunks = new LinkedList()
 
-    // this._socket.on('data', curry2(append, chunks, __))
-    this._socket.on('data', chunk => {
-      // console.log('WebSocket append chunk')
-
-      chunks.append(chunk)
-
-      process.nextTick(thunkify3(call, this._processChunk, this, chunks))
-      // this._processChunk(chunks)
-    })
-
-    // this._processChunks(chunks)
+    this._socket.on('data', functionConcatSync(
+      curry2(append, chunks, __),
+      thunkify1(
+        process.nextTick,
+        thunkify3(call, this._processChunk, this, chunks)
+      )
+    ))
   }
 
   /**
