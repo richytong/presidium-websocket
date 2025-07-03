@@ -115,8 +115,8 @@ new WebSocket(url string, options {
 
 websocket.on('open', ()=>()) -> ()
 websocket.on('message', (message Buffer)=>()) -> ()
-websocket.on('ping', ()=>()) -> ()
-websocket.on('pong', ()=>()) -> ()
+websocket.on('ping', (payload Buffer)=>()) -> ()
+websocket.on('pong', (payload Buffer)=>()) -> ()
 websocket.on('error', (error Error)=>()) -> ()
 websocket.on('close', ()=>()) -> ()
 ```
@@ -251,8 +251,8 @@ server.on('close', ()=>()) -> ()
 server.on('connection', (websocket WebSocket) => {
   websocket.on('open', ()=>()) -> ()
   websocket.on('message', (message Buffer)=>()) -> ()
-  websocket.on('ping', ()=>()) -> ()
-  websocket.on('pong', ()=>()) -> ()
+  websocket.on('ping', (payload Buffer)=>()) -> ()
+  websocket.on('pong', (payload Buffer)=>()) -> ()
   websocket.on('error', (error Error)=>()) -> ()
   websocket.on('close', ()=>()) -> ()
 })
