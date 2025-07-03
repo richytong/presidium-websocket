@@ -90,11 +90,7 @@ setImmediate(async () => {
     const diff = presidiumThroughput - wsThroughput
 
     if (wsMessages.length - presidiumMessages.length > 1) {
-      throw new Error('2')
-    }
-
-    if (diff !== 0) {
-      numDiffs += 1
+      throw new Error('ws pulled ahead beyond 1 message')
     }
 
     const logMessage = `
@@ -104,7 +100,6 @@ Presidium messages:   ${presidiumMessages.length}
 ws throughput:        ${wsThroughput} messages/s
 ws messages:          ${wsMessages.length}
 diff throughput:      ${diff} messages/s
-num diffs:            ${numDiffs}
     `.trim()
     write(logMessage)
     write('\n\n')
