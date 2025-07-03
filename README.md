@@ -161,7 +161,7 @@ websocket.close() -> ()
 websocket.close(payload Buffer|string) -> ()
 ```
 
-Destroy the underlying [socket](https://nodejs.org/api/net.html#class-netsocket)
+Destroy the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
 
 ```coffeescript [specscript]
 websocket.destroy() -> ()
@@ -214,7 +214,7 @@ server.on('connection', (websocket WebSocket) => {
 ```
 
 ### WebSocket.SecureServer
-Create a Presidium WebSocket Secure server.
+Create a Presidium WebSocket Secure (WSS) server.
 
 ```coffeescript [specscript]
 module http 'https://nodejs.org/api/http.html'
