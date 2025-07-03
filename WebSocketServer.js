@@ -38,23 +38,23 @@ const functionConcatSync = require('./_internal/functionConcatSync')
  * httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
  * upgradeHandler (request http.ClientRequest, socket net.Socket, head Buffer)=>()
  *
- * new WebSocket.Server() -> server WebSocket.Server
- * new WebSocket.Server(websocketHandler) -> server WebSocket.Server
+ * new WebSocketServer() -> server WebSocketServer
+ * new WebSocketServer(websocketHandler) -> server WebSocketServer
  *
- * new WebSocket.Server(websocketHandler, options {
+ * new WebSocketServer(websocketHandler, options {
  *   httpHandler: httpHandler,
  *   secure: boolean,
  *   key: string,
  *   cert: string
- * }) -> server WebSocket.Server
+ * }) -> server WebSocketServer
  *
- * new WebSocket.Server(options {
+ * new WebSocketServer(options {
  *   websocketHandler: websocketHandler,
  *   httpHandler: httpHandler,
  *   secure: boolean,
  *   key: string,
  *   cert: string
- * }) -> server WebSocket.Server
+ * }) -> server WebSocketServer
  *
  * server.on('connection', websocketHandler) -> ()
  * server.on('request', httpHandler) -> ()

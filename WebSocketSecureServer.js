@@ -19,23 +19,23 @@ const WebSocketServer = require('./WebSocketServer')
  * httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
  * upgradeHandler (request http.ClientRequest, socket net.Socket, head Buffer)=>()
  *
- * new WebSocket.SecureServer(options {
+ * new WebSocketSecureServer(options {
  *   key: string,
  *   cert: string
- * }) -> server WebSocket.SecureServer
+ * }) -> server WebSocketSecureServer
  *
- * new WebSocket.SecureServer(websocketHandler, options {
+ * new WebSocketSecureServer(websocketHandler, options {
  *   httpHandler: httpHandler,
  *   key: string,
  *   cert: string
- * }) -> server WebSocket.SecureServer
+ * }) -> server WebSocketSecureServer
  *
- * new WebSocket.SecureServer(options {
+ * new WebSocketSecureServer(options {
  *   websocketHandler: websocketHandler,
  *   httpHandler: httpHandler,
  *   key: string,
  *   cert: string
- * }) -> server WebSocket.SecureServer
+ * }) -> server WebSocketSecureServer
  *
  * server.on('connection', websocketHandler) -> ()
  * server.on('request', httpHandler) -> ()

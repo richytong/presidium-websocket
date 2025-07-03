@@ -93,6 +93,13 @@ while (true) {
 }
 ```
 
+## Installation
+
+with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
+```bash
+npm i presidium-websocket
+```
+
 ## Docs
 
 ### WebSocket
@@ -206,7 +213,7 @@ server.on('connection', (websocket WebSocket) => {
 })
 ```
 
-### WebSocket.Server
+### WebSocket.SecureServer
 Create a Presidium WebSocket Secure server.
 
 ```coffeescript [specscript]
@@ -249,13 +256,6 @@ server.on('connection', (websocket WebSocket) => {
   websocket.on('error', (error Error)=>()) -> ()
   websocket.on('close', ()=>()) -> ()
 })
-```
-
-## Installation
-
-with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
-```bash
-npm i presidium-websocket
 ```
 
 ## Benchmarks
