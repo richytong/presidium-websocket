@@ -18,6 +18,8 @@ const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
 const append = require('./_internal/append')
+const call = require('./_internal/call')
+const thunkify3 = require('./_internal/thunkify3')
 
 const MESSAGE_MAX_LENGTH_BYTES = 1024 * 1024
 
@@ -97,6 +99,7 @@ class WebSocket extends events.EventEmitter {
    */
   connect() {
     if (this._socket) { // dispose existing
+      this.readyState = 0 // CONNECTING
       this._socket.destroy()
     }
 
@@ -148,12 +151,107 @@ class WebSocket extends events.EventEmitter {
    * websocket._handleDataFrames() -> ()
    * ```
    */
-  _handleDataFrames() {
+  async _handleDataFrames() {
     const chunks = new LinkedList()
 
-    this._socket.on('data', curry2(append, chunks, __))
+    // this._socket.on('data', curry2(append, chunks, __))
+    this._socket.on('data', chunk => {
+      chunks.append(chunk)
 
-    this._processChunks(chunks)
+      // process.nextTick(thunkify3(call, this._processChunk, this, chunks))
+      this._processChunk(chunks)
+    })
+
+    // this._processChunks(chunks)
+  }
+
+  /**
+   * @name _processChunk
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * websocket._processChunk(chunks Array<Buffer>) -> ()
+   * ```
+   */
+  _processChunk(chunks) {
+    if (this.readyState === 3) {
+      return undefined
+    }
+
+    if (chunks.length == 0) {
+      return undefined
+    }
+
+    if (this.readyState === 0) { // process handshake
+
+      let chunk = chunks.shift()
+      let decodeResult = decodeWebSocketHandshakeResponse(chunk)
+      while (decodeResult == null && chunks.length > 0) {
+        chunk = Buffer.concat([chunk, chunks.shift()])
+        decodeResult = decodeWebSocketHandshakeResponse(chunk)
+      }
+      if (decodeResult == null) {
+        chunks.prepend(chunk)
+        return undefined
+      }
+
+      const {
+        handshakeSucceeded,
+        perMessageDeflate,
+        message,
+        remaining
+      } = decodeResult
+
+      if (!handshakeSucceeded) {
+        this.emit('error', new Error(message))
+        return undefined
+      }
+
+      if (perMessageDeflate) {
+        this.perMessageDeflate = true
+        this._socket.perMessageDeflate = true
+      }
+
+      if (remaining.length > 0) {
+        chunks.prepend(remaining)
+      }
+
+      this.readyState = 1 // OPEN
+      this.emit('open')
+
+      return undefined
+    }
+
+    // process data frames
+    while (chunks.length > 0) {
+
+      let chunk = chunks.shift()
+      let decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      while (decodeResult == null && chunks.length > 0) {
+        chunk = Buffer.concat([chunk, chunks.shift()])
+        decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      }
+      if (decodeResult == null) {
+        chunks.prepend(chunk)
+        return undefined
+      }
+
+      const { fin, opcode, payload, remaining, masked } = decodeResult
+
+      // The client must close the connection upon receiving a frame that is masked
+      if (masked) {
+        this.close()
+        return undefined
+      }
+
+      if (remaining.length > 0) {
+        chunks.prepend(remaining)
+      }
+
+      this._handleDataFrame(payload, opcode, fin)
+    }
+
+    return undefined
   }
 
   /**
