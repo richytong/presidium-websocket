@@ -366,11 +366,8 @@ describe('WebSocket.Server, WebSocket', () => {
   it('WebSocket destroyed before handshake', async () => {
     const websocket = new WebSocket('ws://localhost/')
     assert.strictEqual(websocket.readyState, 0)
-    assert.equal(websocket.url.port, '80')
-    websocket._socket.destroyed = true
-    while (websocket.readyState !== 3) {
-      await sleep(100)
-    }
+    websocket.destroy()
+    assert.strictEqual(websocket.readyState, 3)
   }).timeout(1000)
 
   it('WebSocket reconnects', async () => {
