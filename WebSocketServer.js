@@ -246,58 +246,6 @@ class WebSocketServer extends events.EventEmitter {
   }
 
   /**
-   * @name _processChunks
-   *
-   * @docs
-   * ```coffeescript [specscript]
-   * server._processChunks(
-   *   chunks Array<Buffer>,
-   *   websocket ServerWebSocket
-   * ) -> ()
-   * ```
-   */
-  async _processChunks(chunks, websocket) {
-    while (!this.closed && !websocket.closed) {
-
-      if (chunks.length == 0) {
-        await sleep(0)
-        continue
-      }
-
-      let chunk = chunks.shift()
-      let decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
-      while (decodeResult == null && chunks.length > 0) {
-        chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
-      }
-
-      if (decodeResult == null) {
-        chunks.prepend(chunk)
-        await sleep(0)
-        continue
-      }
-
-      const { fin, opcode, payload, remaining, masked } = decodeResult
-
-      // The server must close the connection upon receiving a frame that is not masked
-      if (!masked) {
-        websocket.sendClose()
-        // websocket.close()
-        break
-      }
-
-      if (remaining.length > 0) {
-        chunks.prepend(remaining)
-      }
-
-      this._handleDataFrame(websocket, payload, opcode, fin)
-
-      await sleep(0)
-    }
-
-  }
-
-  /**
    * @name _handleDataFrame
    *
    * @docs
