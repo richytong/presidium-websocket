@@ -76,31 +76,36 @@ class WebSocketServer extends events.EventEmitter {
     }
 
     if (options.secure) {
-      this._server = https.createServer({
-        key: options.key,
-        cert: options.cert
-      }, (request, response) => {
-        this.emit('request', request)
-        this._httpHandler(request, response)
-      })
+      this._server = https.createServer(
+        { key: options.key, cert: options.cert },
+        this._handleRequest.bind(this)
+      )
     } else {
-      this._server = http.createServer((request, response) => {
-        this.emit('request', request)
-        this._httpHandler(request, response)
-      })
+      this._server = http.createServer(this._handleRequest.bind(this))
     }
-
-    this._server.on('upgrade', (request, socket, head) => {
-      if (this.perMessageDeflate) {
-        socket._perMessageDeflate = true
-      }
-      this.emit('upgrade', request, socket, head)
-      this._handleUpgrade(request, socket, head)
-    })
 
     this.clients = new Set()
 
+    this._server.on('upgrade', this._handleUpgrade.bind(this))
+
     this.on('error', unhandledErrorListener.bind(this))
+
+  }
+
+  /**
+   * @name _handleRequest
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * server._handleRequest(
+   *   request http.ClientRequest,
+   *   response http.ServerResponse
+   * ) -> ()
+   * ```
+   */
+  _handleRequest(request, response) {
+    this.emit('request', request)
+    this._httpHandler(request, response)
   }
 
   /**
@@ -116,6 +121,11 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleUpgrade(request, socket, head) {
+    if (this.perMessageDeflate) {
+      socket._perMessageDeflate = true
+    }
+    this.emit('upgrade', request, socket, head)
+
     if (
       request.headers['upgrade'] == 'websocket'
       && typeof request.headers['sec-websocket-key'] == 'string'
