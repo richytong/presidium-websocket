@@ -13,6 +13,7 @@ const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./_internal/ServerWebSocket')
 const sleep = require('./_internal/sleep')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
+const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
 const append = require('./_internal/append')
@@ -157,7 +158,7 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleDataFrames(socket, request, head) {
-    const chunks = []
+    const chunks = new LinkedList()
 
     socket.on('data', curry2(append, chunks, __))
 
@@ -201,7 +202,7 @@ class WebSocketServer extends events.EventEmitter {
       }
 
       if (decodeResult == null) {
-        chunks.unshift(chunk)
+        chunks.prepend(chunk)
         await sleep(0)
         continue
       }
@@ -216,7 +217,7 @@ class WebSocketServer extends events.EventEmitter {
       }
 
       if (remaining.length > 0) {
-        chunks.unshift(remaining)
+        chunks.prepend(remaining)
       }
 
       this._handleDataFrame(websocket, payload, opcode, fin)

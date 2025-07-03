@@ -3,11 +3,11 @@
  *
  * @docs
  * ```coffeescript [specscript]
- * append(array Array, element any) -> ()
+ * append(col { append: function }, element any) -> ()
  * ```
  */
-function append(array, element) {
-  array.push(element)
+function append(col, element) {
+  col.append(element)
 }
 
 module.exports = append
