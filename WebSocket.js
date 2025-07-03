@@ -174,7 +174,7 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks) {
-    if (this.readyState === 3) {
+    if (this._socket.destroyed) {
       return undefined
     }
 
