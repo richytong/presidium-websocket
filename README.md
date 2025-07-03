@@ -93,6 +93,119 @@ while (true) {
 }
 ```
 
+## Docs
+
+### WebSocket
+Create a Presidium WebSocket client.
+
+```coffeescript [specscript]
+new WebSocket(url string) -> websocket WebSocket
+
+new WebSocket(url string, options {
+  rejectUnauthorized: boolean,
+  autoConnect: boolean
+}) -> websocket WebSocket
+
+websocket.on('open', ()=>()) -> ()
+websocket.on('message', (message Buffer)=>()) -> ()
+websocket.on('ping', ()=>()) -> ()
+websocket.on('pong', ()=>()) -> ()
+websocket.on('error', (error Error)=>()) -> ()
+websocket.on('close', ()=>()) -> ()
+```
+
+Initiate a new connection to the WebSocket server.
+
+```coffeescript [specscript]
+websocket.connect() -> ()
+```
+
+Send a payload to the WebSocket server.
+
+```coffeescript [specscript]
+websocket.send(payload Buffer|string) -> ()
+```
+
+Send a close frame to the WebSocket server.
+
+```coffeescript [specscript]
+websocket.sendClose() -> ()
+websocket.sendClose(payload Buffer|string) -> ()
+```
+
+Send a ping frame to the server.
+
+```coffeescript [specscript]
+websocket.sendPing() -> ()
+websocket.sendPing(payload Buffer|string) -> ()
+```
+
+Send a pong frame to the server.
+
+```coffeescript [specscript]
+websocket.sendPong() -> ()
+websocket.sendPong(payload Buffer|string) -> ()
+```
+
+Close the connection to the WebSocket server.
+
+```coffeescript [specscript]
+websocket.close() -> ()
+websocket.close(payload Buffer|string) -> ()
+```
+
+Destroy the underlying [socket](https://nodejs.org/api/net.html#class-netsocket)
+
+```coffeescript [specscript]
+websocket.destroy() -> ()
+websocket.destroy(payload Buffer|string) -> ()
+```
+
+### WebSocket.Server
+Create a Presidium WebSocket server.
+
+```coffeescript [specscript]
+module http 'https://nodejs.org/api/http.html'
+module net 'https://nodejs.org/api/net.html'
+
+websocketHandler (websocket WebSocket)=>()
+httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
+upgradeHandler (request http.ClientRequest, socket net.Socket, head Buffer)=>()
+
+new WebSocketServer() -> server WebSocket.Server
+new WebSocketServer(websocketHandler) -> server WebSocket.Server
+
+new WebSocketServer(websocketHandler, options {
+  httpHandler: httpHandler,
+  secure: boolean,
+  key: string,
+  cert: string
+}) -> server WebSocket.Server
+
+new WebSocketServer(options {
+  websocketHandler: websocketHandler,
+  httpHandler: httpHandler,
+  secure: boolean,
+  key: string,
+  cert: string
+}) -> server WebSocket.Server
+
+server.on('connection', websocketHandler) -> ()
+server.on('request', httpHandler) -> ()
+server.on('upgrade', upgradeHandler) -> ()
+server.on('error', (error Error)=>()) -> ()
+server.on('close', ()=>()) -> ()
+
+server.on('connection', (websocket WebSocket) => {
+  websocket.on('open', ()=>()) -> ()
+  websocket.on('message', (message Buffer)=>()) -> ()
+  websocket.on('ping', ()=>()) -> ()
+  websocket.on('pong', ()=>()) -> ()
+  websocket.on('error', (error Error)=>()) -> ()
+  websocket.on('close', ()=>()) -> ()
+})
+```
+
 ## Installation
 
 with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):

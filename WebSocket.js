@@ -36,7 +36,8 @@ const MESSAGE_MAX_LENGTH_BYTES = 1024 * 1024
  * new WebSocket(url string) -> websocket WebSocket
  *
  * new WebSocket(url string, options {
- *   rejectUnauthorized: boolean
+ *   rejectUnauthorized: boolean,
+ *   autoConnect: boolean
  * }) -> websocket WebSocket
  * ```
  *
@@ -481,7 +482,7 @@ class WebSocket extends events.EventEmitter {
    * @name sendClose
    *
    * @docs
-   * Sends close frame to client
+   * Sends close frame to the server
    *
    * ```coffeescript [specscript]
    * websocket.sendClose(payload Buffer|string) -> ()
@@ -496,7 +497,7 @@ class WebSocket extends events.EventEmitter {
    * @name sendPing
    *
    * @docs
-   * Sends "ping" to client
+   * Sends a ping frame to the server
    *
    * ```coffeescript [specscript]
    * websocket.sendPing(payload Buffer|string) -> ()

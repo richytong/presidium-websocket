@@ -38,7 +38,7 @@ const functionConcatSync = require('./_internal/functionConcatSync')
  *
  * new WebSocketServer(websocketHandler, options {
  *   httpHandler: httpHandler,
- *   ssl: boolean,
+ *   secure: boolean,
  *   key: string,
  *   cert: string
  * }) -> server WebSocket.Server
@@ -46,7 +46,7 @@ const functionConcatSync = require('./_internal/functionConcatSync')
  * new WebSocketServer(options {
  *   websocketHandler: websocketHandler,
  *   httpHandler: httpHandler,
- *   ssl: boolean,
+ *   secure: boolean,
  *   key: string,
  *   cert: string
  * }) -> server WebSocket.Server
