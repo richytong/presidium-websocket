@@ -14,6 +14,9 @@ let wsStart = null
 const presidiumMessages = []
 const wsMessages = []
 
+const start = performance.now()
+
+
 { // Presidium
 
   const server = new PresidiumWebSocketServer(websocket => {
@@ -30,7 +33,6 @@ const wsMessages = []
   })
 
   websocket.on('open', async () => {
-    presidiumStart = performance.now()
     while (true) {
       websocket.send('small-message-16')
       await sleep(0)
@@ -55,7 +57,6 @@ const wsMessages = []
   })
 
   ws.on('open', async () => {
-    wsStart = performance.now()
     while (true) {
       ws.send('small-message-16')
       await sleep(0)
@@ -79,16 +80,27 @@ setImmediate(async () => {
   write('\n')
   write(`ws@${wsPackage.version}`)
   write('\n\n')
+
+  let numDiffs = 0
+
   while (true) {
     const now = performance.now()
-    const presidiumThroughput = presidiumMessages.length / (now - presidiumStart) * 1000
-    const wsThroughput = wsMessages.length / (now - wsStart) * 1000
+    const presidiumThroughput = presidiumMessages.length / (now - start) * 1000
+    const wsThroughput = wsMessages.length / (now - start) * 1000
     const diff = presidiumThroughput - wsThroughput
+
+    if (diff !== 0) {
+      numDiffs += 1
+    }
+
     const logMessage = `
 Time: ${now / 1000} seconds
-Presidium throughput: ${presidiumMessages.length / (now - presidiumStart) * 1000} messages/s
-ws throughput:        ${wsMessages.length / (now - wsStart) * 1000} messages/s
+Presidium throughput: ${presidiumThroughput} messages/s
+Presidium messages:   ${presidiumMessages.length}
+ws throughput:        ${wsThroughput} messages/s
+ws messages:          ${wsMessages.length}
 diff throughput:      ${diff} messages/s
+num diffs:            ${numDiffs}
     `.trim()
     write(logMessage)
     write('\n\n')
