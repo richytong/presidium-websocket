@@ -16,6 +16,7 @@ const unhandledErrorListener = require('./_internal/unhandledErrorListener')
 const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
+const curry3 = require('./_internal/curry3')
 const append = require('./_internal/append')
 const call = require('./_internal/call')
 const thunkify1 = require('./_internal/thunkify1')
@@ -180,7 +181,7 @@ class WebSocketServer extends events.EventEmitter {
     ))
 
     socket.on('data', functionConcatSync(
-      curry2(append, chunks, __),
+      curry3(append, chunks, __, 'WebSocketServer'),
       thunkify1(
         process.nextTick,
         thunkify4(call, this._processChunk, this, chunks, websocket)
@@ -200,7 +201,7 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks, websocket) {
-    // console.log(`WebSocketServer _processChunk`)
+    console.log(`WebSocketServer _processChunk`)
 
     if (websocket._socket.destroyed) {
       return undefined
