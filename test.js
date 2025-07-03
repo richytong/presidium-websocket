@@ -631,12 +631,14 @@ describe('WebSocket.Server, WebSocket', () => {
     }
 
     const server = new WebSocket.Server(websocket => {
-      websocket.on('ping', () => {
+      websocket.on('ping', message => {
+        assert.equal(message.toString('utf8'), 'test')
         pingPongResults.serverGotPing = true
-        websocket.sendPing()
+        websocket.sendPing('test')
       })
 
-      websocket.on('pong', () => {
+      websocket.on('pong', message => {
+        assert.equal(message.toString('utf8'), 'test')
         pingPongResults.serverGotPong = true
       })
 
@@ -653,17 +655,19 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const websocket = new WebSocket('ws://localhost:7357')
 
-    websocket.on('ping', () => {
+    websocket.on('ping', message => {
+      assert.equal(message.toString('utf8'), 'test')
       pingPongResults.clientGotPing = true
     })
 
-    websocket.on('pong', () => {
+    websocket.on('pong', message => {
+      assert.equal(message.toString('utf8'), 'test')
       pingPongResults.clientGotPong = true
       websocket.close()
     })
 
     websocket.on('open', () => {
-      websocket.sendPing()
+      websocket.sendPing('test')
     })
 
     await promise

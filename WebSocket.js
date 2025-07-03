@@ -379,6 +379,9 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   sendClose(payload = Buffer.from([])) {
+    if (!Buffer.isBuffer(payload)) {
+      payload = Buffer.from(payload)
+    }
     this._socket.write(encodeWebSocketFrame.call(this, payload, 0x8, true)) // close frame
     this.sentClose = true
   }
@@ -394,6 +397,9 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   sendPing(payload = Buffer.from([])) {
+    if (!Buffer.isBuffer(payload)) {
+      payload = Buffer.from(payload)
+    }
     this._socket.write(encodeWebSocketFrame.call(this, payload, 0x9, true)) // ping frame
   }
 
@@ -408,6 +414,9 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   sendPong(payload = Buffer.from([])) {
+    if (!Buffer.isBuffer(payload)) {
+      payload = Buffer.from(payload)
+    }
     this._socket.write(encodeWebSocketFrame.call(this, payload, 0xA, true)) // pong frame
   }
 
