@@ -366,11 +366,8 @@ describe('WebSocket.Server, WebSocket', () => {
   it('WebSocket destroyed before handshake', async () => {
     const websocket = new WebSocket('ws://localhost/')
     assert.strictEqual(websocket.readyState, 0)
-    assert.equal(websocket.url.port, '80')
-    websocket._socket.destroyed = true
-    while (websocket.readyState !== 3) {
-      await sleep(100)
-    }
+    websocket.destroy()
+    assert.strictEqual(websocket.readyState, 3)
   }).timeout(1000)
 
   it('WebSocket reconnects', async () => {
@@ -469,6 +466,7 @@ describe('WebSocket.Server, WebSocket', () => {
     assert(Buffer.isBuffer(messages[1]))
     assert.equal(messages[0].toString('utf8'), 'ping')
     assert.equal(messages[1].toString('utf8'), 'pong')
+    assert.equal(server.clients.size, 0)
     server.close()
 
     await sleep(100)

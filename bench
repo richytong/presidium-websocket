@@ -14,30 +14,8 @@ let wsStart = null
 const presidiumMessages = []
 const wsMessages = []
 
-{ // Presidium
+const start = performance.now()
 
-  const server = new PresidiumWebSocketServer(websocket => {
-    websocket.on('message', message => {
-      websocket.send(message)
-    })
-  })
-  server.listen(1337)
-
-  const websocket = new PresidiumWebSocket('ws://localhost:1337')
-
-  websocket.on('message', message => {
-    presidiumMessages.push(message)
-  })
-
-  websocket.on('open', async () => {
-    presidiumStart = performance.now()
-    while (true) {
-      websocket.send('small-message-16')
-      await sleep(0)
-    }
-  })
-
-}
 
 { // ws
 
@@ -55,9 +33,32 @@ const wsMessages = []
   })
 
   ws.on('open', async () => {
-    wsStart = performance.now()
     while (true) {
       ws.send('small-message-16')
+      await sleep(0)
+    }
+  })
+
+}
+
+{ // Presidium
+
+  const server = new PresidiumWebSocketServer(websocket => {
+    websocket.on('message', message => {
+      websocket.send(message)
+    })
+  })
+  server.listen(1337)
+
+  const websocket = new PresidiumWebSocket('ws://localhost:1337')
+
+  websocket.on('message', message => {
+    presidiumMessages.push(message)
+  })
+
+  websocket.on('open', async () => {
+    while (true) {
+      websocket.send('small-message-16')
       await sleep(0)
     }
   })
@@ -70,7 +71,6 @@ setImmediate(async () => {
     { flags: 'w' }
   )
 
-
   function write(s) {
     writeStream.write(s)
     process.stdout.write(s)
@@ -80,12 +80,31 @@ setImmediate(async () => {
   write('\n')
   write(`ws@${wsPackage.version}`)
   write('\n\n')
+
+  let numDiffs = 0
+
   while (true) {
     const now = performance.now()
+    const presidiumThroughput = presidiumMessages.length / (now - start) * 1000
+    const wsThroughput = wsMessages.length / (now - start) * 1000
+    const diff = presidiumThroughput - wsThroughput
+
+    if (wsMessages.length - presidiumMessages.length > 1) {
+      throw new Error('2')
+    }
+
+    if (diff !== 0) {
+      numDiffs += 1
+    }
+
     const logMessage = `
 Time: ${now / 1000} seconds
-Presidium throughput: ${presidiumMessages.length / (now - presidiumStart) * 1000} messages/s
-ws throughput:        ${wsMessages.length / (now - wsStart) * 1000} messages/s
+Presidium throughput: ${presidiumThroughput} messages/s
+Presidium messages:   ${presidiumMessages.length}
+ws throughput:        ${wsThroughput} messages/s
+ws messages:          ${wsMessages.length}
+diff throughput:      ${diff} messages/s
+num diffs:            ${numDiffs}
     `.trim()
     write(logMessage)
     write('\n\n')

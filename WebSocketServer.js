@@ -13,6 +13,16 @@ const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./_internal/ServerWebSocket')
 const sleep = require('./_internal/sleep')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
+const LinkedList = require('./_internal/LinkedList')
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
+const curry3 = require('./_internal/curry3')
+const append = require('./_internal/append')
+const call = require('./_internal/call')
+const thunkify1 = require('./_internal/thunkify1')
+const thunkify3 = require('./_internal/thunkify3')
+const thunkify4 = require('./_internal/thunkify4')
+const functionConcatSync = require('./_internal/functionConcatSync')
 
 /**
  * @name WebSocketServer
@@ -72,31 +82,36 @@ class WebSocketServer extends events.EventEmitter {
     }
 
     if (options.secure) {
-      this._server = https.createServer({
-        key: options.key,
-        cert: options.cert
-      }, (request, response) => {
-        this.emit('request', request)
-        this._httpHandler(request, response)
-      })
+      this._server = https.createServer(
+        { key: options.key, cert: options.cert },
+        this._handleRequest.bind(this)
+      )
     } else {
-      this._server = http.createServer((request, response) => {
-        this.emit('request', request)
-        this._httpHandler(request, response)
-      })
+      this._server = http.createServer(this._handleRequest.bind(this))
     }
-
-    this._server.on('upgrade', (request, socket, head) => {
-      if (this.perMessageDeflate) {
-        socket._perMessageDeflate = true
-      }
-      this.emit('upgrade', request, socket, head)
-      this._handleUpgrade(request, socket, head)
-    })
 
     this.clients = new Set()
 
+    this._server.on('upgrade', this._handleUpgrade.bind(this))
+
     this.on('error', unhandledErrorListener.bind(this))
+
+  }
+
+  /**
+   * @name _handleRequest
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * server._handleRequest(
+   *   request http.ClientRequest,
+   *   response http.ServerResponse
+   * ) -> ()
+   * ```
+   */
+  _handleRequest(request, response) {
+    this.emit('request', request)
+    this._httpHandler(request, response)
   }
 
   /**
@@ -112,6 +127,12 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleUpgrade(request, socket, head) {
+
+    if (this.perMessageDeflate) {
+      socket._perMessageDeflate = true
+    }
+    this.emit('upgrade', request, socket, head)
+
     if (
       request.headers['upgrade'] == 'websocket'
       && typeof request.headers['sec-websocket-key'] == 'string'
@@ -121,18 +142,9 @@ class WebSocketServer extends events.EventEmitter {
       hash.update(request.headers['sec-websocket-key'] + guid)
       const acceptKey = hash.digest('base64')
 
-      const headers = [
-        'HTTP/1.1 101 Switching Protocols',
-        'Upgrade: websocket',
-        'Connection: Upgrade',
-        `Sec-WebSocket-Accept: ${acceptKey}`,
-
-        ...socket._perMessageDeflate
-          ? ['Sec-WebSocket-Extensions: permessage-deflate']
-          : []
-      ]
-
-      socket.write(headers.join('\r\n') + '\r\n\r\n')
+      socket.write(
+        `HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${acceptKey}\r\n${socket._perMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate\r\n' : ''}\r\n`
+      )
 
       this._handleDataFrames(socket, request, head)
 
@@ -154,108 +166,188 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleDataFrames(socket, request, head) {
-    const chunks = []
-
-    socket.on('data', chunk => {
-      chunks.push(chunk)
-    })
-
+    const chunks = new LinkedList()
     const websocket = new ServerWebSocket(socket)
 
     this.emit('connection', websocket, request, head)
     this._websocketHandler(websocket, request, head)
     this.clients.add(websocket)
 
-    websocket.on('close', () => {
-      this.clients.delete(websocket)
-    })
+    websocket.on('close', thunkify3(
+      call,
+      this.clients.delete,
+      this.clients,
+      websocket
+    ))
 
-    let continuationPayloads = []
+    socket.on('data', functionConcatSync(
+      curry3(append, chunks, __, 'WebSocketServer'),
+      thunkify1(
+        process.nextTick,
+        thunkify4(call, this._processChunk, this, chunks, websocket)
+      )
+    ))
+  }
 
-    setImmediate(async () => {
-      while (!this.closed && !websocket.closed) {
+  /**
+   * @name _processChunk
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * _processChunk(
+   *   chunks Array<Buffer>,
+   *   websocket ServerWebSocket
+   * ) -> Promise<>
+   * ```
+   */
+  _processChunk(chunks, websocket) {
+    // console.log(`WebSocketServer _processChunk`)
 
-        if (chunks.length == 0) {
-          await sleep(0)
-          continue
-        }
+    if (websocket._socket.destroyed) {
+      return undefined
+    }
 
-        let chunk
-        let decodeResult
-        try {
-          chunk = chunks.shift()
-          decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-          while (decodeResult == null && chunks.length > 0) {
-            chunk = Buffer.concat([chunk, chunks.shift()])
-            decodeResult = decodeWebSocketFrame(chunk, this.perMessageDeflate)
-          }
-        } catch (error) {
-          this.emit('error', error)
-          break
-        }
+    if (chunks.length == 0) {
+      return undefined
+    }
 
-        if (decodeResult == null) {
-          chunks.unshift(chunk)
-          await sleep(0)
-          continue
-        }
+    // process data frames
+    while (chunks.length > 0) {
 
-        const { fin, opcode, payload, remaining, masked } = decodeResult
-
-        // The server must close the connection upon receiving a frame that is not masked
-        if (!masked) {
-          websocket.sendClose()
-          // websocket.close()
-          break
-        }
-
-        if (remaining.length > 0) {
-          chunks.unshift(remaining)
-        }
-
-        if (opcode === 0x0) { // continuation frame
-          continuationPayloads.push(payload)
-          if (fin) { // last continuation frame
-            websocket.emit('message', Buffer.concat(continuationPayloads))
-            continuationPayloads = []
-          }
-        } else if (fin) { // unfragmented message
-
-          switch (opcode) {
-            case 0x1: // text frame
-            case 0x2: // binary frame
-              websocket.emit('message', payload)
-              break
-            case 0x8: // close frame
-              if (websocket.sentClose) {
-                websocket.destroy()
-              } else {
-                websocket.sendClose()
-                websocket.destroy()
-              }
-              break
-            case 0x9: // ping frame
-              websocket.emit('ping', payload)
-              websocket.sendPong(payload)
-              break
-            case 0xA: // pong frame
-              websocket.emit('pong', payload)
-              break
-          }
-
-        } else { // fragmented message, wait for continuation frames
-          continuationPayloads.push(payload)
-        }
-
-        await sleep(0)
+      let chunk = chunks.shift()
+      let decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      while (decodeResult == null && chunks.length > 0) {
+        chunk = Buffer.concat([chunk, chunks.shift()])
+        decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      }
+      if (decodeResult == null) {
+        chunks.prepend(chunk)
+        return undefined
       }
 
-    })
+      const { fin, opcode, payload, remaining, masked } = decodeResult
+
+      // console.log('WebSocketServer payload', payload.toString('utf8'))
+
+      // The server must close the connection upon receiving a frame that is not masked
+      if (!masked) {
+        websocket.sendClose()
+        // websocket.close()
+        break
+      }
+
+      if (remaining.length > 0) {
+        chunks.prepend(remaining)
+      }
+
+      this._handleDataFrame(websocket, payload, opcode, fin)
+    }
 
   }
 
   /**
-   * @name close
+   * @name _processChunks
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * server._processChunks(
+   *   chunks Array<Buffer>,
+   *   websocket ServerWebSocket
+   * ) -> ()
+   * ```
+   */
+  async _processChunks(chunks, websocket) {
+    while (!this.closed && !websocket.closed) {
+
+      if (chunks.length == 0) {
+        await sleep(0)
+        continue
+      }
+
+      let chunk = chunks.shift()
+      let decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      while (decodeResult == null && chunks.length > 0) {
+        chunk = Buffer.concat([chunk, chunks.shift()])
+        decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      }
+
+      if (decodeResult == null) {
+        chunks.prepend(chunk)
+        await sleep(0)
+        continue
+      }
+
+      const { fin, opcode, payload, remaining, masked } = decodeResult
+
+      // The server must close the connection upon receiving a frame that is not masked
+      if (!masked) {
+        websocket.sendClose()
+        // websocket.close()
+        break
+      }
+
+      if (remaining.length > 0) {
+        chunks.prepend(remaining)
+      }
+
+      this._handleDataFrame(websocket, payload, opcode, fin)
+
+      await sleep(0)
+    }
+
+  }
+
+  /**
+   * @name _handleDataFrame
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * server._handleDataFrame(
+   *   websocket ServerWebSocket,
+   *   payload Buffer,
+   *   opcode number,
+   *   fin boolean
+   * ) -> ()
+   * ```
+   */
+  _handleDataFrame(websocket, payload, opcode, fin) {
+    if (opcode === 0x0) { // continuation frame
+      websocket._continuationPayloads.push(payload)
+      if (fin) { // last continuation frame
+        websocket.emit('message', Buffer.concat(websocket._continuationPayloads))
+        websocket._continuationPayloads = []
+      }
+    } else if (fin) { // unfragmented message
+
+      switch (opcode) {
+        case 0x1: // text frame
+        case 0x2: // binary frame
+          websocket.emit('message', payload)
+          break
+        case 0x8: // close frame
+          if (websocket.sentClose) {
+            websocket.destroy()
+          } else {
+            websocket.sendClose()
+            websocket.destroy()
+          }
+          break
+        case 0x9: // ping frame
+          websocket.emit('ping', payload)
+          websocket.sendPong(payload)
+          break
+        case 0xA: // pong frame
+          websocket.emit('pong', payload)
+          break
+      }
+
+    } else { // fragmented message, wait for continuation frames
+      websocket._continuationPayloads.push(payload)
+    }
+  }
+
+  /**
+   * @name listen
    *
    * @docs
    * ```coffeescript [specscript]
