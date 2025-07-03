@@ -121,6 +121,7 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleUpgrade(request, socket, head) {
+
     if (this.perMessageDeflate) {
       socket._perMessageDeflate = true
     }
@@ -135,18 +136,9 @@ class WebSocketServer extends events.EventEmitter {
       hash.update(request.headers['sec-websocket-key'] + guid)
       const acceptKey = hash.digest('base64')
 
-      const headers = [
-        'HTTP/1.1 101 Switching Protocols',
-        'Upgrade: websocket',
-        'Connection: Upgrade',
-        `Sec-WebSocket-Accept: ${acceptKey}`,
-
-        ...socket._perMessageDeflate
-          ? ['Sec-WebSocket-Extensions: permessage-deflate']
-          : []
-      ]
-
-      socket.write(headers.join('\r\n') + '\r\n\r\n')
+      socket.write(
+        `HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${acceptKey}\r\n${socket._perMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate\r\n' : ''}\r\n`
+      )
 
       this._handleDataFrames(socket, request, head)
 

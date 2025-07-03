@@ -135,16 +135,9 @@ class WebSocket extends events.EventEmitter {
    */
   _handleTCPConnection() {
     const key = crypto.randomBytes(16).toString('base64')
-    const headers = [
-      `GET ${this.url.pathname} HTTP/1.1`,
-      `Host: ${this.url.hostname}:${this.url.port}`,
-      'Upgrade: websocket',
-      'Connection: Upgrade',
-      `Sec-WebSocket-Key: ${key}`,
-      'Sec-WebSocket-Version: 13',
-      'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits'
-    ]
-    this._socket.write(headers.join('\r\n') + '\r\n\r\n')
+    this._socket.write(
+      `GET ${this.url.pathname} HTTP/1.1\r\nHost: ${this.url.hostname}:${this.url.port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n\r\n`
+    )
   }
 
   /**
