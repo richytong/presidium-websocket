@@ -17,6 +17,8 @@ const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
 const append = require('./_internal/append')
+const call = require('./_internal/call')
+const thunkify4 = require('./_internal/thunkify4')
 
 /**
  * @name WebSocketServer
@@ -173,9 +175,12 @@ class WebSocketServer extends events.EventEmitter {
 
     // socket.on('data', curry2(append, chunks, __))
     socket.on('data', chunk => {
+      // console.log(`WebSocketServer append chunk`)
+
       chunks.append(chunk)
 
-      this._processChunk(chunks, websocket)
+      process.nextTick(thunkify4(call, this._processChunk, this, chunks, websocket))
+      // this._processChunk(chunks, websocket)
     })
 
     // this._processChunks(chunks, websocket)
@@ -193,6 +198,8 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks, websocket) {
+    // console.log(`WebSocketServer _processChunk`)
+
     if (websocket._socket.destroyed) {
       return undefined
     }
@@ -216,6 +223,8 @@ class WebSocketServer extends events.EventEmitter {
       }
 
       const { fin, opcode, payload, remaining, masked } = decodeResult
+
+      // console.log('WebSocketServer payload', payload.toString('utf8'))
 
       // The server must close the connection upon receiving a frame that is not masked
       if (!masked) {

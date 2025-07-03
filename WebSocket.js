@@ -156,10 +156,12 @@ class WebSocket extends events.EventEmitter {
 
     // this._socket.on('data', curry2(append, chunks, __))
     this._socket.on('data', chunk => {
+      // console.log('WebSocket append chunk')
+
       chunks.append(chunk)
 
-      // process.nextTick(thunkify3(call, this._processChunk, this, chunks))
-      this._processChunk(chunks)
+      process.nextTick(thunkify3(call, this._processChunk, this, chunks))
+      // this._processChunk(chunks)
     })
 
     // this._processChunks(chunks)
@@ -174,6 +176,8 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks) {
+    // console.log('WebSocket _processChunk')
+
     if (this._socket.destroyed) {
       return undefined
     }
