@@ -11,6 +11,8 @@
   },
   "homepage": "https://github.com/richytong/presidium-websocket",
   "keywords": [
+    "compression",
+    "permessage-deflate",
     "node",
     "nodejs",
     "javascript",
