@@ -70,7 +70,6 @@ setImmediate(async () => {
     { flags: 'w' }
   )
 
-
   function write(s) {
     writeStream.write(s)
     process.stdout.write(s)
