@@ -158,6 +158,7 @@ class WebSocketServer extends events.EventEmitter {
    */
   _handleDataFrames(socket, request, head) {
     const chunks = []
+    const dataframes = []
 
     socket.on('data', curry2(append, chunks, __))
 
@@ -171,7 +172,8 @@ class WebSocketServer extends events.EventEmitter {
       this.clients.delete(websocket)
     })
 
-    this._processChunks(chunks, websocket)
+    this._processChunks(chunks, dataframes, websocket)
+    this._processDataFrames(dataframes, websocket)
   }
 
   /**
@@ -181,11 +183,12 @@ class WebSocketServer extends events.EventEmitter {
    * ```coffeescript [specscript]
    * server._processChunks(
    *   chunks Array<Buffer>,
+   *   dataframes Array<[payload Buffer, opcode number, fin boolean]>,
    *   websocket ServerWebSocket
    * ) -> ()
    * ```
    */
-  async _processChunks(chunks, websocket) {
+  async _processChunks(chunks, dataframes, websocket) {
     while (!this.closed && !websocket.closed) {
 
       if (chunks.length == 0) {
@@ -211,7 +214,6 @@ class WebSocketServer extends events.EventEmitter {
       // The server must close the connection upon receiving a frame that is not masked
       if (!masked) {
         websocket.sendClose()
-        // websocket.close()
         break
       }
 
@@ -219,11 +221,71 @@ class WebSocketServer extends events.EventEmitter {
         chunks.unshift(remaining)
       }
 
-      this._handleDataFrame(websocket, payload, opcode, fin)
+      dataframes.push([payload, opcode, fin])
 
       await sleep(0)
     }
 
+  }
+
+  /**
+   * @name _processDataFrames
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * server._processDataFrames(
+   *   dataframes Array<[payload Buffer, opcode number, fin boolean]>,
+   *   websocket ServerWebSocket
+   * ) -> ()
+   * ```
+   */
+  async _processDataFrames(dataframes, websocket) {
+    let continuationPayloads = []
+
+    while (!this.closed && !websocket.closed) {
+      if (dataframes.length == 0) {
+        await sleep(0)
+        continue
+      }
+
+      const [payload, opcode, fin] = dataframes.shift()
+
+      if (opcode === 0x0) { // continuation frame
+        continuationPayloads.push(payload)
+        if (fin) { // last continuation frame
+          websocket.emit('message', Buffer.concat(continuationPayloads))
+          continuationPayloads = []
+        }
+      } else if (fin) { // unfragmented message
+
+        switch (opcode) {
+          case 0x1: // text frame
+          case 0x2: // binary frame
+            websocket.emit('message', payload)
+            break
+          case 0x8: // close frame
+            if (websocket.sentClose) {
+              websocket.destroy()
+            } else {
+              websocket.sendClose()
+              websocket.destroy()
+            }
+            break
+          case 0x9: // ping frame
+            websocket.emit('ping', payload)
+            websocket.sendPong(payload)
+            break
+          case 0xA: // pong frame
+            websocket.emit('pong', payload)
+            break
+        }
+
+      } else { // fragmented message, wait for continuation frames
+        continuationPayloads.push(payload)
+      }
+
+      await sleep(0)
+    }
   }
 
   /**

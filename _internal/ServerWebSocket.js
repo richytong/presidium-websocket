@@ -23,8 +23,6 @@ class ServerWebsocket extends events.EventEmitter {
     this._socket.on('error', error => {
       this.emit('error', error)
     })
-
-    this._continuationPayloads = []
   }
 
   /**

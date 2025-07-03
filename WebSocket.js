@@ -83,7 +83,6 @@ class WebSocket extends events.EventEmitter {
       this.connect()
     }
 
-    this._continuationPayloads = []
   }
 
   /**
@@ -156,10 +155,12 @@ class WebSocket extends events.EventEmitter {
    */
   _handleDataFrames() {
     const chunks = []
+    const dataframes = []
 
     this._socket.on('data', curry2(append, chunks, __))
 
-    this._processChunks(chunks)
+    this._processChunks(chunks, dataframes)
+    this._processDataFrames(dataframes)
   }
 
   /**
@@ -170,7 +171,7 @@ class WebSocket extends events.EventEmitter {
    * websocket._processChunks(chunks Array<Buffer>) -> ()
    * ```
    */
-  async _processChunks(chunks) {
+  async _processChunks(chunks, dataframes) {
     while (!this.closed) {
       // handle handshake response
 
@@ -260,11 +261,75 @@ class WebSocket extends events.EventEmitter {
         chunks.unshift(remaining)
       }
 
-      this._handleDataFrame(payload, opcode, fin)
+      dataframes.push([payload, opcode, fin])
 
       await sleep(0)
     }
 
+  }
+
+  /**
+   * @name _processDataFrames
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * websocket._processDataFrames(
+   *   dataframes Array<[payload Buffer, opcode number, fin boolean]>
+   * ) -> ()
+   * ```
+   */
+  async _processDataFrames(dataframes) {
+    let continuationPayloads = []
+
+    while (!this.closed) {
+      if (dataframes.length == 0) {
+        if (this._socket.destroyed) {
+          this.readyState = 3 // CLOSED
+          break
+        }
+        await sleep(0)
+        continue
+      }
+
+      const [payload, opcode, fin] = dataframes.shift()
+
+      if (opcode === 0x0) { // continuation frame
+        continuationPayloads.push(payload)
+        if (fin) { // last continuation frame
+          this.emit('message', Buffer.concat(continuationPayloads))
+          continuationPayloads = []
+        }
+      } else if (fin) { // unfragmented message
+
+        switch (opcode) {
+          case 0x1: // text frame
+          case 0x2: // binary frame
+            this.emit('message', payload)
+            break
+          case 0x8: // close frame
+            this.readyState = 2 // CLOSING
+            if (this.sentClose) {
+              this.destroy()
+            } else {
+              this.sendClose()
+              this.destroy()
+            }
+            break
+          case 0x9: // ping frame
+            this.emit('ping', payload)
+            this.sendPong(payload)
+            break
+          case 0xA: // pong frame
+            this.emit('pong', payload)
+            break
+        }
+
+      } else { // fragmented message, wait for continuation frames
+        continuationPayloads.push(payload)
+      }
+
+      await sleep(0)
+    }
   }
 
   /**
