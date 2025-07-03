@@ -31,25 +31,45 @@ const functionConcatSync = require('./_internal/functionConcatSync')
  * Presidium WebSocket server.
  *
  * ```coffeescript [specscript]
+ * module http 'https://nodejs.org/api/http.html'
+ * module net 'https://nodejs.org/api/net.html'
+ *
  * websocketHandler (websocket WebSocket)=>()
  * httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
+ * upgradeHandler (request http.ClientRequest, socket net.Socket, head Buffer)=>()
  *
- * new WebSocketServer(websocketHandler) -> server WebSocket.Server
+ * new WebSocket.Server() -> server WebSocket.Server
+ * new WebSocket.Server(websocketHandler) -> server WebSocket.Server
  *
- * new WebSocketServer(websocketHandler, options {
+ * new WebSocket.Server(websocketHandler, options {
  *   httpHandler: httpHandler,
  *   secure: boolean,
  *   key: string,
  *   cert: string
  * }) -> server WebSocket.Server
  *
- * new WebSocketServer(options {
+ * new WebSocket.Server(options {
  *   websocketHandler: websocketHandler,
  *   httpHandler: httpHandler,
  *   secure: boolean,
  *   key: string,
  *   cert: string
  * }) -> server WebSocket.Server
+ *
+ * server.on('connection', websocketHandler) -> ()
+ * server.on('request', httpHandler) -> ()
+ * server.on('upgrade', upgradeHandler) -> ()
+ * server.on('error', (error Error)=>()) -> ()
+ * server.on('close', ()=>()) -> ()
+ *
+ * server.on('connection', (websocket WebSocket) => {
+ *   websocket.on('open', ()=>()) -> ()
+ *   websocket.on('message', (message Buffer)=>()) -> ()
+ *   websocket.on('ping', ()=>()) -> ()
+ *   websocket.on('pong', ()=>()) -> ()
+ *   websocket.on('error', (error Error)=>()) -> ()
+ *   websocket.on('close', ()=>()) -> ()
+ * })
  * ```
  */
 class WebSocketServer extends events.EventEmitter {

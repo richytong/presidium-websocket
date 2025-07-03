@@ -39,18 +39,13 @@ const MESSAGE_MAX_LENGTH_BYTES = 1024 * 1024
  *   rejectUnauthorized: boolean,
  *   autoConnect: boolean
  * }) -> websocket WebSocket
- * ```
  *
- * ```javascript
- * const myWebsocket = new WebSocket('wss://echo.websocket.org/')
- *
- * myWebsocket.on('open', () => {
- *   myWebsocket.send('Hello Server!')
- * })
- *
- * myWebsocket.on('message', message => {
- *   console.log('Message from server:', message)
- * })
+ * websocket.on('open', ()=>()) -> ()
+ * websocket.on('message', (message Buffer)=>()) -> ()
+ * websocket.on('ping', ()=>()) -> ()
+ * websocket.on('pong', ()=>()) -> ()
+ * websocket.on('error', (error Error)=>()) -> ()
+ * websocket.on('close', ()=>()) -> ()
  * ```
  */
 class WebSocket extends events.EventEmitter {

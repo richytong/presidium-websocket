@@ -12,21 +12,45 @@ const WebSocketServer = require('./WebSocketServer')
  *
  * @docs
  * ```coffeescript [specscript]
+ * module http 'https://nodejs.org/api/http.html'
+ * module net 'https://nodejs.org/api/net.html'
+ *
  * websocketHandler (websocket WebSocket)=>()
  * httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
+ * upgradeHandler (request http.ClientRequest, socket net.Socket, head Buffer)=>()
  *
- * new WebSocketSecureServer(websocketHandler, options {
+ * new WebSocket.SecureServer(options {
+ *   key: string,
+ *   cert: string
+ * }) -> server WebSocket.SecureServer
+ *
+ * new WebSocket.SecureServer(websocketHandler, options {
  *   httpHandler: httpHandler,
  *   key: string,
  *   cert: string
- * }) -> server WebSocket.Server
+ * }) -> server WebSocket.SecureServer
  *
- * new WebSocketSecureServer(options {
+ * new WebSocket.SecureServer(options {
  *   websocketHandler: websocketHandler,
  *   httpHandler: httpHandler,
  *   key: string,
  *   cert: string
- * }) -> server WebSocket.Server
+ * }) -> server WebSocket.SecureServer
+ *
+ * server.on('connection', websocketHandler) -> ()
+ * server.on('request', httpHandler) -> ()
+ * server.on('upgrade', upgradeHandler) -> ()
+ * server.on('error', (error Error)=>()) -> ()
+ * server.on('close', ()=>()) -> ()
+ *
+ * server.on('connection', (websocket WebSocket) => {
+ *   websocket.on('open', ()=>()) -> ()
+ *   websocket.on('message', (message Buffer)=>()) -> ()
+ *   websocket.on('ping', ()=>()) -> ()
+ *   websocket.on('pong', ()=>()) -> ()
+ *   websocket.on('error', (error Error)=>()) -> ()
+ *   websocket.on('close', ()=>()) -> ()
+ * })
  * ```
  */
 class WebSocketSecureServer extends WebSocketServer {
