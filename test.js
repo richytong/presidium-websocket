@@ -466,6 +466,7 @@ describe('WebSocket.Server, WebSocket', () => {
     assert(Buffer.isBuffer(messages[1]))
     assert.equal(messages[0].toString('utf8'), 'ping')
     assert.equal(messages[1].toString('utf8'), 'pong')
+    assert.equal(server.clients.size, 0)
     server.close()
 
     await sleep(100)
