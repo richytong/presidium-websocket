@@ -17,30 +17,6 @@ const wsMessages = []
 const start = performance.now()
 
 
-{ // Presidium
-
-  const server = new PresidiumWebSocketServer(websocket => {
-    websocket.on('message', message => {
-      websocket.send(message)
-    })
-  })
-  server.listen(1337)
-
-  const websocket = new PresidiumWebSocket('ws://localhost:1337')
-
-  websocket.on('message', message => {
-    presidiumMessages.push(message)
-  })
-
-  websocket.on('open', async () => {
-    while (true) {
-      websocket.send('small-message-16')
-      await sleep(0)
-    }
-  })
-
-}
-
 { // ws
 
   const server = new WSWebSocketServer({ port: 1338 })
@@ -59,6 +35,30 @@ const start = performance.now()
   ws.on('open', async () => {
     while (true) {
       ws.send('small-message-16')
+      await sleep(0)
+    }
+  })
+
+}
+
+{ // Presidium
+
+  const server = new PresidiumWebSocketServer(websocket => {
+    websocket.on('message', message => {
+      websocket.send(message)
+    })
+  })
+  server.listen(1337)
+
+  const websocket = new PresidiumWebSocket('ws://localhost:1337')
+
+  websocket.on('message', message => {
+    presidiumMessages.push(message)
+  })
+
+  websocket.on('open', async () => {
+    while (true) {
+      websocket.send('small-message-16')
       await sleep(0)
     }
   })
@@ -88,6 +88,10 @@ setImmediate(async () => {
     const presidiumThroughput = presidiumMessages.length / (now - start) * 1000
     const wsThroughput = wsMessages.length / (now - start) * 1000
     const diff = presidiumThroughput - wsThroughput
+
+    if (wsMessages.length - presidiumMessages.length > 1) {
+      throw new Error('2')
+    }
 
     if (diff !== 0) {
       numDiffs += 1
