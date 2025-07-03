@@ -161,9 +161,6 @@ class WebSocketServer extends events.EventEmitter {
    */
   _handleDataFrames(socket, request, head) {
     const chunks = new LinkedList()
-
-    socket.on('data', curry2(append, chunks, __))
-
     const websocket = new ServerWebSocket(socket)
 
     this.emit('connection', websocket, request, head)
@@ -174,7 +171,66 @@ class WebSocketServer extends events.EventEmitter {
       this.clients.delete(websocket)
     })
 
-    this._processChunks(chunks, websocket)
+    // socket.on('data', curry2(append, chunks, __))
+    socket.on('data', chunk => {
+      chunks.append(chunk)
+
+      this._processChunk(chunks, websocket)
+    })
+
+    // this._processChunks(chunks, websocket)
+  }
+
+  /**
+   * @name _processChunk
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * _processChunk(
+   *   chunks Array<Buffer>,
+   *   websocket ServerWebSocket
+   * ) -> Promise<>
+   * ```
+   */
+  _processChunk(chunks, websocket) {
+    if (websocket._socket.destroyed) {
+      return undefined
+    }
+
+    if (chunks.length == 0) {
+      return undefined
+    }
+
+    // process data frames
+    while (chunks.length > 0) {
+
+      let chunk = chunks.shift()
+      let decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      while (decodeResult == null && chunks.length > 0) {
+        chunk = Buffer.concat([chunk, chunks.shift()])
+        decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      }
+      if (decodeResult == null) {
+        chunks.prepend(chunk)
+        return undefined
+      }
+
+      const { fin, opcode, payload, remaining, masked } = decodeResult
+
+      // The server must close the connection upon receiving a frame that is not masked
+      if (!masked) {
+        websocket.sendClose()
+        // websocket.close()
+        break
+      }
+
+      if (remaining.length > 0) {
+        chunks.prepend(remaining)
+      }
+
+      this._handleDataFrame(websocket, payload, opcode, fin)
+    }
+
   }
 
   /**
