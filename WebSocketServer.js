@@ -165,7 +165,7 @@ class WebSocketServer extends events.EventEmitter {
    * ) -> ()
    * ```
    */
-  _handleDataFrames(socket, request, head) {
+  async _handleDataFrames(socket, request, head) {
     const chunks = new LinkedList()
     const websocket = new ServerWebSocket(socket)
 
@@ -180,12 +180,39 @@ class WebSocketServer extends events.EventEmitter {
       websocket
     ))
 
-    socket.on('data', functionConcatSync(
-      curry3(append, chunks, __, 'WebSocketServer'),
-      thunkify1(
-        process.nextTick,
-        thunkify4(call, this._processChunk, this, chunks, websocket)
-      )
+    socket.pause()
+    while (!this.closed && !websocket.closed) {
+      // console.log('WebSocketServer call this._readSocket')
+      this._readSocket(websocket, chunks)
+      await sleep(2)
+    }
+
+  }
+
+  /**
+   * @name _readSocket
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * _readSocket(websocket ServerWebSocket, chunks Array<Buffer>) -> ()
+   * ```
+   */
+  _readSocket(websocket, chunks) {
+    const chunk = websocket._socket.read()
+    if (chunk == null) {
+      console.log('WebSocketServer _readSocket null')
+      return undefined
+    }
+    // console.log('WebSocketServer _readSocket', chunk)
+
+    chunks.append(chunk)
+
+    process.nextTick(thunkify4(
+      call,
+      this._processChunk,
+      this,
+      chunks,
+      websocket
     ))
   }
 
@@ -201,15 +228,17 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks, websocket) {
-    console.log(`WebSocketServer _processChunk`)
-
     if (websocket._socket.destroyed) {
+      // console.log('WebSocketServer _processChunk socket destroyed')
       return undefined
     }
 
     if (chunks.length == 0) {
+      // console.log('WebSocketServer _processChunk no chunks')
       return undefined
     }
+
+    // console.log(`WebSocketServer _processChunk`)
 
     // process data frames
     while (chunks.length > 0) {
@@ -227,22 +256,23 @@ class WebSocketServer extends events.EventEmitter {
 
       const { fin, opcode, payload, remaining, masked } = decodeResult
 
-      // console.log('WebSocketServer payload', payload.toString('utf8'))
+      // console.log('WebSocketServer _processChunk', payload.toString())
 
       // The server must close the connection upon receiving a frame that is not masked
       if (!masked) {
         websocket.sendClose()
-        // websocket.close()
-        break
+        return undefined
       }
 
       if (remaining.length > 0) {
         chunks.prepend(remaining)
       }
 
+      // TODO bench process.nextTick
       this._handleDataFrame(websocket, payload, opcode, fin)
     }
 
+    return undefined
   }
 
   /**
