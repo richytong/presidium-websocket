@@ -7,7 +7,7 @@
  * ```
  */
 function append(col, element, source) {
-  console.log(source, 'append')
+  // console.log(source, 'append')
   col.append(element)
 }
 

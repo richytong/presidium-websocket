@@ -201,7 +201,7 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks, websocket) {
-    console.log(`WebSocketServer _processChunk`)
+    // console.log(`WebSocketServer _processChunk`)
 
     if (websocket._socket.destroyed) {
       return undefined
