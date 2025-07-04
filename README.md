@@ -110,7 +110,8 @@ new WebSocket(url string) -> websocket WebSocket
 
 new WebSocket(url string, options {
   rejectUnauthorized: boolean,
-  autoConnect: boolean
+  autoConnect: boolean,
+  maxMessageLength: number
 }) -> websocket WebSocket
 
 websocket.on('open', ()=>()) -> ()
@@ -121,18 +122,34 @@ websocket.on('error', (error Error)=>()) -> ()
 websocket.on('close', ()=>()) -> ()
 ```
 
+Options:
+  * `rejectUnauthorized boolean` - if `true`, the client verifies the server's certificate against a list of pre-approved certificate authorities (CAs). An `'error'` event is emitted if verification fails; `err.code` contains the OpenSSL error code. Defaults to `true`.
+  * `autoConnect boolean` - if `true`, establishes the underlying TCP connection automatically upon construction. Defaults to `true`.
+  * `maxMessageLength number` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
+
+Events:
+  * `'open'` - emitted when the WebSocket protocol handshake is complete. Event handlers for the `'open'` event are called with no arguments.
+  * `'message'` - emitted upon receipt and successful decoding (and reassembly, if applicable) of an incoming message. Event handlers for the `'message'` event are called with the message payload `Buffer`.
+  * `'ping'` - emitted upon receipt and successful decoding of an incoming "ping" message. Event handlers for the `'ping'` event are called with the message payload `Buffer`.
+  * `'pong'` - emitted upon receipt and successful decoding of an incoming "pong" message. Event handlers for the `'pong'` event are called with the message payload `Buffer`.
+  * `'error'` - emitted if any errors occur during construction, in any method calls, or on the underlying [socket](https://nodejs.org/api/net.html#class-netsocket). Event handlers for the `'error'` event are called with the error `Error` object.
+  * `'close'` - emitted when the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) is destroyed. The `'close'` event can be emitted after a call to the [websocket.close](#websocketclose) method. Event handlers for the `'close'` event are called with no arguments.
+
+#### websocket.connect
 Initiate a new connection to the WebSocket server.
 
 ```coffeescript [specscript]
 websocket.connect() -> ()
 ```
 
+#### websocket.send
 Send a payload to the WebSocket server.
 
 ```coffeescript [specscript]
 websocket.send(payload Buffer|string) -> ()
 ```
 
+#### websocket.sendClose
 Send a close frame to the WebSocket server.
 
 ```coffeescript [specscript]
@@ -140,6 +157,7 @@ websocket.sendClose() -> ()
 websocket.sendClose(payload Buffer|string) -> ()
 ```
 
+#### websocket.sendPing
 Send a ping frame to the server.
 
 ```coffeescript [specscript]
@@ -147,6 +165,7 @@ websocket.sendPing() -> ()
 websocket.sendPing(payload Buffer|string) -> ()
 ```
 
+#### websocket.sendPong
 Send a pong frame to the server.
 
 ```coffeescript [specscript]
@@ -154,6 +173,7 @@ websocket.sendPong() -> ()
 websocket.sendPong(payload Buffer|string) -> ()
 ```
 
+#### websocket.close
 Close the connection to the WebSocket server.
 
 ```coffeescript [specscript]
@@ -161,6 +181,7 @@ websocket.close() -> ()
 websocket.close(payload Buffer|string) -> ()
 ```
 
+#### websocket.destroy
 Destroy the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
 
 ```coffeescript [specscript]
