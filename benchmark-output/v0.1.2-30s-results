@@ -4,6 +4,11 @@ Presidium throughput: 758.2840701864596 messages/s
 Presidium throughput: 748.3150089077047 messages/s
 Presidium throughput: 737.2862715131091 messages/s
 Presidium throughput: 735.0285869808462 messages/s
+Presidium throughput: 793.301588695004 messages/s
+Presidium throughput: 745.5280002524676 messages/s
+Presidium throughput: 750.5895317037134 messages/s
+Presidium throughput: 730.8104248306355 messages/s
+Presidium throughput: 740.311525022701 messages/s
 
 # ws
 ws throughput:        726.4544378691397 messages/s
@@ -11,3 +16,8 @@ ws throughput:        732.7982735729721 messages/s
 ws throughput:        754.1407262925522 messages/s
 ws throughput:        744.14436167396 messages/s
 ws throughput:        727.8412335066249 messages/s
+ws throughput:        732.1324772444592 messages/s
+ws throughput:        729.8160579492268 messages/s
+ws throughput:        735.5071696659313 messages/s
+ws throughput:        761.5190218780193 messages/s
+ws throughput:        755.8728887003929 messages/s
