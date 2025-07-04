@@ -109,11 +109,15 @@ Constructs a Presidium WebSocket client.
 new WebSocket(url string) -> websocket WebSocket
 
 new WebSocket(url string, options {
-  rejectUnauthorized: boolean, # if `true`, the client verifies the server's certificate against a list of pre-approved certificate authorities (CAs). An [error](#websocket-error-event) event is emitted if verification fails; `err.code` contains the OpenSSL error code. Defaults to `true`.
+  rejectUnauthorized: boolean,
+  # if `true`, the client verifies the server's certificate against a list of pre-approved certificate authorities (CAs). An [error](#websocket-error-event) event is emitted if verification fails; `err.code` contains the OpenSSL error code. Defaults to `true`.
 
-  autoConnect: boolean, # if `true`, establishes the underlying TCP connection automatically upon construction. Defaults to `true`.
+  autoConnect: boolean,
+  # if `true`, establishes the underlying TCP connection automatically upon construction. Defaults to `true`.
 
-  maxMessageLength: number # the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
+  maxMessageLength: number
+  # the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
+
 }) -> websocket WebSocket
 ```
 
