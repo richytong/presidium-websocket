@@ -257,7 +257,7 @@ new WebSocket.Server(options {
   maxMessageLength: number
 }) -> server WebSocket.Server
 
-server.on('connection', websocketHandler) -> ()
+server.on('connection', websocketHandler WebSocketHandler) -> ()
 server.on('request', httpHandler HTTPHandler) -> ()
 server.on('upgrade', upgradeHandler) -> ()
 server.on('error', (error Error)=>()) -> ()
@@ -306,7 +306,7 @@ new WebSocket.SecureServer(options {
   maxMessageLength: number
 }) -> server WebSocket.SecureServer
 
-server.on('connection', websocketHandler) -> ()
+server.on('connection', websocketHandler WebSocketHandler) -> ()
 server.on('request', httpHandler HTTPHandler) -> ()
 server.on('upgrade', upgradeHandler) -> ()
 server.on('error', (error Error)=>()) -> ()
