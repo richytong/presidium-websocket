@@ -171,21 +171,21 @@ websocket.on('close', ()=>()) -> ()
 ```
 
 #### websocket.connect
-Initiate a new connection to the WebSocket server.
+Initiates a new connection to the WebSocket server.
 
 ```coffeescript [specscript]
 websocket.connect() -> ()
 ```
 
 #### websocket.send
-Send a payload to the WebSocket server.
+Sends a payload to the WebSocket server.
 
 ```coffeescript [specscript]
 websocket.send(payload Buffer|string) -> ()
 ```
 
 #### websocket.sendClose
-Send a close frame to the WebSocket server.
+Sends a close frame to the WebSocket server.
 
 ```coffeescript [specscript]
 websocket.sendClose() -> ()
@@ -193,7 +193,7 @@ websocket.sendClose(payload Buffer|string) -> ()
 ```
 
 #### websocket.sendPing
-Send a ping frame to the server.
+Sends a ping frame to the server.
 
 ```coffeescript [specscript]
 websocket.sendPing() -> ()
@@ -201,7 +201,7 @@ websocket.sendPing(payload Buffer|string) -> ()
 ```
 
 #### websocket.sendPong
-Send a pong frame to the server.
+Sends a pong frame to the server.
 
 ```coffeescript [specscript]
 websocket.sendPong() -> ()
@@ -209,7 +209,7 @@ websocket.sendPong(payload Buffer|string) -> ()
 ```
 
 #### websocket.close
-Close the connection to the WebSocket server.
+Closes the connection to the WebSocket server.
 
 ```coffeescript [specscript]
 websocket.close() -> ()
@@ -217,7 +217,7 @@ websocket.close(payload Buffer|string) -> ()
 ```
 
 #### websocket.destroy
-Destroy the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
+Destroys the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
 
 ```coffeescript [specscript]
 websocket.destroy() -> ()
