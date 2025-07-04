@@ -121,12 +121,12 @@ Options:
   * `maxMessageLength` - `<number>` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
 
 Events:
-  * ['open'](#websocket-open-event)
-  * ['message'](#websocket-message-event)
-  * ['ping'](#websocket-ping-event)
-  * ['pong'](#websocket-pong-event)
-  * ['error'](#websocket-error-event)
-  * ['close'](#websocket-close-event)
+  * [open](#websocket-open-event)
+  * [message](#websocket-message-event)
+  * [ping](#websocket-ping-event)
+  * [pong](#websocket-pong-event)
+  * [error](#websocket-error-event)
+  * [close](#websocket-close-event)
 
 #### websocket 'open' event
 Emitted when the WebSocket protocol handshake is complete.
