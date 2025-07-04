@@ -121,12 +121,12 @@ Options:
   * `maxMessageLength` - `<number>` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
 
 Events:
-  * [open](#websocket-open-event)
-  * [message](#websocket-message-event)
-  * [ping](#websocket-ping-event)
-  * [pong](#websocket-pong-event)
-  * [error](#websocket-error-event)
-  * [close](#websocket-close-event)
+  * [`'open'`](#websocket-open-event)
+  * [`'message'`](#websocket-message-event)
+  * [`'ping'`](#websocket-ping-event)
+  * [`'pong'`](#websocket-pong-event)
+  * [`'error'`](#websocket-error-event)
+  * [`'close'`](#websocket-close-event)
 
 #### websocket `'open'` event
 Emitted when the WebSocket protocol handshake is complete.
@@ -135,35 +135,35 @@ Emitted when the WebSocket protocol handshake is complete.
 websocket.on('open', ()=>()) -> ()
 ```
 
-#### websocket 'message' event
+#### websocket `'message'` event
 Emitted upon receipt and successful decoding (and reassembly, if applicable) of an incoming message.
 
 ```coffeescript [specscript]
 websocket.on('message', (message Buffer)=>()) -> ()
 ```
 
-#### websocket 'ping' event
+#### websocket `'ping'` event
 Emitted upon receipt and successful decoding of an incoming "ping" message.
 
 ```coffeescript [specscript]
 websocket.on('ping', (payload Buffer)=>()) -> ()
 ```
 
-#### websocket 'pong' event
+#### websocket `'pong'` event
 Emitted upon receipt and successful decoding of an incoming "pong" message.
 
 ```coffeescript [specscript]
 websocket.on('pong', (payload Buffer)=>()) -> ()
 ```
 
-#### websocket 'error' event
+#### websocket `'error'` event
 Emitted if any errors occur during construction, in any method calls, or on the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
 
 ```coffeescript [specscript]
 websocket.on('error', (error Error)=>()) -> ()
 ```
 
-#### websocket 'close' event
+#### websocket `'close'` event
 Emitted when the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) is destroyed. The `'close'` event can be emitted after a call to the [websocket.close](#websocketclose) method.
 
 ```coffeescript [specscript]
