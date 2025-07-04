@@ -323,7 +323,7 @@ server.on('connection', (websocket WebSocket) => {
 ```
 
 ## Benchmarks
-Please find the published benchmark output inside the [benchmark-output](https://github.com/richytong/presidium-websocket/tree/master/benchmark-output) folder. You can run the benchmarks on your own system with the following command:
+Please find the published benchmark output inside the [benchmark-output](https://github.com/richytong/presidium-websocket/tree/master/benchmark-output) folder. You can run the benchmarks on your own system using the following command:
 ```
 npm run bench
 ```
