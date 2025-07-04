@@ -1,0 +1,43 @@
+ws ////////////////////////////////////////////////////////////////////////////
+
+Time: 30.095410221999998 seconds
+ws throughput:        754.7332920799113 messages/s
+ws messages:          22670
+
+Time: 30.090833148999998 seconds
+ws throughput:        734.2973647882679 messages/s
+ws messages:          22054
+
+Time: 30.093396398 seconds
+ws throughput:        762.5537931914678 messages/s
+ws messages:          22902
+
+Time: 30.095671631000002 seconds
+ws throughput:        746.1178005609903 messages/s
+ws messages:          22409
+
+Time: 30.093483377000002 seconds
+ws throughput:        745.481778061089 messages/s
+ws messages:          22389
+
+presidium /////////////////////////////////////////////////////////////////////
+
+Time: 30.089104480000003 seconds
+Presidium throughput: 795.2364497535796 messages/s
+Presidium messages:   23882
+
+Time: 30.090804648000002 seconds
+Presidium throughput: 751.3920377299843 messages/s
+Presidium messages:   22565
+
+Time: 30.088567443 seconds
+Presidium throughput: 757.370614936165 messages/s
+Presidium messages:   22743
+
+Time: 30.083320473 seconds
+Presidium throughput: 793.6879810873387 messages/s
+Presidium messages:   23828
+
+Time: 30.089762995 seconds
+Presidium throughput: 747.8672535254688 messages/s
+Presidium messages:   22458
