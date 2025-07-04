@@ -104,17 +104,18 @@ class WebSocketServer extends events.EventEmitter {
     this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
 
     if (options.secure) {
-      this._server = https.createServer(
-        { key: options.key, cert: options.cert },
-        this._handleRequest.bind(this)
-      )
+      this._server = https.createServer({
+        key: options.key,
+        cert: options.cert
+      })
     } else {
-      this._server = http.createServer(this._handleRequest.bind(this))
+      this._server = http.createServer()
     }
 
-    this.clients = new Set()
-
+    this._server.on('request', this._handleRequest.bind(this))
     this._server.on('upgrade', this._handleUpgrade.bind(this))
+
+    this.clients = new Set()
 
     this.on('error', unhandledErrorListener.bind(this))
 
