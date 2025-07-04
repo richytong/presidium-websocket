@@ -341,6 +341,8 @@ ws Avg Throughput:        721.359269165629
 
 Please find all of the published benchmark output inside the [benchmark-output](https://github.com/richytong/presidium-websocket/tree/master/benchmark-output) folder.
 
+### Running benchmarks on your own system
+
 Run benchmarks for [ws](https://github.com/websockets/ws):
 ```
 ./bench-ws
