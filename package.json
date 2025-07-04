@@ -10,6 +10,13 @@
     "url": "github:richytong/presidium-websocket"
   },
   "homepage": "https://github.com/richytong/presidium-websocket",
+  "files": [
+    "_internal",
+    "WebSocket.js",
+    "WebSocketServer.js",
+    "WebSocketSecureServer.js",
+    "index.js"
+  ],
   "keywords": [
     "compression",
     "permessage-deflate",
