@@ -1,0 +1,74 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const PresidiumWebSocket = require('./WebSocket')
+const PresidiumWebSocketServer = require('./WebSocketServer')
+const sleep = require('./_internal/sleep')
+const package = require('./package.json')
+
+const presidiumMessages = []
+
+const start = performance.now()
+
+{ // Presidium
+
+  const server = new PresidiumWebSocketServer(websocket => {
+    websocket.on('message', message => {
+      websocket.send(message)
+    })
+  }, { maxMessageLength: 1024 * 1024 })
+  server.listen(1337)
+
+  const websocket = new PresidiumWebSocket('ws://localhost:1337')
+
+  websocket.on('message', message => {
+    presidiumMessages.push(message)
+  })
+
+  websocket.on('open', async () => {
+    while (true) {
+      websocket.send('small-message-16')
+      // websocket.send(Buffer.alloc(3 * 1024 * 1024))
+      await sleep(0)
+    }
+  })
+
+}
+
+setImmediate(async () => {
+  const writeStream = fs.createWriteStream(
+    `${__dirname}/benchmark-output/30s-presidium`,
+    { flags: 'w' }
+  )
+
+  function write(s) {
+    writeStream.write(s)
+    process.stdout.write(s)
+  }
+
+  write(`presidium-websocket@${package.version}`)
+  write(`\nOS ${os.release()}`)
+  write(`\nNode.js ${process.version}`)
+  write('\n\n')
+
+  let numDiffs = 0
+
+  while (true) {
+    const now = performance.now()
+    const presidiumThroughput = presidiumMessages.length / (now - start) * 1000
+
+    const logMessage = `
+Time: ${now / 1000} seconds
+Presidium throughput: ${presidiumThroughput} messages/s
+Presidium messages:   ${presidiumMessages.length}
+    `.trim()
+    write(logMessage)
+    write('\n\n')
+
+    if (now - start > 30000) {
+      process.exit()
+    }
+
+    await sleep(1000)
+  }
+})

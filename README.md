@@ -323,7 +323,23 @@ server.on('connection', (websocket WebSocket) => {
 ```
 
 ## Benchmarks
-Please find the published benchmark output inside the [benchmark-output](https://github.com/richytong/presidium-websocket/tree/master/benchmark-output) folder. You can run the benchmarks on your own system using the following command:
+Stats for 30 individual 30s runs of [bench-presidium](/bench-presidium) and [bench-ws](/bench-ws):
+```
+OS 6.15.4-arch2-1
+Node.js v22.12.0
+presidium-websocket@0.1.2
+ws@8.18.3
+
+Presidium Max Throughput: 773.9204074888052
+Presidium Min Throughput: 663.717446247961
+Presidium Avg Throughput: 740.4098268048717
+
+ws Max Throughput:        734.9618854401924
+ws Min Throughput:        699.1601014862653
+ws Avg Throughput:        721.359269165629
+```
+
+Please find all of the published benchmark output inside the [benchmark-output](https://github.com/richytong/presidium-websocket/tree/master/benchmark-output) folder. You can run the benchmarks on your own system using the following command:
 ```
 npm run bench
 ```

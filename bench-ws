@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const WSWebSocket = require('ws')
+const WSWebSocketServer = WSWebSocket.WebSocketServer
+const sleep = require('./_internal/sleep')
+const wsPackage = require('./node_modules/ws/package.json')
+
+const wsMessages = []
+
+const start = performance.now()
+
+
+{ // ws
+
+  const server = new WSWebSocketServer({ port: 1338 })
+  server.on('connection', ws => {
+    ws.on('message', message => {
+      ws.send(message)
+    })
+  })
+
+  const ws = new WSWebSocket('ws://localhost:1338')
+
+  ws.on('message', message => {
+    wsMessages.push(message)
+  })
+
+  ws.on('open', async () => {
+    while (true) {
+      ws.send('small-message-16')
+      // ws.send(Buffer.alloc(3 * 1024 * 1024))
+      await sleep(0)
+    }
+  })
+
+}
+
+setImmediate(async () => {
+  const writeStream = fs.createWriteStream(
+    `${__dirname}/benchmark-output/30s-ws`,
+    { flags: 'w' }
+  )
+
+  function write(s) {
+    writeStream.write(s)
+    process.stdout.write(s)
+  }
+
+  write(`ws@${wsPackage.version}`)
+  write(`\nOS ${os.release()}`)
+  write(`\nNode.js ${process.version}`)
+  write('\n\n')
+
+  let numDiffs = 0
+
+  while (true) {
+    const now = performance.now()
+    const wsThroughput = wsMessages.length / (now - start) * 1000
+
+    const logMessage = `
+Time: ${now / 1000} seconds
+ws throughput:        ${wsThroughput} messages/s
+ws messages:          ${wsMessages.length}
+    `.trim()
+    write(logMessage)
+    write('\n\n')
+
+    if (now - start > 30000) {
+      process.exit()
+    }
+
+    await sleep(1000)
+  }
+})

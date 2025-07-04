@@ -1,0 +1,78 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+
+function sum(array) {
+  let result = 0
+  for (const n of array) {
+    result += Number(n)
+  }
+  return result
+}
+
+async function main() {
+  const filepaths = fs.readdirSync(`${__dirname}/benchmark-output`)
+
+  const presidiumThroughputs = []
+  const wsThroughputs = []
+
+  for (const filepath of filepaths) {
+    if (
+      (filepath.includes('30s-ws-bo30') || filepath.includes('30s-presidium-bo30'))
+      && !filepath.includes('results')
+    ) {
+      const buffer = fs.readFileSync(`${__dirname}/benchmark-output/${filepath}`)
+      const content = buffer.toString('utf8')
+      const lines = content.split('\n')
+      const lastThroughputLine = lines.findLast(line => line.includes('messages/s'))
+      console.log(`${__dirname}/benchmark-output/${filepath}`)
+      console.log(lastThroughputLine)
+
+      const throughput = lastThroughputLine.match(/\d+\.\d+/g)[0]
+      if (lastThroughputLine.includes('Presidium throughput')) {
+        presidiumThroughputs.push(throughput)
+      } else if (lastThroughputLine.includes('ws throughput')) {
+        wsThroughputs.push(throughput)
+      }
+
+    }
+  }
+
+  console.log('Presidium Max Throughput:', Math.max(...presidiumThroughputs))
+  console.log('Presidium Min Throughput:', Math.min(...presidiumThroughputs))
+  console.log('Presidium Avg Throughput:', sum(presidiumThroughputs) / presidiumThroughputs.length)
+  console.log('ws Max Throughput:       ', Math.max(...wsThroughputs))
+  console.log('ws Min Throughput:       ', Math.min(...wsThroughputs))
+  console.log('ws Avg Throughput:       ', sum(wsThroughputs) / wsThroughputs.length)
+
+  /*
+  const buffer = fs.readFileSync(`${__dirname}/benchmark-output/v0.1.2-30s-results`)
+  const content = buffer.toString('utf8')
+
+  const presidiumThroughputs = []
+  const wsThroughputs = []
+
+  console.log(content)
+
+  for (const line of content.split('\n')) {
+    if (line.includes('messages/s')) {
+      const throughput = line.match(/\d+\.\d+/g)[0]
+      if (line.includes('Presidium throughput')) {
+        presidiumThroughputs.push(throughput)
+      } else if (line.includes('ws throughput')) {
+        wsThroughputs.push(throughput)
+      }
+    }
+  }
+
+  console.log('Presidium Max Throughput:', Math.max(...presidiumThroughputs))
+  console.log('Presidium Min Throughput:', Math.min(...presidiumThroughputs))
+  console.log('Presidium Avg Throughput:', sum(presidiumThroughputs) / presidiumThroughputs.length)
+  console.log('ws Max Throughput:       ', Math.max(...wsThroughputs))
+  console.log('ws Min Throughput:       ', Math.min(...wsThroughputs))
+  console.log('ws Avg Throughput:       ', sum(wsThroughputs) / wsThroughputs.length)
+  */
+
+}
+
+main()

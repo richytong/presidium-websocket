@@ -1,0 +1,128 @@
+OS 6.15.4-arch2-1
+Node.js v22.12.0
+presidium-websocket@0.1.2
+
+Time: 0.061124599 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+
+Time: 1.0644654230000001 seconds
+Presidium throughput: 665.8000251146417 messages/s
+Presidium messages:   681
+
+Time: 2.071495719 seconds
+Presidium throughput: 651.7691080730804 messages/s
+Presidium messages:   1323
+
+Time: 3.078625799 seconds
+Presidium throughput: 657.8882345591485 messages/s
+Presidium messages:   1998
+
+Time: 4.084528628 seconds
+Presidium throughput: 673.032925758882 messages/s
+Presidium messages:   2721
+
+Time: 5.091668632 seconds
+Presidium throughput: 679.5995397692511 messages/s
+Presidium messages:   3432
+
+Time: 6.097485215 seconds
+Presidium throughput: 686.6088806680885 messages/s
+Presidium messages:   4158
+
+Time: 7.102322114 seconds
+Presidium throughput: 691.5758286218082 messages/s
+Presidium messages:   4883
+
+Time: 8.10633007 seconds
+Presidium throughput: 699.2205531076196 messages/s
+Presidium messages:   5639
+
+Time: 9.111117979000001 seconds
+Presidium throughput: 703.7888009543869 messages/s
+Presidium messages:   6383
+
+Time: 10.11749518 seconds
+Presidium throughput: 706.4409813141422 messages/s
+Presidium messages:   7118
+
+Time: 11.123865558 seconds
+Presidium throughput: 710.2361311580007 messages/s
+Presidium messages:   7871
+
+Time: 12.129730668 seconds
+Presidium throughput: 713.4292113061949 messages/s
+Presidium messages:   8624
+
+Time: 13.134090013000002 seconds
+Presidium throughput: 716.0613155720002 messages/s
+Presidium messages:   9375
+
+Time: 14.139725956 seconds
+Presidium throughput: 717.8277253029172 messages/s
+Presidium messages:   10120
+
+Time: 15.143848371 seconds
+Presidium throughput: 719.695868182676 messages/s
+Presidium messages:   10869
+
+Time: 16.149505327 seconds
+Presidium throughput: 720.9519526016841 messages/s
+Presidium messages:   11613
+
+Time: 17.155703596 seconds
+Presidium throughput: 722.2712995568753 messages/s
+Presidium messages:   12361
+
+Time: 18.16186364 seconds
+Presidium throughput: 724.3838269356704 messages/s
+Presidium messages:   13126
+
+Time: 19.166112425999998 seconds
+Presidium throughput: 724.9348705745914 messages/s
+Presidium messages:   13864
+
+Time: 20.17120888 seconds
+Presidium throughput: 724.6552090155338 messages/s
+Presidium messages:   14587
+
+Time: 21.176436398 seconds
+Presidium throughput: 725.1547000222316 messages/s
+Presidium messages:   15326
+
+Time: 22.181227635 seconds
+Presidium throughput: 725.3069572079481 messages/s
+Presidium messages:   16058
+
+Time: 23.186192565000002 seconds
+Presidium throughput: 726.3046840055923 messages/s
+Presidium messages:   16810
+
+Time: 24.187784094999998 seconds
+Presidium throughput: 728.0664300095931 messages/s
+Presidium messages:   17580
+
+Time: 25.191694341999998 seconds
+Presidium throughput: 728.4674887344863 messages/s
+Presidium messages:   18321
+
+Time: 26.197771902 seconds
+Presidium throughput: 730.9183555637086 messages/s
+Presidium messages:   19118
+
+Time: 27.201710058 seconds
+Presidium throughput: 731.8463049379861 messages/s
+Presidium messages:   19877
+
+Time: 28.20566862 seconds
+Presidium throughput: 732.2104799177841 messages/s
+Presidium messages:   20622
+
+Time: 29.211638448000002 seconds
+Presidium throughput: 732.9447393452955 messages/s
+Presidium messages:   21380
+
+Time: 30.215726262 seconds
+Presidium throughput: 734.4711853178771 messages/s
+Presidium messages:   22162
+
