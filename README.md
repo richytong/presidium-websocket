@@ -103,7 +103,7 @@ npm i presidium-websocket
 ## Docs
 
 ### WebSocket
-Create a Presidium WebSocket client.
+Constructs a Presidium WebSocket client.
 
 ```coffeescript [specscript]
 new WebSocket(url string) -> websocket WebSocket
@@ -225,7 +225,7 @@ websocket.destroy(payload Buffer|string) -> ()
 ```
 
 ### WebSocket.Server
-Create a Presidium WebSocket server.
+Constructs a Presidium WebSocket server.
 
 ```coffeescript [specscript]
 module http 'https://nodejs.org/api/http.html'
@@ -270,7 +270,7 @@ server.on('connection', (websocket WebSocket) => {
 ```
 
 ### WebSocket.SecureServer
-Create a Presidium WebSocket Secure (WSS) server.
+Constructs a Presidium WebSocket Secure (WSS) server.
 
 ```coffeescript [specscript]
 module http 'https://nodejs.org/api/http.html'
