@@ -1,0 +1,220 @@
+presidium-websocket@0.1.2
+ws@8.18.3
+
+Time: 0.082130352 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        0 messages/s
+ws messages:          0
+diff throughput:      0 messages/s
+
+Time: 1.083193487 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        637.6720667377156 messages/s
+ws messages:          653
+diff throughput:      -637.6720667377156 messages/s
+
+Time: 2.0846451999999998 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        630.958733174919 messages/s
+ws messages:          1278
+diff throughput:      -630.958733174919 messages/s
+
+Time: 3.084116997 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        669.0995711101831 messages/s
+ws messages:          2024
+diff throughput:      -669.0995711101831 messages/s
+
+Time: 4.08440009 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        713.2486995821647 messages/s
+ws messages:          2871
+diff throughput:      -713.2486995821647 messages/s
+
+Time: 5.084647287 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        725.1032598529536 messages/s
+ws messages:          3644
+diff throughput:      -725.1032598529536 messages/s
+
+Time: 6.085690821 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        731.7638156261277 messages/s
+ws messages:          4410
+diff throughput:      -731.7638156261277 messages/s
+
+Time: 7.086160666 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        735.3062025387276 messages/s
+ws messages:          5167
+diff throughput:      -735.3062025387276 messages/s
+
+Time: 8.086554378 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        735.2319940096356 messages/s
+ws messages:          5902
+diff throughput:      -735.2319940096356 messages/s
+
+Time: 9.086272238 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        736.4478246523224 messages/s
+ws messages:          6648
+diff throughput:      -736.4478246523224 messages/s
+
+Time: 10.087195994 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        736.8339297450713 messages/s
+ws messages:          7389
+diff throughput:      -736.8339297450713 messages/s
+
+Time: 11.088187345 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        737.2361055233998 messages/s
+ws messages:          8131
+diff throughput:      -737.2361055233998 messages/s
+
+Time: 12.088716882 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        737.849053980136 messages/s
+ws messages:          8876
+diff throughput:      -737.849053980136 messages/s
+
+Time: 13.088556226000001 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        738.0232358983851 messages/s
+ws messages:          9616
+diff throughput:      -738.0232358983851 messages/s
+
+Time: 14.089329659 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        738.1234451064968 messages/s
+ws messages:          10356
+diff throughput:      -738.1234451064968 messages/s
+
+Time: 15.089195194 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        738.7206362808544 messages/s
+ws messages:          11103
+diff throughput:      -738.7206362808544 messages/s
+
+Time: 16.089360906 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        739.2918672157687 messages/s
+ws messages:          11851
+diff throughput:      -739.2918672157687 messages/s
+
+Time: 17.090146749 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        739.1819009431335 messages/s
+ws messages:          12589
+diff throughput:      -739.1819009431335 messages/s
+
+Time: 18.090675126999997 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        739.1501527360871 messages/s
+ws messages:          13328
+diff throughput:      -739.1501527360871 messages/s
+
+Time: 19.090445638000002 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        744.5107707961783 messages/s
+ws messages:          14169
+diff throughput:      -744.5107707961783 messages/s
+
+Time: 20.091088733 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        744.211770091783 messages/s
+ws messages:          14908
+diff throughput:      -744.211770091783 messages/s
+
+Time: 21.092075914000002 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        745.3078403690554 messages/s
+ws messages:          15676
+diff throughput:      -745.3078403690554 messages/s
+
+Time: 22.092748164 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        749.4465721024208 messages/s
+ws messages:          16513
+diff throughput:      -749.4465721024208 messages/s
+
+Time: 23.092502151 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        750.6508175257974 messages/s
+ws messages:          17290
+diff throughput:      -750.6508175257974 messages/s
+
+Time: 24.093105182 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        750.1472180870679 messages/s
+ws messages:          18029
+diff throughput:      -750.1472180870679 messages/s
+
+Time: 25.093350435 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        749.4549172384375 messages/s
+ws messages:          18762
+diff throughput:      -749.4549172384375 messages/s
+
+Time: 26.094075981000003 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        749.3397380377253 messages/s
+ws messages:          19509
+diff throughput:      -749.3397380377253 messages/s
+
+Time: 27.094583288000003 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        749.0911796073406 messages/s
+ws messages:          20252
+diff throughput:      -749.0911796073406 messages/s
+
+Time: 28.094656666 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        748.7649451455266 messages/s
+ws messages:          20992
+diff throughput:      -748.7649451455266 messages/s
+
+Time: 29.094384954000002 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        748.3323156383507 messages/s
+ws messages:          21728
+diff throughput:      -748.3323156383507 messages/s
+
+Time: 30.094342543 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+ws throughput:        748.7551337863956 messages/s
+ws messages:          22489
+diff throughput:      -748.7551337863956 messages/s
+
