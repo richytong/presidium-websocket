@@ -339,9 +339,16 @@ ws Min Throughput:        699.1601014862653
 ws Avg Throughput:        721.359269165629
 ```
 
-Please find all of the published benchmark output inside the [benchmark-output](https://github.com/richytong/presidium-websocket/tree/master/benchmark-output) folder. You can run the benchmarks on your own system using the following command:
+Please find all of the published benchmark output inside the [benchmark-output](https://github.com/richytong/presidium-websocket/tree/master/benchmark-output) folder.
+
+Run benchmarks for [ws](https://github.com/websockets/ws):
 ```
-npm run bench
+./bench-ws
+```
+
+Run benchmarks for presidium-websocket:
+```
+./bench-presidium
 ```
 
 ## Contributing

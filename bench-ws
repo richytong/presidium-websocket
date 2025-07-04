@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs')
+const os = require('os')
 const WSWebSocket = require('ws')
 const WSWebSocketServer = WSWebSocket.WebSocketServer
 const sleep = require('./_internal/sleep')
