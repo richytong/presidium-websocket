@@ -128,7 +128,7 @@ Events:
   * [error](#websocket-error-event)
   * [close](#websocket-close-event)
 
-#### websocket 'open' event
+#### websocket `'open'` event
 Emitted when the WebSocket protocol handshake is complete.
 
 ```coffeescript [specscript]
