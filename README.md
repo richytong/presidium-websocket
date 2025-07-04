@@ -232,14 +232,14 @@ module http 'https://nodejs.org/api/http.html'
 module net 'https://nodejs.org/api/net.html'
 
 type WebSocketHandler = (websocket WebSocket)=>()
-type HttpHandler = (request http.ClientRequest, response http.ServerResponse)=>()
+type HTTPHandler = (request http.ClientRequest, response http.ServerResponse)=>()
 type UpgradeHandler = (request http.ClientRequest, socket net.Socket, head Buffer)=>()
 
 new WebSocket.Server() -> server WebSocket.Server
 new WebSocket.Server(websocketHandler WebSocketHandler) -> server WebSocket.Server
 
 new WebSocket.Server(websocketHandler WebSocketHandler, options {
-  httpHandler: HttpHandler,
+  httpHandler: HTTPHandler,
   secure: boolean,
   key: string,
   cert: string,
@@ -249,7 +249,7 @@ new WebSocket.Server(websocketHandler WebSocketHandler, options {
 
 new WebSocket.Server(options {
   websocketHandler: WebSocketHandler,
-  httpHandler: HttpHandler,
+  httpHandler: HTTPHandler,
   secure: boolean,
   key: string,
   cert: string,
@@ -258,7 +258,7 @@ new WebSocket.Server(options {
 }) -> server WebSocket.Server
 
 server.on('connection', websocketHandler) -> ()
-server.on('request', httpHandler) -> ()
+server.on('request', httpHandler HTTPHandler) -> ()
 server.on('upgrade', upgradeHandler) -> ()
 server.on('error', (error Error)=>()) -> ()
 server.on('close', ()=>()) -> ()
@@ -281,7 +281,7 @@ module http 'https://nodejs.org/api/http.html'
 module net 'https://nodejs.org/api/net.html'
 
 type WebSocketHandler = (websocket WebSocket)=>()
-type HttpHandler = (request http.ClientRequest, response http.ServerResponse)=>()
+type HTTPHandler = (request http.ClientRequest, response http.ServerResponse)=>()
 type UpgradeHandler = (request http.ClientRequest, socket net.Socket, head Buffer)=>()
 
 new WebSocket.SecureServer(options {
@@ -290,7 +290,7 @@ new WebSocket.SecureServer(options {
 }) -> server WebSocket.SecureServer
 
 new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
-  httpHandler: HttpHandler,
+  httpHandler: HTTPHandler,
   key: string,
   cert: string,
   perMessageDeflate: boolean,
@@ -299,7 +299,7 @@ new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
 
 new WebSocket.SecureServer(options {
   websocketHandler: WebSocketHandler,
-  httpHandler: HttpHandler,
+  httpHandler: HTTPHandler,
   key: string,
   cert: string,
   perMessageDeflate: boolean,
@@ -307,7 +307,7 @@ new WebSocket.SecureServer(options {
 }) -> server WebSocket.SecureServer
 
 server.on('connection', websocketHandler) -> ()
-server.on('request', httpHandler) -> ()
+server.on('request', httpHandler HTTPHandler) -> ()
 server.on('upgrade', upgradeHandler) -> ()
 server.on('error', (error Error)=>()) -> ()
 server.on('close', ()=>()) -> ()
