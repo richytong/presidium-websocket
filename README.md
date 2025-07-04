@@ -116,9 +116,9 @@ new WebSocket(url string, options {
 ```
 
 Options:
-  * `rejectUnauthorized` - `<boolean>` - if `true`, the client verifies the server's certificate against a list of pre-approved certificate authorities (CAs). An `'error'` event is emitted if verification fails; `err.code` contains the OpenSSL error code. Defaults to `true`.
-  * `autoConnect` - `<boolean>` - if `true`, establishes the underlying TCP connection automatically upon construction. Defaults to `true`.
-  * `maxMessageLength` - `<number>` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
+  * `rejectUnauthorized` - if `true`, the client verifies the server's certificate against a list of pre-approved certificate authorities (CAs). An `'error'` event is emitted if verification fails; `err.code` contains the OpenSSL error code. Defaults to `true`.
+  * `autoConnect` - if `true`, establishes the underlying TCP connection automatically upon construction. Defaults to `true`.
+  * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
 
 Events:
   * [open](#websocket-open-event)
