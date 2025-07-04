@@ -259,7 +259,7 @@ new WebSocket.Server(options {
 
 server.on('connection', websocketHandler WebSocketHandler) -> ()
 server.on('request', httpHandler HTTPHandler) -> ()
-server.on('upgrade', upgradeHandler) -> ()
+server.on('upgrade', upgradeHandler UpgradeHandler) -> ()
 server.on('error', (error Error)=>()) -> ()
 server.on('close', ()=>()) -> ()
 
@@ -308,7 +308,7 @@ new WebSocket.SecureServer(options {
 
 server.on('connection', websocketHandler WebSocketHandler) -> ()
 server.on('request', httpHandler HTTPHandler) -> ()
-server.on('upgrade', upgradeHandler) -> ()
+server.on('upgrade', upgradeHandler UpgradeHandler) -> ()
 server.on('error', (error Error)=>()) -> ()
 server.on('close', ()=>()) -> ()
 
