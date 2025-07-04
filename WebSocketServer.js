@@ -101,6 +101,8 @@ class WebSocketServer extends events.EventEmitter {
       this.perMessageDeflate = options.perMessageDeflate
     }
 
+    this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
+
     if (options.secure) {
       this._server = https.createServer(
         { key: options.key, cert: options.cert },
@@ -187,7 +189,9 @@ class WebSocketServer extends events.EventEmitter {
    */
   _handleDataFrames(socket, request, head) {
     const chunks = new LinkedList()
-    const websocket = new ServerWebSocket(socket)
+    const websocket = new ServerWebSocket(socket, {
+      maxMessageLength: this._maxMessageLength
+    })
 
     this.emit('connection', websocket, request, head)
     this._websocketHandler(websocket, request, head)

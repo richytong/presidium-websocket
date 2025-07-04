@@ -2,18 +2,18 @@ const events = require('events')
 const encodeWebSocketFrame = require('./encodeWebSocketFrame')
 const unhandledErrorListener = require('./unhandledErrorListener')
 
-const MESSAGE_MAX_LENGTH_BYTES = 1024 * 1024
-
 /**
  * @name ServerWebsocket
  *
  * @docs
  * ```coffeescript [specscript]
- * new ServerWebsocket(socket net.Socket) -> websocket ServerWebsocket
+ * new ServerWebsocket(socket net.Socket, options {
+ *   maxMessageLength: number
+ * }) -> websocket ServerWebsocket
  * ```
  */
 class ServerWebsocket extends events.EventEmitter {
-  constructor(socket) {
+  constructor(socket, options) {
     super()
     this._socket = socket
     this.perMessageDeflate = socket._perMessageDeflate
@@ -23,6 +23,8 @@ class ServerWebsocket extends events.EventEmitter {
     this._socket.on('error', error => {
       this.emit('error', error)
     })
+
+    this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
 
     this._continuationPayloads = []
   }
@@ -53,7 +55,7 @@ class ServerWebsocket extends events.EventEmitter {
       return undefined
     }
 
-    if (buffer.length < MESSAGE_MAX_LENGTH_BYTES) { // unfragmented
+    if (buffer.length < this._maxMessageLength) { // unfragmented
       this._socket.write(encodeWebSocketFrame.call(
         this,
         buffer,
@@ -64,7 +66,7 @@ class ServerWebsocket extends events.EventEmitter {
       ))
     } else { // fragmented
       let index = 0
-      let fragment = buffer.slice(0, MESSAGE_MAX_LENGTH_BYTES)
+      let fragment = buffer.slice(0, this._maxMessageLength)
       this._socket.write(encodeWebSocketFrame.call(
         this,
         fragment,
@@ -75,11 +77,11 @@ class ServerWebsocket extends events.EventEmitter {
       ))
 
       // continuation frames
-      index += MESSAGE_MAX_LENGTH_BYTES
+      index += this._maxMessageLength
 
       while (index < payload.length) {
-        const fin = index + MESSAGE_MAX_LENGTH_BYTES >= payload.length
-        fragment = payload.slice(index, index + MESSAGE_MAX_LENGTH_BYTES)
+        const fin = index + this._maxMessageLength >= payload.length
+        fragment = payload.slice(index, index + this._maxMessageLength)
 
         this._socket.write(encodeWebSocketFrame.call(
           this,
@@ -90,7 +92,7 @@ class ServerWebsocket extends events.EventEmitter {
           this.perMessageDeflate
         ))
 
-        index += MESSAGE_MAX_LENGTH_BYTES
+        index += this._maxMessageLength
       }
     }
 

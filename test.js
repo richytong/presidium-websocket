@@ -691,6 +691,8 @@ describe('WebSocket.Server, WebSocket', () => {
     const messages = []
 
     const server = new WebSocket.Server(websocket => {
+      assert.equal(websocket._maxMessageLength, 1024 * 1024)
+
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
         messages.push(message)
@@ -700,7 +702,7 @@ describe('WebSocket.Server, WebSocket', () => {
       websocket.on('close', () => {
         server.close()
       })
-    })
+    }, { maxMessageLength: 1024 * 1024 })
 
     server.on('request', () => {
       didRequest = true
@@ -716,7 +718,10 @@ describe('WebSocket.Server, WebSocket', () => {
 
     server.listen(7357)
 
-    const websocket = new WebSocket('ws://localhost:7357')
+    const websocket = new WebSocket('ws://localhost:7357', {
+      maxMessageLength: 1024 * 1024
+    })
+    assert.equal(websocket._maxMessageLength, 1024 * 1024)
 
     websocket.on('message', message => {
       messages.push(message)
