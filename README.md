@@ -231,26 +231,30 @@ Constructs a Presidium WebSocket server.
 module http 'https://nodejs.org/api/http.html'
 module net 'https://nodejs.org/api/net.html'
 
-websocketHandler (websocket WebSocket)=>()
-httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
-upgradeHandler (request http.ClientRequest, socket net.Socket, head Buffer)=>()
+type WebSocketHandler = (websocket WebSocket)=>()
+type HttpHandler = (request http.ClientRequest, response http.ServerResponse)=>()
+type UpgradeHandler = (request http.ClientRequest, socket net.Socket, head Buffer)=>()
 
 new WebSocket.Server() -> server WebSocket.Server
-new WebSocket.Server(websocketHandler) -> server WebSocket.Server
+new WebSocket.Server(websocketHandler WebSocketHandler) -> server WebSocket.Server
 
-new WebSocket.Server(websocketHandler, options {
-  httpHandler: httpHandler,
+new WebSocket.Server(websocketHandler WebSocketHandler, options {
+  httpHandler: HttpHandler,
   secure: boolean,
   key: string,
-  cert: string
+  cert: string,
+  perMessageDeflate: boolean,
+  maxMessageLength: number
 }) -> server WebSocket.Server
 
 new WebSocket.Server(options {
-  websocketHandler: websocketHandler,
-  httpHandler: httpHandler,
+  websocketHandler: WebSocketHandler,
+  httpHandler: HttpHandler,
   secure: boolean,
   key: string,
-  cert: string
+  cert: string,
+  perMessageDeflate: boolean,
+  maxMessageLength: number
 }) -> server WebSocket.Server
 
 server.on('connection', websocketHandler) -> ()
@@ -276,26 +280,30 @@ Constructs a Presidium WebSocket Secure (WSS) server.
 module http 'https://nodejs.org/api/http.html'
 module net 'https://nodejs.org/api/net.html'
 
-websocketHandler (websocket WebSocket)=>()
-httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
-upgradeHandler (request http.ClientRequest, socket net.Socket, head Buffer)=>()
+type WebSocketHandler = (websocket WebSocket)=>()
+type HttpHandler = (request http.ClientRequest, response http.ServerResponse)=>()
+type UpgradeHandler = (request http.ClientRequest, socket net.Socket, head Buffer)=>()
 
 new WebSocket.SecureServer(options {
   key: string,
   cert: string
 }) -> server WebSocket.SecureServer
 
-new WebSocket.SecureServer(websocketHandler, options {
-  httpHandler: httpHandler,
+new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
+  httpHandler: HttpHandler,
   key: string,
-  cert: string
+  cert: string,
+  perMessageDeflate: boolean,
+  maxMessageLength: number
 }) -> server WebSocket.SecureServer
 
 new WebSocket.SecureServer(options {
-  websocketHandler: websocketHandler,
-  httpHandler: httpHandler,
+  websocketHandler: WebSocketHandler,
+  httpHandler: HttpHandler,
   key: string,
-  cert: string
+  cert: string,
+  perMessageDeflate: boolean,
+  maxMessageLength: number
 }) -> server WebSocket.SecureServer
 
 server.on('connection', websocketHandler) -> ()
