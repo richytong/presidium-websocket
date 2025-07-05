@@ -216,7 +216,8 @@ class WebSocketServer extends events.EventEmitter {
   _handleConnection(socket, request, head) {
     const chunks = new LinkedList()
     const websocket = new ServerWebSocket(socket, {
-      maxMessageLength: this._maxMessageLength
+      maxMessageLength: this._maxMessageLength,
+      socketBufferLength: this._socketBufferLength
     })
 
     this.connections.push(websocket)

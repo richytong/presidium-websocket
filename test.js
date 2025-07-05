@@ -832,7 +832,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('WebSocket.Server and WebSocket 3MB buffer exchange with 1MB maxMessageLength', async () => {
+  it('WebSocket.Server and WebSocket 3MB buffer exchange with 1MB maxMessageLength and 1MB socketBufferLength', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -844,6 +844,7 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const server = new WebSocket.Server(websocket => {
       assert.equal(websocket._maxMessageLength, 1024 * 1024)
+      assert.equal(websocket._socketBufferLength, 1024 * 1024)
 
       websocket.on('message', message => {
         assert.equal(server.connections.length, 1)
@@ -854,7 +855,10 @@ describe('WebSocket.Server, WebSocket', () => {
       websocket.on('close', () => {
         server.close()
       })
-    }, { maxMessageLength: 1024 * 1024 })
+    }, {
+      maxMessageLength: 1024 * 1024,
+      socketBufferLength: 1024 * 1024
+    })
 
     server.on('request', () => {
       didRequest = true
@@ -871,9 +875,11 @@ describe('WebSocket.Server, WebSocket', () => {
     server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357', {
-      maxMessageLength: 1024 * 1024
+      maxMessageLength: 1024 * 1024,
+      socketBufferLength: 1024 * 1024
     })
     assert.equal(websocket._maxMessageLength, 1024 * 1024)
+    assert.equal(websocket._socketBufferLength, 1024 * 1024)
 
     websocket.on('message', message => {
       messages.push(message)

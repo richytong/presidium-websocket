@@ -25,6 +25,7 @@ class ServerWebsocket extends events.EventEmitter {
     })
 
     this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
+    this._socketBufferLength = options.socketBufferLength ?? 100 * 1024
 
     this._continuationPayloads = []
 
