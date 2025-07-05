@@ -393,7 +393,7 @@ describe('WebSocket.Server, WebSocket', () => {
     })
 
     websocket.on('error', error => {
-      websocket.destroy()
+      assert.strictEqual(websocket.readyState, 3)
       resolve()
     })
 
@@ -437,14 +437,16 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
-  it('WebSocket port 80', async () => {
+  it('WebSocket port 80 with autoConnect false', async () => {
     const websocket = new WebSocket('ws://localhost/', { autoConnect: false })
     assert.equal(websocket.url.port, '80')
+    assert.strictEqual(websocket.readyState, 3) // not yet connecting
   })
 
-  it('WebSocket port 443', async () => {
+  it('WebSocket port 443 with autoConnect false', async () => {
     const websocket = new WebSocket('wss://localhost/', { autoConnect: false })
     assert.equal(websocket.url.port, '443')
+    assert.strictEqual(websocket.readyState, 3) // not yet connecting
   })
 
   it('WebSocket destroyed before handshake', async () => {
@@ -1310,8 +1312,10 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const errors = []
     websocket.on('error', error => {
+      assert.strictEqual(websocket.readyState, 3)
       errors.push(error)
       websocket.close()
+      server.close()
       resolve()
     })
 

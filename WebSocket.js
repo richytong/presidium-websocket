@@ -70,8 +70,6 @@ class WebSocket extends events.EventEmitter {
       this.url.port = 80
     }
 
-    this.readyState = 0 // CONNECTING
-
     this._connectOptions = {
       rejectUnauthorized: options.rejectUnauthorized ?? true,
       servername: net.isIP(this.url.hostname) ? '' : this.url.hostname
@@ -81,6 +79,8 @@ class WebSocket extends events.EventEmitter {
 
     this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
     this._socketBufferLength = options.socketBufferLength ?? 100 * 1024
+
+    this.readyState = 3 // CLOSED
 
     this._autoConnect = options.autoConnect ?? true
     if (this._autoConnect) {
@@ -100,7 +100,6 @@ class WebSocket extends events.EventEmitter {
    */
   connect() {
     if (this._socket) { // dispose existing
-      this.readyState = 0 // CONNECTING
       this._socket.destroy()
     }
 
@@ -132,7 +131,10 @@ class WebSocket extends events.EventEmitter {
       )
     }
 
+    this.readyState = 0 // CONNECTING
+
     this._socket.on('error', error => {
+      this.destroy()
       this.emit('error', error)
     })
 
@@ -225,6 +227,7 @@ class WebSocket extends events.EventEmitter {
       } = decodeResult
 
       if (!handshakeSucceeded) {
+        this.destroy()
         this.emit('error', new Error(message))
         return undefined
       }
