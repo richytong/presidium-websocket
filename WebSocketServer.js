@@ -299,8 +299,8 @@ class WebSocketServer extends events.EventEmitter {
 
       // The server must close the connection upon receiving a frame that is not masked
       if (!masked) {
-        websocket.sendClose()
-        // websocket.close()
+        websocket.sendClose('unmasked frame')
+        websocket.destroy()
         break
       }
 
@@ -342,10 +342,10 @@ class WebSocketServer extends events.EventEmitter {
           break
         case 0x8: // close frame
           if (websocket.sentClose) {
-            websocket.destroy()
+            websocket.destroy(payload)
           } else {
-            websocket.sendClose()
-            websocket.destroy()
+            websocket.sendClose(payload)
+            websocket.destroy(payload)
           }
           break
         case 0x9: // ping frame

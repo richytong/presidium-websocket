@@ -264,8 +264,9 @@ class WebSocket extends events.EventEmitter {
 
       // The client must close the connection upon receiving a frame that is masked
       if (masked) {
-        this.close()
-        return undefined
+        this.sendClose('masked frame')
+        this.destroy()
+        break
       }
 
       if (remaining.length > 0) {
@@ -303,10 +304,10 @@ class WebSocket extends events.EventEmitter {
         case 0x8: // close frame
           this.readyState = 2 // CLOSING
           if (this.sentClose) {
-            this.destroy()
+            this.destroy(payload)
           } else {
             this.sendClose()
-            this.destroy()
+            this.destroy(payload)
           }
           break
         case 0x9: // ping frame
@@ -469,14 +470,14 @@ class WebSocket extends events.EventEmitter {
    * Closes the websocket
    *
    * ```coffeescript [specscript]
-   * websocket.destroy() -> ()
+   * websocket.destroy(Buffer|string) -> ()
    * ```
    */
-  destroy() {
+  destroy(payload) {
     this._socket.destroy()
     this.closed = true
     this.readyState = 3 // CLOSED
-    this.emit('close')
+    this.emit('close', payload)
   }
 }
 

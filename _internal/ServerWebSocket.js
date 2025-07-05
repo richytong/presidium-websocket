@@ -187,14 +187,14 @@ class ServerWebsocket extends events.EventEmitter {
    * Closes the websocket
    *
    * ```coffeescript [specscript]
-   * websocket.destroy() -> ()
+   * websocket.destroy(payload Buffer|string) -> ()
    * ```
    */
-  destroy() {
+  destroy(payload) {
     this._socket.destroy()
     this.closed = true
     this.readyState = 3 // CLOSED
-    this.emit('close')
+    this.emit('close', payload)
   }
 }
 

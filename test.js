@@ -5,6 +5,7 @@ const fs = require('fs')
 const http = require('http')
 const https = require('https')
 const sleep = require('./_internal/sleep')
+const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 const WebSocket = require('.')
 
 describe('WebSocket.Server, WebSocket', () => {
@@ -1502,6 +1503,90 @@ describe('WebSocket.Server, WebSocket', () => {
       () => new WebSocket('http://localhost:4507/'),
       new TypeError('URL protocol must be "ws" or "wss"')
     )
+  })
+
+  it('The server must close the connection upon receiving a frame that is not masked', async () => {
+    let resolve0
+    const promise0 = new Promise(_resolve => {
+      resolve0 = _resolve
+    })
+
+    const server = new WebSocket.Server()
+    server.on('connection', websocket => {
+      websocket.on('close', () => {
+        resolve0()
+      })
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('open', () => {
+      websocket._socket.write(encodeWebSocketFrame(
+        Buffer.from('willclose'),
+        0x1,
+        false, // mask
+        true, // fin
+        false, // perMessageDeflate
+      ))
+    })
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    websocket.on('error', error => {
+      console.error('websocket error', error)
+    })
+
+    websocket.on('close', message => {
+      assert.equal(message.toString('utf8'), 'unmasked frame')
+      resolve()
+    })
+
+    await promise
+    await promise0
+    server.close()
+  }).timeout(1000)
+
+  it('The client must close the connection upon receiving a frame that is masked', async () => {
+    let resolve0
+    const promise0 = new Promise(_resolve => {
+      resolve0 = _resolve
+    })
+
+    const server = new WebSocket.Server()
+    server.on('connection', websocket => {
+      websocket._socket.write(encodeWebSocketFrame(
+        Buffer.from('willclose'),
+        0x1,
+        true, // mask
+        true, // fin
+        false, // perMessageDeflate
+      ))
+
+      websocket.on('close', message => {
+        assert.equal(message.toString('utf8'), 'masked frame')
+        resolve0()
+      })
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    websocket.on('close', () => {
+      resolve()
+    })
+
+    await promise0
+    await promise
+    server.close()
   })
 
 })
