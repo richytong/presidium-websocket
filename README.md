@@ -250,8 +250,11 @@ new WebSocket.Server(websocketHandler WebSocketHandler) -> server WebSocket.Serv
 new WebSocket.Server(websocketHandler WebSocketHandler, options {
   httpHandler: HTTPHandler,
   secure: boolean,
-  key: string,
-  cert: string,
+  key: string|Array<string>|Buffer|Array<Buffer>|Array<{
+    pem: string|Buffer,
+    passphrase?: string
+  }>,
+  cert: string|Array<string>|Buffer|Array<Buffer>,
   perMessageDeflate: boolean,
   maxMessageLength: number,
   socketBufferLength: number
@@ -371,14 +374,20 @@ type WebSocketHandler = (websocket WebSocket)=>()
 type HTTPHandler = (request http.ClientRequest, response http.ServerResponse)=>()
 
 new WebSocket.SecureServer(options {
-  key: string,
-  cert: string
+  key: string|Array<string>|Buffer|Array<Buffer>|Array<{
+    pem: string|Buffer,
+    passphrase?: string
+  }>,
+  cert: string|Array<string>|Buffer|Array<Buffer>,
 }) -> server WebSocket.SecureServer
 
 new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
   httpHandler: HTTPHandler,
-  key: string,
-  cert: string,
+  key: string|Array<string>|Buffer|Array<Buffer>|Array<{
+    pem: string|Buffer,
+    passphrase?: string
+  }>,
+  cert: string|Array<string>|Buffer|Array<Buffer>,
   perMessageDeflate: boolean,
   maxMessageLength: number
   socketBufferLength: number
@@ -387,8 +396,11 @@ new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
 new WebSocket.SecureServer(options {
   websocketHandler: WebSocketHandler,
   httpHandler: HTTPHandler,
-  key: string,
-  cert: string,
+  key: string|Array<string>|Buffer|Array<Buffer>|Array<{
+    pem: string|Buffer,
+    passphrase?: string
+  }>,
+  cert: string|Array<string>|Buffer|Array<Buffer>,
   perMessageDeflate: boolean,
   maxMessageLength: number
   socketBufferLength: number
