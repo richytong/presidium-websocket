@@ -113,7 +113,7 @@ class WebSocket extends events.EventEmitter {
             callback: this._onread.bind(this)
           }
         },
-        this._handleTCPConnection.bind(this)
+        this._requestUpgrade.bind(this)
       )
     } else {
       this._socket = net.connect(
@@ -125,7 +125,7 @@ class WebSocket extends events.EventEmitter {
             callback: this._onread.bind(this)
           }
         },
-        this._handleTCPConnection.bind(this)
+        this._requestUpgrade.bind(this)
       )
     }
 
@@ -148,19 +148,18 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   _onread(nread, buffer) {
-    // console.log('client _onread', nread)
     this._socket.emit('data', Buffer.from(buffer.slice(0, nread)))
   }
 
   /**
-   * @name _handleTCPConnection
+   * @name _requestUpgrade
    *
    * @docs
    * ```coffeescript [specscript]
-   * websocket._handleTCPConnection() -> ()
+   * _requestUpgrade() -> ()
    * ```
    */
-  _handleTCPConnection() {
+  _requestUpgrade() {
     const key = crypto.randomBytes(16).toString('base64')
     this._socket.write(
       `GET ${this.url.pathname} HTTP/1.1\r\nHost: ${this.url.hostname}:${this.url.port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n\r\n`
@@ -196,7 +195,6 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks) {
-
     if (this.readyState === 0) { // process handshake
       let chunk = chunks.shift()
       let decodeResult = decodeWebSocketHandshakeResponse(chunk)
@@ -343,7 +341,6 @@ class WebSocket extends events.EventEmitter {
     }
 
     if (buffer.length <= this._maxMessageLength) { // unfragmented
-      // console.log('client send', buffer.length)
       this._socket.write(encodeWebSocketFrame.call(
         this,
         buffer,
