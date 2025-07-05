@@ -30,6 +30,18 @@ class ServerWebsocket extends events.EventEmitter {
   }
 
   /**
+   * @name connect
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * websocket.connect() -> ()
+   * ```
+   */
+  connect() {
+    this.emit('error', new Error('server WebSocket instances cannot use the connect method'))
+  }
+
+  /**
    * @name send
    *
    * @docs

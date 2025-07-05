@@ -1136,6 +1136,76 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
+  it('Server WebSocket error: Server WebSocket instances cannot use the connect method', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+    const errors = []
+
+    const server = new WebSocket.Server(websocket => {
+      websocket.on('message', message => {
+        assert.equal(server.clients.size, 1)
+        messages.push(message)
+        websocket.connect()
+      })
+
+      websocket.on('error', error => {
+        errors.push(error)
+        resolve()
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('error', error => {
+      errors.push(error)
+      resolve()
+    })
+
+    websocket.on('open', () => {
+      websocket.send('abc')
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 1)
+    assert.equal(messages[0].toString('utf8'), 'abc')
+    assert.equal(errors.length, 1)
+    assert.deepEqual(errors[0], new Error('server WebSocket instances cannot use the connect method'))
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
   it('WebSocket catches errors emitted on underlying socket', async () => {
     const server = new WebSocket.Server(websocket => {
       websocket.on('close', () => {
