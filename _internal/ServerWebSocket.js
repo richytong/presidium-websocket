@@ -29,7 +29,7 @@ class ServerWebsocket extends events.EventEmitter {
 
     this._continuationPayloads = []
 
-    this.readyState = 1 // OPEN
+    this.readyState = 0 // CONNECTING
   }
 
   /**

@@ -85,7 +85,6 @@ class WebSocketServer extends events.EventEmitter {
 
     let options
     if (args.length == 0) {
-      this._websocketHandler = noop
       options = {}
     } else if (args.length == 1) {
       if (typeof args[0] == 'function') {
@@ -93,12 +92,11 @@ class WebSocketServer extends events.EventEmitter {
         options = {}
       } else if (typeof args[0] == 'object') {
         options = args[0] ?? {}
-        this._websocketHandler = noop
       } else {
         throw new TypeError('bad options')
       }
     } else {
-      this._websocketHandler = args[0] ?? noop
+      this._websocketHandler = args[0]
       options = args[1] ?? {}
     }
 
@@ -220,10 +218,15 @@ class WebSocketServer extends events.EventEmitter {
       socketBufferLength: this._socketBufferLength
     })
 
+    this.emit('connection', websocket, request, head)
+    if (typeof this._websocketHandler == 'function') {
+      this._websocketHandler(websocket, request, head)
+    }
+
     this.connections.push(websocket)
     websocket.once('ping', thunkify5(
       call,
-      this._handleConnectionHandlers,
+      this._handleOpen,
       this,
       websocket,
       request,
@@ -246,20 +249,16 @@ class WebSocketServer extends events.EventEmitter {
   }
 
   /**
-   * @name _handleConnectionHandlers
+   * @name _handleOpen
    *
    * @docs
    * ```coffeescript [specscript]
-   * _handleConnectionHandlers(
-   *   websocket ServerWebSocket,
-   *   request http.ClientRequest,
-   *   head Buffer
-   * ) -> ()
+   * _handleOpen(websocket ServerWebSocket) -> ()
    * ```
    */
-  _handleConnectionHandlers(websocket, request, head) {
-    this.emit('connection', websocket, request, head)
-    this._websocketHandler(websocket, request, head)
+  _handleOpen(websocket) {
+    websocket.readyState = 1
+    this.emit('open')
   }
 
   /**

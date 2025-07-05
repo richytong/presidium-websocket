@@ -15,7 +15,7 @@ describe('WebSocket.Server, WebSocket', () => {
     let didRequest = false
 
     const server = new WebSocket.Server()
-    assert.equal(server._websocketHandler.name, 'noop')
+    assert.equal(server._websocketHandler, null)
     assert.equal(server._httpHandler.name, 'defaultHttpHandler')
     server.listen(7357)
     server.on('request', () => {
@@ -35,11 +35,11 @@ describe('WebSocket.Server, WebSocket', () => {
     const server2 = new WebSocket.Server(undefined, {
       httpHandler: testHandler
     })
-    assert.equal(server2._websocketHandler.name, 'noop')
+    assert.equal(server2._websocketHandler, null)
     assert.equal(server2._httpHandler, testHandler)
 
     const server3 = new WebSocket.Server(undefined, {})
-    assert.equal(server3._websocketHandler.name, 'noop')
+    assert.equal(server3._websocketHandler, null)
     assert.equal(server3._httpHandler.name, 'defaultHttpHandler')
 
     await sleep(100)
@@ -52,7 +52,7 @@ describe('WebSocket.Server, WebSocket', () => {
       cert: fs.readFileSync('./test/localhost.crt'),
       key: fs.readFileSync('./test/localhost.key')
     })
-    assert.equal(server._websocketHandler.name, 'noop')
+    assert.equal(server._websocketHandler, null)
     assert.equal(server._httpHandler.name, 'defaultHttpHandler')
 
     let resolve0
@@ -113,14 +113,14 @@ describe('WebSocket.Server, WebSocket', () => {
       cert: fs.readFileSync('./test/localhost.crt'),
       key: fs.readFileSync('./test/localhost.key')
     })
-    assert.equal(server2._websocketHandler.name, 'noop')
+    assert.equal(server2._websocketHandler, null)
     assert.equal(server2._httpHandler, testHandler)
 
     const server3 = new WebSocket.Server(undefined, {
       cert: fs.readFileSync('./test/localhost.crt'),
       key: fs.readFileSync('./test/localhost.key')
     })
-    assert.equal(server3._websocketHandler.name, 'noop')
+    assert.equal(server3._websocketHandler, null)
     assert.equal(server3._httpHandler.name, 'defaultHttpHandler')
 
     await sleep(100)
@@ -134,7 +134,7 @@ describe('WebSocket.Server, WebSocket', () => {
       key: fs.readFileSync('./test/localhost-encrypted.key'),
       passphrase: 'passphrase'
     })
-    assert.equal(server._websocketHandler.name, 'noop')
+    assert.equal(server._websocketHandler, null)
     assert.equal(server._httpHandler.name, 'defaultHttpHandler')
 
     let resolve0
@@ -196,7 +196,7 @@ describe('WebSocket.Server, WebSocket', () => {
       key: fs.readFileSync('./test/localhost-encrypted.key'),
       passphrase: 'passphrase'
     })
-    assert.equal(server2._websocketHandler.name, 'noop')
+    assert.equal(server2._websocketHandler, null)
     assert.equal(server2._httpHandler, testHandler)
 
     const server3 = new WebSocket.Server(undefined, {
@@ -204,7 +204,7 @@ describe('WebSocket.Server, WebSocket', () => {
       key: fs.readFileSync('./test/localhost-encrypted.key'),
       passphrase: 'passphrase'
     })
-    assert.equal(server3._websocketHandler.name, 'noop')
+    assert.equal(server3._websocketHandler, null)
     assert.equal(server3._httpHandler.name, 'defaultHttpHandler')
 
     await sleep(100)
@@ -585,6 +585,36 @@ describe('WebSocket.Server, WebSocket', () => {
     assert(didOpen)
   }).timeout(10000)
 
+  xit('WebSocket.Server attempts to send messages to client immediately without waiting for open event', async () => {
+    const server = new WebSocket.Server()
+    server.on('connection', websocket => {
+      websocket.send('test1')
+      websocket.send('test2')
+      websocket.send('test3')
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357/')
+    const messages = []
+    websocket.on('message', message => {
+      messages.push(message.toString())
+      if (messages.length === 3) {
+        server.close()
+      }
+    })
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    server.on('close', resolve)
+
+    await promise
+    console.log(messages)
+  })
+
   it('WebSocket.Server and WebSocket text exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
@@ -596,7 +626,10 @@ describe('WebSocket.Server, WebSocket', () => {
     const messages = []
 
     const server = new WebSocket.Server(websocket => {
-      assert.strictEqual(websocket.readyState, 1)
+      assert.strictEqual(websocket.readyState, 0) // CONNECTING
+      websocket.on('open', () => {
+        assert.strictEqual(websocket.readyState, 1) // OPEN
+      })
       websocket.on('message', message => {
         assert.equal(server.connections.length, 1)
         messages.push(message)
@@ -738,7 +771,12 @@ describe('WebSocket.Server, WebSocket', () => {
     }
 
     const server = new WebSocket.Server(websocket => {
+      let npings = 0
       websocket.on('ping', message => {
+        npings += 1
+        if (npings === 1) { // discard initial ping from client
+          return
+        }
         assert.equal(message.toString('utf8'), 'test')
         pingPongResults.serverGotPing = true
         websocket.sendPing('test')
@@ -1601,7 +1639,12 @@ describe('WebSocket.Server, WebSocket', () => {
     })
 
     const server = new WebSocket.Server(websocket => {
+      let npings = 0
       websocket.on('ping', () => {
+        npings += 1
+        if (npings === 1) { // discard initial ping from client
+          return
+        }
         websocket._socket.emit('error', new Error('test2'))
       })
 
