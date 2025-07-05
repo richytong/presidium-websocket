@@ -255,6 +255,7 @@ new WebSocket.Server(websocketHandler WebSocketHandler, options {
     passphrase?: string
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
+  passphrase: string,
   perMessageDeflate: boolean,
   maxMessageLength: number,
   socketBufferLength: number
@@ -269,6 +270,7 @@ new WebSocket.Server(options {
     passphrase?: string
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
+  passphrase: string,
   perMessageDeflate: boolean,
   maxMessageLength: number,
   socketBufferLength: number
@@ -373,14 +375,6 @@ module net 'https://nodejs.org/api/net.html'
 type WebSocketHandler = (websocket WebSocket)=>()
 type HTTPHandler = (request http.ClientRequest, response http.ServerResponse)=>()
 
-new WebSocket.SecureServer(options {
-  key: string|Array<string>|Buffer|Array<Buffer>|Array<{
-    pem: string|Buffer,
-    passphrase?: string
-  }>,
-  cert: string|Array<string>|Buffer|Array<Buffer>,
-}) -> server WebSocket.SecureServer
-
 new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
   httpHandler: HTTPHandler,
   key: string|Array<string>|Buffer|Array<Buffer>|Array<{
@@ -388,6 +382,7 @@ new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
     passphrase?: string
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
+  passphrase: string,
   perMessageDeflate: boolean,
   maxMessageLength: number
   socketBufferLength: number
@@ -401,6 +396,7 @@ new WebSocket.SecureServer(options {
     passphrase?: string
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
+  passphrase: string,
   perMessageDeflate: boolean,
   maxMessageLength: number
   socketBufferLength: number
