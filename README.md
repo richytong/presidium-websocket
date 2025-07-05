@@ -268,7 +268,7 @@ new WebSocket.Server(websocketHandler WebSocketHandler, options {
   secure: boolean,
   key: string|Array<string>|Buffer|Array<Buffer>|Array<{
     pem: string|Buffer,
-    passphrase?: string
+    passphrase: string
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
   passphrase: string,
@@ -283,7 +283,7 @@ new WebSocket.Server(options {
   secure: boolean,
   key: string|Array<string>|Buffer|Array<Buffer>|Array<{
     pem: string|Buffer,
-    passphrase?: string
+    passphrase: string
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
   passphrase: string,
@@ -296,8 +296,9 @@ new WebSocket.Server(options {
 Options:
   * `httpHandler` - function that processes incoming HTTP requests from clients. Defaults to an HTTP handler that responds with `200 OK`.
   * `secure` - if `true`, starts an HTTPS server instead of an HTTP server. Clients must connect to the server using the `wss` protocol instead of the `ws` protocol. Requires `key` and `cert` options.
-  * `key` - private key(s) in PEM format. Multiple keys using different algorithms can be provided as an array of unencrypted key strings or buffers, or an array of objects in the form `{ pem: string|Buffer, passphrase?: string }`.
+  * `key` - private key(s) in PEM format. Encrypted keys will be decrypted using the `passphrase` option. Multiple keys using different algorithms can be provided as an array of unencrypted key strings or buffers, or an array of objects in the form `{ pem: string|Buffer, passphrase: string }`.
   * `cert` - cert chain(s) in PEM format. One cert chain should be provided per private key.
+  * `passphrase` - used to decrypt the private key(s).
   * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
   * `socketBufferLength` - length of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data.
@@ -395,7 +396,7 @@ new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
   httpHandler: HTTPHandler,
   key: string|Array<string>|Buffer|Array<Buffer>|Array<{
     pem: string|Buffer,
-    passphrase?: string
+    passphrase: string
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
   passphrase: string,
@@ -409,7 +410,7 @@ new WebSocket.SecureServer(options {
   httpHandler: HTTPHandler,
   key: string|Array<string>|Buffer|Array<Buffer>|Array<{
     pem: string|Buffer,
-    passphrase?: string
+    passphrase: string
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
   passphrase: string,
@@ -421,8 +422,9 @@ new WebSocket.SecureServer(options {
 
 Options:
   * `httpHandler` - function that processes incoming HTTP requests from clients. Defaults to an HTTP handler that responds with `200 OK`.
-  * `key` - private key(s) in PEM format. Multiple keys using different algorithms can be provided as an array of unencrypted key strings or buffers, or an array of objects in the form `{ pem: string|Buffer, passphrase?: string }`.
+  * `key` - private key(s) in PEM format. Encrypted keys will be decrypted using the `passphrase` option. Multiple keys using different algorithms can be provided as an array of unencrypted key strings or buffers, or an array of objects in the form `{ pem: string|Buffer, passphrase: string }`.
   * `cert` - cert chain(s) in PEM format. One cert chain should be provided per private key.
+  * `passphrase` - used to decrypt the private key(s).
   * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
   * `socketBufferLength` - length of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data.
