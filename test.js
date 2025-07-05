@@ -966,7 +966,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it.only('Minimal WebSocket.Server and WebSocket 3MB string exchange with perMessageDeflate', async () => {
+  it('Minimal WebSocket.Server and WebSocket 3MB string exchange with perMessageDeflate', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
