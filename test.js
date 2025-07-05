@@ -496,7 +496,7 @@ describe('WebSocket.Server, WebSocket', () => {
     const server = new WebSocket.Server(websocket => {
       assert.strictEqual(websocket.readyState, 1)
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send('pong')
       })
@@ -554,7 +554,7 @@ describe('WebSocket.Server, WebSocket', () => {
     assert(Buffer.isBuffer(messages[1]))
     assert.equal(messages[0].toString('utf8'), 'ping')
     assert.equal(messages[1].toString('utf8'), 'pong')
-    assert.equal(server.connections.size, 0)
+    assert.equal(server.connections.length, 0)
     server.close()
 
     await sleep(100)
@@ -572,7 +572,7 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send('pong')
       })
@@ -655,7 +655,7 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send(Buffer.from('pong'))
       })
@@ -782,7 +782,7 @@ describe('WebSocket.Server, WebSocket', () => {
       assert.equal(websocket._maxMessageLength, 1024 * 1024)
 
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send(Buffer.alloc(3 * 1024 * 1024))
       })
@@ -847,7 +847,7 @@ describe('WebSocket.Server, WebSocket', () => {
       assert.equal(websocket._maxMessageLength, 3 * 1024 * 1024)
 
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send(Buffer.alloc(3 * 1024 * 1024))
       })
@@ -915,7 +915,7 @@ describe('WebSocket.Server, WebSocket', () => {
     const server = new WebSocket.Server(websocket => {
       assert.strictEqual(websocket.perMessageDeflate, true)
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send(Buffer.alloc(3 * 1024 * 1024))
       })
@@ -978,7 +978,7 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send(Buffer.alloc(65535))
       })
@@ -1038,7 +1038,7 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send(new Uint8Array([4, 5, 6]))
       })
@@ -1103,7 +1103,7 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send(new Uint8Array([4, 5, 6]))
       })
@@ -1167,7 +1167,7 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.send(1)
       })
@@ -1237,7 +1237,7 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const server = new WebSocket.Server(websocket => {
       websocket.on('message', message => {
-        assert.equal(server.connections.size, 1)
+        assert.equal(server.connections.length, 1)
         messages.push(message)
         websocket.connect()
       })

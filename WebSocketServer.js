@@ -19,7 +19,9 @@ const curry2 = require('./_internal/curry2')
 const curry3 = require('./_internal/curry3')
 const append = require('./_internal/append')
 const call = require('./_internal/call')
+const remove = require('./_internal/remove')
 const thunkify1 = require('./_internal/thunkify1')
+const thunkify2 = require('./_internal/thunkify2')
 const thunkify3 = require('./_internal/thunkify3')
 const thunkify4 = require('./_internal/thunkify4')
 const functionConcatSync = require('./_internal/functionConcatSync')
@@ -124,7 +126,7 @@ class WebSocketServer extends events.EventEmitter {
     this._server.on('request', this._handleRequest.bind(this))
     this._server.on('upgrade', this._handleUpgrade.bind(this))
 
-    this.connections = new Set()
+    this.connections = []
 
     this.on('error', unhandledErrorListener.bind(this))
 
@@ -209,11 +211,10 @@ class WebSocketServer extends events.EventEmitter {
 
     this.emit('connection', websocket, request, head)
     this._websocketHandler(websocket, request, head)
-    this.connections.add(websocket)
+    this.connections.push(websocket)
 
-    websocket.on('close', thunkify3(
-      call,
-      this.connections.delete,
+    websocket.on('close', thunkify2(
+      remove,
       this.connections,
       websocket
     ))
