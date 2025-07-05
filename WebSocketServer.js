@@ -124,7 +124,7 @@ class WebSocketServer extends events.EventEmitter {
     this._server.on('request', this._handleRequest.bind(this))
     this._server.on('upgrade', this._handleUpgrade.bind(this))
 
-    this.clients = new Set()
+    this.connections = new Set()
 
     this.on('error', unhandledErrorListener.bind(this))
 
@@ -209,12 +209,12 @@ class WebSocketServer extends events.EventEmitter {
 
     this.emit('connection', websocket, request, head)
     this._websocketHandler(websocket, request, head)
-    this.clients.add(websocket)
+    this.connections.add(websocket)
 
     websocket.on('close', thunkify3(
       call,
-      this.clients.delete,
-      this.clients,
+      this.connections.delete,
+      this.connections,
       websocket
     ))
 
@@ -351,8 +351,8 @@ class WebSocketServer extends events.EventEmitter {
   close() {
     this._server.close()
     this.closed = true
-    this.clients.forEach(client => {
-      client.close()
+    this.connections.forEach(connection => {
+      connection.close()
     })
     this.emit('close')
   }
