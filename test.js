@@ -832,6 +832,77 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
+  it('WebSocket.Server and WebSocket 100 byte buffer exchange with 10 byte maxMessageLength and 10 byte socketBufferLength', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocket.Server(websocket => {
+      assert.equal(websocket._maxMessageLength, 10)
+      assert.equal(websocket._socketBufferLength, 10)
+
+      websocket.on('message', message => {
+        assert.equal(server.connections.length, 1)
+        messages.push(message)
+        websocket.send(Buffer.alloc(100))
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    }, {
+      maxMessageLength: 10,
+      socketBufferLength: 10
+    })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357', {
+      maxMessageLength: 10,
+      socketBufferLength: 10
+    })
+    assert.equal(websocket._maxMessageLength, 10)
+    assert.equal(websocket._socketBufferLength, 10)
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', () => {
+      websocket.send(Buffer.alloc(100))
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 2)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0].length, 100)
+    assert.equal(messages[1].length, 100)
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
   it('WebSocket.Server and WebSocket 3MB buffer exchange with 1MB maxMessageLength and 1MB socketBufferLength', async () => {
     let resolve
     const promise = new Promise(_resolve => {
