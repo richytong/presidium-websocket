@@ -313,6 +313,9 @@ Methods:
   * [server.listen](#serverlisten)
   * [server.close](#serverclose)
 
+Attributes:
+  * [server.connections](#serverconnections)
+
 #### server `'connection'` event
 Emitted when a new WebSocket connection is made to the server.
 
@@ -380,6 +383,13 @@ Stops the server from accepting new connections and closes all current connectio
 ```coffeescript [specscript]
 server.close() -> ()
 server.close(callback function) -> ()
+```
+
+#### server.connections
+An array of WebSocket client connections to the server.
+
+```coffeescript [specscript]
+server.connections -> Array<WebSocket>
 ```
 
 ### WebSocket.SecureServer
