@@ -5,6 +5,7 @@ const fs = require('fs')
 const http = require('http')
 const https = require('https')
 const zlib = require('zlib')
+const crypto = require('crypto')
 const sleep = require('./_internal/sleep')
 const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 const WebSocket = require('.')
@@ -449,6 +450,48 @@ describe('WebSocket.Server, WebSocket', () => {
     const websocket = new WebSocket('wss://localhost/', { autoConnect: false })
     assert.equal(websocket.url.port, '443')
     assert.strictEqual(websocket.readyState, 3) // not yet connecting
+  })
+
+  it('WebSocket send extra data with handshake', async () => {
+    let resolve0
+    const promise0 = new Promise(_resolve => {
+      resolve0 = _resolve
+    })
+
+    const server = new WebSocket.Server()
+    server.on('connection', (socket, request, head) => {
+      assert.equal(head.toString('utf8'), extradata)
+      resolve0()
+    })
+    server.listen(7357)
+    const websocket = new WebSocket('wss://localhost:7357/', { autoConnect: false })
+
+    let resolve1
+    const promise1 = new Promise(_resolve => {
+      resolve1 = _resolve
+    })
+
+    websocket._socket = net.connect({
+      port: 7357,
+      host: 'localhost',
+    }, resolve1)
+
+    await promise1
+
+    const key = crypto.randomBytes(16).toString('base64')
+    const extradata = 'extradata'
+
+    websocket._socket.write(
+      `GET / HTTP/1.1\r\nHost: localhost:7357\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n\r\n${extradata}`
+    )
+
+    websocket.readyState = 0
+    websocket._handleDataFrames()
+
+    await promise0
+    server.close()
+
+    await sleep(100)
   })
 
   it('WebSocket destroyed before handshake', async () => {
