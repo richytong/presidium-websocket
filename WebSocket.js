@@ -196,16 +196,8 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks) {
-    if (this._socket.destroyed) {
-      return undefined
-    }
-
-    if (chunks.length == 0) {
-      return undefined
-    }
 
     if (this.readyState === 0) { // process handshake
-
       let chunk = chunks.shift()
       let decodeResult = decodeWebSocketHandshakeResponse(chunk)
       while (decodeResult == null && chunks.length > 0) {

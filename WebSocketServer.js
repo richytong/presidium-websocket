@@ -274,17 +274,8 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks, websocket) {
-    if (websocket._socket.destroyed) {
-      return undefined
-    }
 
-    if (chunks.length == 0) {
-      return undefined
-    }
-
-    // process data frames
-    while (chunks.length > 0) {
-
+    while (chunks.length > 0) { // process data frames
       let chunk = chunks.shift()
       let decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
       while (decodeResult == null && chunks.length > 0) {
