@@ -70,7 +70,6 @@ class ServerWebsocket extends events.EventEmitter {
     }
 
     if (buffer.length <= this._maxMessageLength) { // unfragmented
-      // console.log('server send', buffer.length)
       this._socket.write(encodeWebSocketFrame.call(
         this,
         buffer,
@@ -96,7 +95,7 @@ class ServerWebsocket extends events.EventEmitter {
 
       while (index < payload.length) {
         const fin = index + this._maxMessageLength >= payload.length
-        fragment = payload.slice(index, index + this._maxMessageLength)
+        fragment = buffer.slice(index, index + this._maxMessageLength)
 
         this._socket.write(encodeWebSocketFrame.call(
           this,
