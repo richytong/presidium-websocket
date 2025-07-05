@@ -111,7 +111,8 @@ new WebSocket(url string) -> websocket WebSocket
 new WebSocket(url string, options {
   rejectUnauthorized: boolean,
   autoConnect: boolean,
-  maxMessageLength: number
+  maxMessageLength: number,
+  socketBufferLength: number
 }) -> websocket WebSocket
 ```
 
@@ -119,6 +120,7 @@ Options:
   * `rejectUnauthorized` - if `true`, the client verifies the server's certificate against a list of pre-approved certificate authorities (CAs). An [error](#websocket-error-event) event is emitted if verification fails; `err.code` contains the OpenSSL error code. Defaults to `true`.
   * `autoConnect` - if `true`, establishes the underlying TCP connection automatically upon construction. Defaults to `true`.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
+  * `socketBufferLength` - length of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data.
 
 Events:
   * [open](#websocket-open-event)
@@ -244,7 +246,8 @@ new WebSocket.Server(websocketHandler WebSocketHandler, options {
   key: string,
   cert: string,
   perMessageDeflate: boolean,
-  maxMessageLength: number
+  maxMessageLength: number,
+  socketBufferLength: number
 }) -> server WebSocket.Server
 
 new WebSocket.Server(options {
@@ -254,7 +257,8 @@ new WebSocket.Server(options {
   key: string,
   cert: string,
   perMessageDeflate: boolean,
-  maxMessageLength: number
+  maxMessageLength: number,
+  socketBufferLength: number
 }) -> server WebSocket.Server
 
 server.on('connection', websocketHandler WebSocketHandler) -> ()
@@ -295,6 +299,7 @@ new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
   cert: string,
   perMessageDeflate: boolean,
   maxMessageLength: number
+  socketBufferLength: number
 }) -> server WebSocket.SecureServer
 
 new WebSocket.SecureServer(options {
@@ -304,6 +309,7 @@ new WebSocket.SecureServer(options {
   cert: string,
   perMessageDeflate: boolean,
   maxMessageLength: number
+  socketBufferLength: number
 }) -> server WebSocket.SecureServer
 
 server.on('connection', websocketHandler WebSocketHandler) -> ()
