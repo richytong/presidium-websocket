@@ -9,14 +9,12 @@ const net = require('net')
 const tls = require('tls')
 const events = require('events')
 const crypto = require('crypto')
-const sleep = require('./_internal/sleep')
 const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const decodeWebSocketHandshakeResponse = require('./_internal/decodeWebSocketHandshakeResponse')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
 const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
-const curry2 = require('./_internal/curry2')
 const curry3 = require('./_internal/curry3')
 const append = require('./_internal/append')
 const call = require('./_internal/call')
@@ -242,6 +240,7 @@ class WebSocket extends events.EventEmitter {
       }
 
       this.readyState = 1 // OPEN
+      this.sendPing()
       this.emit('open')
 
       return undefined

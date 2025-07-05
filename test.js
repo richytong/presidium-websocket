@@ -483,6 +483,63 @@ describe('WebSocket.Server, WebSocket', () => {
     server.close()
   }).timeout(5000)
 
+  it('Server closes WebSocket immediately (websocket handler in constructor)', async () => {
+    const server = new WebSocket.Server((websocket, request, head) => {
+      websocket.close()
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357/')
+    assert.strictEqual(websocket.readyState, 0) // CONNECTING
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+    websocket.on('close', () => {
+      server.close()
+      resolve()
+    })
+
+    let didOpen = false
+    websocket.on('open', () => {
+      didOpen = true
+    })
+    await promise
+    assert.strictEqual(websocket.readyState, 3)
+    assert(didOpen)
+  }).timeout(10000)
+
+  it('Server closes WebSocket immediately (websocket handler in connection event)', async () => {
+    const server = new WebSocket.Server()
+
+    server.on('connection', (websocket, request, head) => {
+      websocket.close()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357/')
+    assert.strictEqual(websocket.readyState, 0) // CONNECTING
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+    websocket.on('close', () => {
+      server.close()
+      resolve()
+    })
+
+    let didOpen = false
+    websocket.on('open', () => {
+      didOpen = true
+    })
+    await promise
+    assert.strictEqual(websocket.readyState, 3)
+    assert(didOpen)
+  }).timeout(10000)
+
   it('Minimal WebSocket.Server and WebSocket text exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
@@ -748,7 +805,12 @@ describe('WebSocket.Server, WebSocket', () => {
       pingPongResults.clientGotPing = true
     })
 
+    let npongs = 0
     websocket.on('pong', message => {
+      npongs += 1
+      if (npongs === 1) { // discard initial pong from server
+        return
+      }
       assert.equal(message.toString('utf8'), 'test')
       pingPongResults.clientGotPong = true
       websocket.close()

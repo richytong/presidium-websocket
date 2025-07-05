@@ -11,19 +11,17 @@ const crypto = require('crypto')
 const events = require('events')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./_internal/ServerWebSocket')
-const sleep = require('./_internal/sleep')
 const unhandledErrorListener = require('./_internal/unhandledErrorListener')
 const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
-const curry2 = require('./_internal/curry2')
 const curry3 = require('./_internal/curry3')
 const append = require('./_internal/append')
 const call = require('./_internal/call')
 const remove = require('./_internal/remove')
 const thunkify1 = require('./_internal/thunkify1')
 const thunkify2 = require('./_internal/thunkify2')
-const thunkify3 = require('./_internal/thunkify3')
 const thunkify4 = require('./_internal/thunkify4')
+const thunkify5 = require('./_internal/thunkify5')
 const functionConcatSync = require('./_internal/functionConcatSync')
 const {
   kBuffer,
@@ -161,10 +159,7 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleUpgrade(request, socket, head) {
-    const buffer = Buffer.alloc(this._socketBufferLength)
-    socket._handle.useUserBuffer(buffer)
-    socket[kBuffer] = buffer
-    socket[kBufferCb] = _onread.bind(socket)
+    this._changeBuffer(socket)
 
     if (this.perMessageDeflate) {
       socket._perMessageDeflate = true
@@ -184,7 +179,7 @@ class WebSocketServer extends events.EventEmitter {
         `HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${acceptKey}\r\n${socket._perMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate\r\n' : ''}\r\n`
       )
 
-      this._handleDataFrames(socket, request, head)
+      this._handleConnection(socket, request, head)
 
     } else {
       socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
@@ -192,26 +187,47 @@ class WebSocketServer extends events.EventEmitter {
   }
 
   /**
-   * @name _handleDataFrames
+   * @name _changeBuffer
    *
    * @docs
    * ```coffeescript [specscript]
-   * server._handleDataFrames(
+   * _changeBuffer(socket net.Socket) -> ()
+   * ```
+   */
+  _changeBuffer(socket) {
+    const buffer = Buffer.alloc(this._socketBufferLength)
+    socket._handle.useUserBuffer(buffer)
+    socket[kBuffer] = buffer
+    socket[kBufferCb] = _onread.bind(socket)
+  }
+
+  /**
+   * @name _handleConnection
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * server._handleConnection(
    *   socket net.Socket,
    *   request http.ClientRequest,
    *   head Buffer
    * ) -> ()
    * ```
    */
-  _handleDataFrames(socket, request, head) {
+  _handleConnection(socket, request, head) {
     const chunks = new LinkedList()
     const websocket = new ServerWebSocket(socket, {
       maxMessageLength: this._maxMessageLength
     })
 
-    this.emit('connection', websocket, request, head)
-    this._websocketHandler(websocket, request, head)
     this.connections.push(websocket)
+    websocket.once('ping', thunkify5(
+      call,
+      this._handleConnectionHandlers,
+      this,
+      websocket,
+      request,
+      head
+    ))
 
     websocket.on('close', thunkify2(
       remove,
@@ -229,14 +245,31 @@ class WebSocketServer extends events.EventEmitter {
   }
 
   /**
+   * @name _handleConnectionHandlers
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * _handleConnectionHandlers(
+   *   websocket ServerWebSocket,
+   *   request http.ClientRequest,
+   *   head Buffer
+   * ) -> ()
+   * ```
+   */
+  _handleConnectionHandlers(websocket, request, head) {
+    this.emit('connection', websocket, request, head)
+    this._websocketHandler(websocket, request, head)
+  }
+
+  /**
    * @name _processChunk
    *
    * @docs
    * ```coffeescript [specscript]
-   * _processChunk(
+   * server._processChunk(
    *   chunks Array<Buffer>,
    *   websocket ServerWebSocket
-   * ) -> Promise<>
+   * ) -> ()
    * ```
    */
   _processChunk(chunks, websocket) {
