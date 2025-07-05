@@ -426,7 +426,7 @@ Methods:
   * [server.close](#serverclose)
 
 ## Benchmarks
-Stats for 30 individual 30s runs of [bench-presidium](/bench-presidium) and [bench-ws](/bench-ws):
+Stats for 30 individual 30s runs of [bench-presidium](/bench-presidium) and [bench-ws](/bench-ws) with a small (16 byte) buffer:
 ```
 OS 6.15.4-arch2-1
 Node.js v22.12.0
@@ -440,6 +440,22 @@ Presidium Avg Throughput: 740.4098268048717
 ws Max Throughput:        734.9618854401924
 ws Min Throughput:        699.1601014862653
 ws Avg Throughput:        721.359269165629
+```
+
+Single run results of [bench-presidium](/bench-presidium) and [bench-ws](/bench-ws) with a large (3MB) buffer:
+```
+OS 6.15.4-arch2-1
+Node.js v22.12.0
+presidium-websocket@0.1.2
+ws@8.18.3
+
+Time: 30.561878826 seconds
+Presidium throughput: 30.706097880478325 messages/s
+Presidium messages:   937
+
+Time: 30.536667375 seconds
+ws throughput:        32.7349797644342 messages/s
+ws messages:          998
 ```
 
 Please find all of the published benchmark output inside the [benchmark-output](https://github.com/richytong/presidium-websocket/tree/master/benchmark-output) folder.

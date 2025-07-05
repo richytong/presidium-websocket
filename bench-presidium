@@ -17,10 +17,16 @@ const start = performance.now()
     websocket.on('message', message => {
       websocket.send(message)
     })
-  }, { maxMessageLength: 1024 * 1024 })
+  }, {
+    maxMessageLength: 3 * 1024 * 1024,
+    socketBufferLength: 3 * 1024 * 1024
+  })
   server.listen(1337)
 
-  const websocket = new PresidiumWebSocket('ws://localhost:1337')
+  const websocket = new PresidiumWebSocket('ws://localhost:1337', {
+    // maxMessageLength: 3 * 1024 * 1024,
+    // socketBufferLength: 3 * 1024 * 1024
+  })
 
   websocket.on('message', message => {
     presidiumMessages.push(message)
@@ -39,6 +45,7 @@ const start = performance.now()
 setImmediate(async () => {
   const writeStream = fs.createWriteStream(
     `${__dirname}/benchmark-output/30s-presidium`,
+    // `${__dirname}/benchmark-output/30s-3MB-presidium`,
     { flags: 'w' }
   )
 

@@ -40,6 +40,7 @@ const start = performance.now()
 setImmediate(async () => {
   const writeStream = fs.createWriteStream(
     `${__dirname}/benchmark-output/30s-ws`,
+    // `${__dirname}/benchmark-output/30s-3MB-ws`,
     { flags: 'w' }
   )
 
