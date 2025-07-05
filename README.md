@@ -351,16 +351,16 @@ server.on('close', ()=>()) -> ()
 Starts the server listening on the port.
 
 ```coffeescript [specscript]
-server.listen(port number)
-server.listen(port number, callback function)
+server.listen(port number) -> ()
+server.listen(port number, callback function) -> ()
 ```
 
 #### server.close
 Stops the server from accepting new connections and closes all current connections.
 
 ```coffeescript [specscript]
-server.close()
-server.close(callback function)
+server.close() -> ()
+server.close(callback function) -> ()
 ```
 
 ### WebSocket.SecureServer
