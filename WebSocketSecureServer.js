@@ -1,5 +1,5 @@
 /**
- * presidium-websocket v0.2.1
+ * presidium-websocket v0.2.2
  * https://github.com/richytong/presidium-websocket
  * (c) 2025 Richard Tong
  * presidium-websocket may be freely distributed under the MIT license.
