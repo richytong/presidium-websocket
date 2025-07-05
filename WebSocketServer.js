@@ -352,7 +352,6 @@ class WebSocketServer extends events.EventEmitter {
     this._server.close()
     this.closed = true
     this.clients.forEach(client => {
-      client.sendClose()
       client.close()
     })
     this.emit('close')
