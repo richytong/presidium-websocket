@@ -270,10 +270,6 @@ new WebSocket.Server(options {
   maxMessageLength: number,
   socketBufferLength: number
 }) -> server WebSocket.Server
-
-server.listen(port number, callback function) -> ()
-
-server.close(callback function) -> ()
 ```
 
 Options:
