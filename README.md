@@ -130,6 +130,14 @@ Events:
   * [error](#websocket-error-event)
   * [close](#websocket-close-event)
 
+Methods:
+  * [websocket.send](#websocketsend)
+  * [websocket.sendClose](#websocketsendclose)
+  * [websocket.sendPing](#websocketsendping)
+  * [websocket.sendPong](#websocketsendpong)
+  * [websocket.close](#websocketclose)
+  * [websocket.destroy](#websocketdestroy)
+
 #### websocket `'open'` event
 Emitted when the WebSocket protocol handshake is complete.
 
@@ -159,7 +167,7 @@ websocket.on('pong', (payload Buffer)=>()) -> ()
 ```
 
 #### websocket `'error'` event
-Emitted if any errors occur during construction, in any method calls, or on the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
+Emitted if an error occurs on the WebSocket instance or on the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
 
 ```coffeescript [specscript]
 websocket.on('error', (error Error)=>()) -> ()
@@ -235,7 +243,6 @@ module net 'https://nodejs.org/api/net.html'
 
 type WebSocketHandler = (websocket WebSocket)=>()
 type HTTPHandler = (request http.ClientRequest, response http.ServerResponse)=>()
-type UpgradeHandler = (request http.ClientRequest, socket net.Socket, head Buffer)=>()
 
 new WebSocket.Server() -> server WebSocket.Server
 new WebSocket.Server(websocketHandler WebSocketHandler) -> server WebSocket.Server
@@ -254,19 +261,44 @@ new WebSocket.Server(options {
   websocketHandler: WebSocketHandler,
   httpHandler: HTTPHandler,
   secure: boolean,
-  key: string,
-  cert: string,
+  key: string|Array<string>|Buffer|Array<Buffer>|Array<{
+    pem: string|Buffer,
+    passphrase?: string
+  }>,
+  cert: string|Array<string>|Buffer|Array<Buffer>,
   perMessageDeflate: boolean,
   maxMessageLength: number,
   socketBufferLength: number
 }) -> server WebSocket.Server
 
-server.on('connection', websocketHandler WebSocketHandler) -> ()
-server.on('request', httpHandler HTTPHandler) -> ()
-server.on('upgrade', upgradeHandler UpgradeHandler) -> ()
-server.on('error', (error Error)=>()) -> ()
-server.on('close', ()=>()) -> ()
+server.listen(port number, callback function) -> ()
 
+server.close(callback function) -> ()
+```
+
+Options:
+  * `httpHandler` - function that processes incoming HTTP requests from clients. Defaults to an HTTP handler that responds with `200 OK`.
+  * `secure` - if `true`, starts an HTTPS server instead of an HTTP server. Clients must connect to the server using the `wss` protocol instead of the `ws` protocol. Requires `key` and `cert` options.
+  * `key` - private key(s) in PEM format. Multiple keys using different algorithms can be provided as an array of unencrypted key strings or buffers, or an array of objects in the form `{ pem: string|Buffer, passphrase?: string }`.
+  * `cert` - cert chain(s) in PEM format. One cert chain should be provided per private key.
+  * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
+  * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
+  * `socketBufferLength` - length of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data.
+
+Events:
+  * [connection](#server-connection-event)
+  * [request](#server-request-event)
+  * [upgrade](#server-upgrade-event)
+  * [close](#server-close-event)
+
+Methods:
+  * [server.listen](#serverlisten)
+  * [server.close](#serverclose)
+
+#### server `'connection'` event
+Emitted when a new WebSocket connection is made to the server.
+
+```coffeescript [specscript]
 server.on('connection', (websocket WebSocket) => {
   websocket.on('open', ()=>()) -> ()
   websocket.on('message', (message Buffer)=>()) -> ()
@@ -274,7 +306,62 @@ server.on('connection', (websocket WebSocket) => {
   websocket.on('pong', (payload Buffer)=>()) -> ()
   websocket.on('error', (error Error)=>()) -> ()
   websocket.on('close', ()=>()) -> ()
+
+  websocket.send(payload Buffer|string) -> ()
+  websocket.sendClose(payload Buffer|string) -> ()
+  websocket.sendPing(payload Buffer|string) -> ()
+  websocket.sendPong(payload Buffer|string) -> ()
+  websocket.close() -> ()
+  websocket.destroy() -> ()
 })
+```
+
+See [WebSocket](#websocket).
+
+#### server `'request'` event
+Emitted on each HTTP request to the server.
+
+```coffeescript [specscript]
+module http 'https://nodejs.org/api/http.html'
+
+type HTTPHandler = (request http.ClientRequest, response http.ServerResponse)=>()
+
+server.on('request', httpHandler HTTPHandler) -> ()
+```
+
+#### server `'upgrade'` event
+Emitted when a client requests an HTTP upgrade.
+
+```coffeescript [specscript]
+module http 'https://nodejs.org/api/http.html'
+module net 'https://nodejs.org/api/net.html'
+
+type UpgradeHandler = (request http.ClientRequest, socket net.Socket, head Buffer)=>()
+
+server.on('upgrade', upgradeHandler UpgradeHandler) -> ()
+```
+
+#### server `'close'` event
+Emitted when the server's [close](#serverclose) method is called.
+
+```coffeescript [specscript]
+server.on('close', ()=>()) -> ()
+```
+
+#### server.listen
+Starts the server listening on the port.
+
+```coffeescript [specscript]
+server.listen(port number)
+server.listen(port number, callback function)
+```
+
+#### server.close
+Stops the server from accepting new connections and closes all current connections.
+
+```coffeescript [specscript]
+server.close()
+server.close(callback function)
 ```
 
 ### WebSocket.SecureServer
@@ -286,7 +373,6 @@ module net 'https://nodejs.org/api/net.html'
 
 type WebSocketHandler = (websocket WebSocket)=>()
 type HTTPHandler = (request http.ClientRequest, response http.ServerResponse)=>()
-type UpgradeHandler = (request http.ClientRequest, socket net.Socket, head Buffer)=>()
 
 new WebSocket.SecureServer(options {
   key: string,
@@ -311,22 +397,25 @@ new WebSocket.SecureServer(options {
   maxMessageLength: number
   socketBufferLength: number
 }) -> server WebSocket.SecureServer
-
-server.on('connection', websocketHandler WebSocketHandler) -> ()
-server.on('request', httpHandler HTTPHandler) -> ()
-server.on('upgrade', upgradeHandler UpgradeHandler) -> ()
-server.on('error', (error Error)=>()) -> ()
-server.on('close', ()=>()) -> ()
-
-server.on('connection', (websocket WebSocket) => {
-  websocket.on('open', ()=>()) -> ()
-  websocket.on('message', (message Buffer)=>()) -> ()
-  websocket.on('ping', (payload Buffer)=>()) -> ()
-  websocket.on('pong', (payload Buffer)=>()) -> ()
-  websocket.on('error', (error Error)=>()) -> ()
-  websocket.on('close', ()=>()) -> ()
-})
 ```
+
+Options:
+  * `httpHandler` - function that processes incoming HTTP requests from clients. Defaults to an HTTP handler that responds with `200 OK`.
+  * `key` - private key(s) in PEM format. Multiple keys using different algorithms can be provided as an array of unencrypted key strings or buffers, or an array of objects in the form `{ pem: string|Buffer, passphrase?: string }`.
+  * `cert` - cert chain(s) in PEM format. One cert chain should be provided per private key.
+  * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
+  * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
+  * `socketBufferLength` - length of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data.
+
+Events:
+  * [connection](#server-connection-event)
+  * [request](#server-request-event)
+  * [upgrade](#server-upgrade-event)
+  * [close](#server-close-event)
+
+Methods:
+  * [server.listen](#serverlisten)
+  * [server.close](#serverclose)
 
 ## Benchmarks
 Stats for 30 individual 30s runs of [bench-presidium](/bench-presidium) and [bench-ws](/bench-ws):
