@@ -492,6 +492,7 @@ describe('WebSocket.Server, WebSocket', () => {
     const messages = []
 
     const server = new WebSocket.Server(websocket => {
+      assert.strictEqual(websocket.readyState, 1)
       websocket.on('message', message => {
         assert.equal(server.clients.size, 1)
         messages.push(message)
@@ -499,6 +500,7 @@ describe('WebSocket.Server, WebSocket', () => {
       })
 
       websocket.on('close', () => {
+        assert.strictEqual(websocket.readyState, 3)
         server.close()
       })
     })

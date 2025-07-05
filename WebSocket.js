@@ -472,8 +472,8 @@ class WebSocket extends events.EventEmitter {
    */
   destroy() {
     this._socket.destroy()
-    this.readyState = 3 // CLOSED
     this.closed = true
+    this.readyState = 3 // CLOSED
     this.emit('close')
   }
 }

@@ -27,6 +27,8 @@ class ServerWebsocket extends events.EventEmitter {
     this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
 
     this._continuationPayloads = []
+
+    this.readyState = 1 // OPEN
   }
 
   /**
@@ -175,6 +177,7 @@ class ServerWebsocket extends events.EventEmitter {
    * ```
    */
   close(payload = Buffer.from([])) {
+    this.readyState = 2 // CLOSING
     this.sendClose(payload)
   }
 
@@ -191,6 +194,7 @@ class ServerWebsocket extends events.EventEmitter {
   destroy() {
     this._socket.destroy()
     this.closed = true
+    this.readyState = 3 // CLOSED
     this.emit('close')
   }
 }
