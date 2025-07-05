@@ -46,8 +46,8 @@ describe('WebSocket.Server, WebSocket', () => {
     let didRequest = false
 
     const server = new WebSocket.SecureServer({
-      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
-      key: fs.readFileSync('./test/fixtures/key.pem')
+      cert: fs.readFileSync('./test/localhost.crt'),
+      key: fs.readFileSync('./test/localhost.key')
     })
     assert.equal(server._websocketHandler.name, 'noop')
     assert.equal(server._httpHandler.name, 'defaultHttpHandler')
@@ -107,15 +107,99 @@ describe('WebSocket.Server, WebSocket', () => {
     const testHandler = () => {}
     const server2 = new WebSocket.SecureServer(undefined, {
       httpHandler: testHandler,
-      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
-      key: fs.readFileSync('./test/fixtures/key.pem')
+      cert: fs.readFileSync('./test/localhost.crt'),
+      key: fs.readFileSync('./test/localhost.key')
     })
     assert.equal(server2._websocketHandler.name, 'noop')
     assert.equal(server2._httpHandler, testHandler)
 
     const server3 = new WebSocket.Server(undefined, {
-      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
-      key: fs.readFileSync('./test/fixtures/key.pem')
+      cert: fs.readFileSync('./test/localhost.crt'),
+      key: fs.readFileSync('./test/localhost.key')
+    })
+    assert.equal(server3._websocketHandler.name, 'noop')
+    assert.equal(server3._httpHandler.name, 'defaultHttpHandler')
+
+    await sleep(100)
+  }).timeout(10000)
+
+  it('WebSocket.SecureServer with encrypted private key handles HTTPS with 200 OK by default', async () => {
+    let didRequest = false
+
+    const server = new WebSocket.SecureServer({
+      cert: fs.readFileSync('./test/localhost-encrypted.crt'),
+      key: fs.readFileSync('./test/localhost-encrypted.key'),
+      passphrase: 'passphrase'
+    })
+    assert.equal(server._websocketHandler.name, 'noop')
+    assert.equal(server._httpHandler.name, 'defaultHttpHandler')
+
+    let resolve0
+    const promise0 = new Promise(_resolve => {
+      resolve0 = _resolve
+    })
+    server.listen(7357, () => {
+      resolve0()
+    })
+    await promise0
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    let resolve1
+    const promise1 = new Promise(_resolve => {
+      resolve1 = _resolve
+    })
+
+    const request = https.request({
+      hostname: 'localhost',
+      protocol: 'https:',
+      port: 7357,
+      path: '/',
+      method: 'GET',
+      rejectUnauthorized: false
+    }, resolve1)
+    request.end()
+
+    const response = await promise1
+
+    let resolve2
+    const promise2 = new Promise(_resolve => {
+      resolve2 = _resolve
+    })
+
+    const chunks = []
+    response.on('data', chunk => {
+      chunks.push(chunk)
+    })
+    response.on('end', () => {
+      resolve2(chunks.map(chunk => chunk.toString('utf8')).join(''))
+    })
+
+    const responseBodyText = await promise2
+
+    assert.equal(response.statusCode, 200)
+    assert.equal(responseBodyText, 'OK')
+    assert(didRequest)
+
+    server.close()
+
+    // coverage
+    const testHandler = () => {}
+    const server2 = new WebSocket.SecureServer(undefined, {
+      httpHandler: testHandler,
+      cert: fs.readFileSync('./test/localhost-encrypted.crt'),
+      key: fs.readFileSync('./test/localhost-encrypted.key'),
+      passphrase: 'passphrase'
+    })
+    assert.equal(server2._websocketHandler.name, 'noop')
+    assert.equal(server2._httpHandler, testHandler)
+
+    const server3 = new WebSocket.Server(undefined, {
+      cert: fs.readFileSync('./test/localhost-encrypted.crt'),
+      key: fs.readFileSync('./test/localhost-encrypted.key'),
+      passphrase: 'passphrase'
     })
     assert.equal(server3._websocketHandler.name, 'noop')
     assert.equal(server3._httpHandler.name, 'defaultHttpHandler')
@@ -154,8 +238,8 @@ describe('WebSocket.Server, WebSocket', () => {
 
     const server = new WebSocket.Server({
       secure: true,
-      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
-      key: fs.readFileSync('./test/fixtures/key.pem')
+      cert: fs.readFileSync('./test/localhost.crt'),
+      key: fs.readFileSync('./test/localhost.key')
     })
 
     server.listen(7357)
@@ -207,8 +291,8 @@ describe('WebSocket.Server, WebSocket', () => {
     })
 
     const server = new WebSocket.SecureServer({
-      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
-      key: fs.readFileSync('./test/fixtures/key.pem')
+      cert: fs.readFileSync('./test/localhost.crt'),
+      key: fs.readFileSync('./test/localhost.key')
     })
 
     server.listen(7357)
@@ -252,16 +336,16 @@ describe('WebSocket.Server, WebSocket', () => {
     const testHandler = () => {}
 
     const server2 = new WebSocket.SecureServer(testHandler, {
-      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
-      key: fs.readFileSync('./test/fixtures/key.pem')
+      cert: fs.readFileSync('./test/localhost.crt'),
+      key: fs.readFileSync('./test/localhost.key')
     })
     assert.equal(server2._websocketHandler, testHandler)
     assert.equal(server2._httpHandler.name, 'defaultHttpHandler')
 
     const server3 = new WebSocket.SecureServer({
       websocketHandler: testHandler,
-      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
-      key: fs.readFileSync('./test/fixtures/key.pem')
+      cert: fs.readFileSync('./test/localhost.crt'),
+      key: fs.readFileSync('./test/localhost.key')
     })
     assert.equal(server3._websocketHandler, testHandler)
     assert.equal(server3._httpHandler.name, 'defaultHttpHandler')

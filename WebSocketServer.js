@@ -50,7 +50,8 @@ const _onread = require('./_internal/_onread')
  *   httpHandler: httpHandler,
  *   secure: boolean,
  *   key: string,
- *   cert: string
+ *   cert: string,
+ *   passphrase: string
  * }) -> server WebSocketServer
  *
  * new WebSocketServer(options {
@@ -58,7 +59,8 @@ const _onread = require('./_internal/_onread')
  *   httpHandler: httpHandler,
  *   secure: boolean,
  *   key: string,
- *   cert: string
+ *   cert: string,
+ *   passphrase: string
  * }) -> server WebSocketServer
  *
  * server.on('connection', websocketHandler) -> ()
@@ -112,7 +114,8 @@ class WebSocketServer extends events.EventEmitter {
     if (options.secure) {
       this._server = https.createServer({
         key: options.key,
-        cert: options.cert
+        cert: options.cert,
+        passphrase: options.passphrase
       })
     } else {
       this._server = http.createServer()

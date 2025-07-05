@@ -21,20 +21,23 @@ const WebSocketServer = require('./WebSocketServer')
  *
  * new WebSocketSecureServer(options {
  *   key: string,
- *   cert: string
+ *   cert: string,
+ *   passphrase: string
  * }) -> server WebSocketSecureServer
  *
  * new WebSocketSecureServer(websocketHandler, options {
  *   httpHandler: httpHandler,
  *   key: string,
- *   cert: string
+ *   cert: string,
+ *   passphrase: string
  * }) -> server WebSocketSecureServer
  *
  * new WebSocketSecureServer(options {
  *   websocketHandler: websocketHandler,
  *   httpHandler: httpHandler,
  *   key: string,
- *   cert: string
+ *   cert: string,
+ *   passphrase: string
  * }) -> server WebSocketSecureServer
  *
  * server.on('connection', websocketHandler) -> ()
