@@ -79,12 +79,13 @@ class WebSocket extends events.EventEmitter {
 
     this.on('error', unhandledErrorListener.bind(this))
 
+    this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
+    this._socketBufferLength = options.socketBufferLength ?? 100 * 1024
+
     this._autoConnect = options.autoConnect ?? true
     if (this._autoConnect) {
       this.connect()
     }
-
-    this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
 
     this._continuationPayloads = []
   }
@@ -109,14 +110,24 @@ class WebSocket extends events.EventEmitter {
           port: this.url.port,
           host: this.url.hostname,
           rejectUnauthorized: this._connectOptions.rejectUnauthorized,
-          servername: this._connectOptions.servername
+          servername: this._connectOptions.servername,
+          onread: {
+            buffer: Buffer.alloc(3 * 1024 * 1024),
+            callback: this._onread.bind(this)
+          }
         },
         this._handleTCPConnection.bind(this)
       )
     } else {
       this._socket = net.connect(
-        this.url.port,
-        this.url.hostname,
+        {
+          port: this.url.port,
+          host: this.url.hostname,
+          onread: {
+            buffer: Buffer.alloc(this._socketBufferLength),
+            callback: this._onread.bind(this)
+          }
+        },
         this._handleTCPConnection.bind(this)
       )
     }
@@ -126,6 +137,19 @@ class WebSocket extends events.EventEmitter {
     })
 
     this._handleDataFrames()
+  }
+
+  /**
+   * @name _onread
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * websocket._onread(nread number, buffer Buffer) -> ()
+   * ```
+   */
+  _onread(nread, buffer) {
+    // console.log('client _onread', nread)
+    this._socket.emit('data', Buffer.from(buffer.slice(0, nread)))
   }
 
   /**
@@ -172,8 +196,6 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks) {
-    // console.log('WebSocket _processChunk')
-
     if (this._socket.destroyed) {
       return undefined
     }
@@ -325,7 +347,8 @@ class WebSocket extends events.EventEmitter {
       return undefined
     }
 
-    if (buffer.length < this._maxMessageLength) { // unfragmented
+    if (buffer.length <= this._maxMessageLength) { // unfragmented
+      // console.log('client send', buffer.length)
       this._socket.write(encodeWebSocketFrame.call(
         this,
         buffer,
@@ -337,6 +360,7 @@ class WebSocket extends events.EventEmitter {
     } else { // fragmented
       let index = 0
       let fragment = buffer.slice(0, this._maxMessageLength)
+
       this._socket.write(encodeWebSocketFrame.call(
         this,
         fragment,

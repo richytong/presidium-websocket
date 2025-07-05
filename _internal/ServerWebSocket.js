@@ -55,7 +55,8 @@ class ServerWebsocket extends events.EventEmitter {
       return undefined
     }
 
-    if (buffer.length < this._maxMessageLength) { // unfragmented
+    if (buffer.length <= this._maxMessageLength) { // unfragmented
+      // console.log('server send', buffer.length)
       this._socket.write(encodeWebSocketFrame.call(
         this,
         buffer,

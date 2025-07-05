@@ -23,6 +23,11 @@ const thunkify1 = require('./_internal/thunkify1')
 const thunkify3 = require('./_internal/thunkify3')
 const thunkify4 = require('./_internal/thunkify4')
 const functionConcatSync = require('./_internal/functionConcatSync')
+const {
+  kBuffer,
+  kBufferCb
+} = require('./_internal/stream_base_commons')
+const _onread = require('./_internal/_onread')
 
 /**
  * @name WebSocketServer
@@ -102,6 +107,7 @@ class WebSocketServer extends events.EventEmitter {
     }
 
     this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
+    this._socketBufferLength = options.socketBufferLength ?? 100 * 1024
 
     if (options.secure) {
       this._server = https.createServer({
@@ -150,6 +156,10 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleUpgrade(request, socket, head) {
+    const buffer = Buffer.alloc(this._socketBufferLength)
+    socket._handle.useUserBuffer(buffer)
+    socket[kBuffer] = buffer
+    socket[kBufferCb] = _onread.bind(socket)
 
     if (this.perMessageDeflate) {
       socket._perMessageDeflate = true
@@ -226,8 +236,6 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _processChunk(chunks, websocket) {
-    // console.log(`WebSocketServer _processChunk`)
-
     if (websocket._socket.destroyed) {
       return undefined
     }
@@ -251,8 +259,6 @@ class WebSocketServer extends events.EventEmitter {
       }
 
       const { fin, opcode, payload, remaining, masked } = decodeResult
-
-      // console.log('WebSocketServer payload', payload.toString('utf8'))
 
       // The server must close the connection upon receiving a frame that is not masked
       if (!masked) {
