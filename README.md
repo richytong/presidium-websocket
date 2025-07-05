@@ -138,6 +138,9 @@ Methods:
   * [websocket.close](#websocketclose)
   * [websocket.destroy](#websocketdestroy)
 
+Attributes:
+  * [websocket.readyState](#websocketreadystate)
+
 #### websocket `'open'` event
 Emitted when the WebSocket protocol handshake is complete.
 
@@ -233,6 +236,19 @@ Destroys the underlying [socket](https://nodejs.org/api/net.html#class-netsocket
 websocket.destroy() -> ()
 websocket.destroy(payload Buffer|string) -> ()
 ```
+
+#### websocket.readyState
+Indicates the current state of the WebSocket connection.
+
+```coffeescript [specscript]
+websocket.readyState -> 0|1|2|3
+```
+
+Values:
+  * `0` - "CONNECTING" - the socket been created, but the connection is not yet open.
+  * `1` - "OPEN" - the connection is ready to send and receive data.
+  * `2` - "CLOSING" - the connection is in the process of closing.
+  * `3` - "CLOSED" - the connection is closed or couldn't be opened.
 
 ### WebSocket.Server
 Constructs a Presidium WebSocket server.
