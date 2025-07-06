@@ -325,7 +325,7 @@ Options:
   * `passphrase` - used to decrypt the private key(s).
   * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
-  * `socketBufferLength` - length of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data.
+  * `socketBufferLength` - length of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data for all connections to the server.
 
 Events:
   * [connection](#server-connection-event)
@@ -461,7 +461,7 @@ Options:
   * `passphrase` - used to decrypt the private key(s).
   * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
-  * `socketBufferLength` - length of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data.
+  * `socketBufferLength` - length of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data for all connections to the server.
 
 Events:
   * [connection](#server-connection-event)
