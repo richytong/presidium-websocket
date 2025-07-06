@@ -1,5 +1,5 @@
 # presidium-websocket
-![presidium](https://rubico.land/assets/wreath-logo-w256.png)
+![presidium](https://rubico.land/assets/presidium-logo-200.jpg)
 
 **Presidium WebSocket**
 
