@@ -177,7 +177,7 @@ class WebSocketServer extends events.EventEmitter {
         `HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${acceptKey}\r\n${socket._perMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate\r\n' : ''}\r\n`
       )
 
-      this._handleConnection(socket, request, head)
+      this._handleUpgradedConnection(socket, request, head)
 
     } else {
       socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
@@ -200,18 +200,18 @@ class WebSocketServer extends events.EventEmitter {
   }
 
   /**
-   * @name _handleConnection
+   * @name _handleUpgradedConnection
    *
    * @docs
    * ```coffeescript [specscript]
-   * server._handleConnection(
+   * server._handleUpgradedConnection(
    *   socket net.Socket,
    *   request http.ClientRequest,
    *   head Buffer
    * ) -> ()
    * ```
    */
-  _handleConnection(socket, request, head) {
+  _handleUpgradedConnection(socket, request, head) {
     const chunks = new LinkedList()
     const websocket = new ServerWebSocket(socket, {
       maxMessageLength: this._maxMessageLength,
