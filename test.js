@@ -1887,7 +1887,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
-  it('WebSocket.Server sends close', async () => {
+  it('WebSocket.Server sends close (1)', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -1896,7 +1896,6 @@ describe('WebSocket.Server, WebSocket', () => {
     const server = new WebSocket.Server()
     server.on('connection', websocket => {
       websocket.on('open', () => {
-        websocket.sendClose('close-message')
         websocket.sendClose()
       })
 
@@ -1915,9 +1914,42 @@ describe('WebSocket.Server, WebSocket', () => {
     })
 
     await promise
-    assert.equal(closeMessages.length, 2)
-    assert(closeMessages.map(m => m.toString('utf8')).includes('close-message'))
+    assert.equal(closeMessages.length, 1)
     assert(closeMessages.map(m => m.toString('utf8')).includes(''))
+    server.close()
+
+    await sleep(100)
+  })
+
+  it('WebSocket.Server sends close (2)', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const server = new WebSocket.Server()
+    server.on('connection', websocket => {
+      websocket.on('open', () => {
+        websocket.sendClose('close-message')
+      })
+
+      websocket.on('close', resolve)
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    const closeMessages = []
+    websocket.on('close', message => {
+      closeMessages.push(message)
+      if (closeMessages.length == 1) {
+        websocket.close()
+      }
+    })
+
+    await promise
+    assert.equal(closeMessages.length, 1)
+    assert(closeMessages.map(m => m.toString('utf8')).includes('close-message'))
     server.close()
 
     await sleep(100)
