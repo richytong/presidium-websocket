@@ -585,12 +585,15 @@ describe('WebSocket.Server, WebSocket', () => {
     assert(didOpen)
   }).timeout(10000)
 
-  xit('WebSocket.Server attempts to send messages to client immediately without waiting for open event', async () => {
+  it('WebSocket.Server sends messages to client', async () => {
     const server = new WebSocket.Server()
+
     server.on('connection', websocket => {
-      websocket.send('test1')
-      websocket.send('test2')
-      websocket.send('test3')
+      websocket.on('open', () => {
+        websocket.send('test1')
+        websocket.send('test2')
+        websocket.send('test3')
+      })
     })
 
     server.listen(7357)
@@ -612,7 +615,7 @@ describe('WebSocket.Server, WebSocket', () => {
     server.on('close', resolve)
 
     await promise
-    console.log(messages)
+    assert.equal(messages.length, 3)
   })
 
   it('WebSocket.Server and WebSocket text exchange', async () => {

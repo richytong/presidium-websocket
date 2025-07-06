@@ -258,7 +258,7 @@ class WebSocketServer extends events.EventEmitter {
    */
   _handleOpen(websocket) {
     websocket.readyState = 1
-    this.emit('open')
+    websocket.emit('open')
   }
 
   /**
