@@ -148,6 +148,30 @@ Emitted when the WebSocket protocol handshake is complete.
 websocket.on('open', ()=>()) -> ()
 ```
 
+Ensure the WebSocket connection is open before sending messages.
+
+```javascript
+const server = new WebSocket.Server()
+
+server.on('connection', websocket => {
+  websocket.on('open', () => {
+    websocket.send('server-message-1')
+    websocket.send('server-message-2')
+    websocket.send('server-message-3')
+  })
+})
+
+server.listen(1337)
+
+const websocket = new WebSocket('ws://localhost:1337/')
+
+websocket.on('open', () => {
+  websocket.send('client-message-1')
+  websocket.send('client-message-2')
+  websocket.send('client-message-3')
+})
+```
+
 #### websocket `'message'` event
 Emitted upon receipt and successful decoding (and reassembly, if applicable) of an incoming message.
 
