@@ -24,8 +24,8 @@ class ServerWebsocket extends events.EventEmitter {
       this.emit('error', error)
     })
 
-    this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
-    this._socketBufferLength = options.socketBufferLength ?? 100 * 1024
+    this._maxMessageLength = options.maxMessageLength
+    this._socketBufferLength = options.socketBufferLength
 
     this._continuationPayloads = []
 
