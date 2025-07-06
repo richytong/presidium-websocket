@@ -120,7 +120,7 @@ Options:
   * `rejectUnauthorized` - if `true`, the client verifies the server's certificate against a list of pre-approved certificate authorities (CAs). An [error](#websocket-error-event) event is emitted if verification fails; `err.code` contains the OpenSSL error code. Defaults to `true`.
   * `autoConnect` - if `true`, establishes the underlying TCP connection automatically upon construction. Defaults to `true`.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
-  * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data.
+  * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
 
 Events:
   * [open](#websocket-open-event)
@@ -325,7 +325,7 @@ Options:
   * `passphrase` - used to decrypt the private key(s).
   * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
-  * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data for all connections to the server.
+  * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for all connections to the server.
 
 Events:
   * [connection](#server-connection-event)
@@ -461,7 +461,7 @@ Options:
   * `passphrase` - used to decrypt the private key(s).
   * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
-  * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for storing incoming data for all connections to the server.
+  * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for all connections to the server.
 
 Events:
   * [connection](#server-connection-event)
