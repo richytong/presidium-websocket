@@ -148,6 +148,28 @@ describe('LinkedList', () => {
     assert.equal(ll.last, null)
   })
 
+  it('objects 2', async () => {
+    const ll = new LinkedList({ keyname: 'id' })
+
+    assert.deepEqual(ll.slice(0), [])
+
+    const o0 = { id: 'a' }
+    const o1 = { id: 'b' }
+    const o2 = { id: 'c' }
+    const o3 = { id: 'd' }
+
+    ll.prepend(o3)
+    ll.insertBefore(o2, o3)
+
+    assert.deepEqual(ll.slice(0), [o2, o3])
+    assert.deepEqual(ll.slice(3), [])
+    assert.equal(ll.findLeft(o => o.id == 'c'), o2)
+
+    assert.equal(ll.shift(), o2)
+    assert.equal(ll.length, 1)
+    assert.equal(ll.first, o3)
+  })
+
   it('findLeft, findRight', async () => {
     const ll = new LinkedList({ keyname: 'n' })
 
