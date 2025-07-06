@@ -42,6 +42,15 @@ describe('WebSocket.Server, WebSocket', () => {
     assert.equal(server3._websocketHandler, null)
     assert.equal(server3._httpHandler.name, 'defaultHttpHandler')
 
+    const server4 = new WebSocket.Server(null)
+    assert.equal(server4._websocketHandler, null)
+    assert.equal(server4._httpHandler.name, 'defaultHttpHandler')
+
+    function x() {}
+    const server5 = new WebSocket.Server(x, null)
+    assert.equal(server5._websocketHandler, x)
+    assert.equal(server5._httpHandler.name, 'defaultHttpHandler')
+
     await sleep(100)
   }).timeout(10000)
 
@@ -1773,4 +1782,144 @@ describe('WebSocket.Server, WebSocket', () => {
     server.close()
   })
 
+  it('WebSocket sends unsolicited pong', async () => {
+    const pongMessages = []
+    const server = new WebSocket.Server()
+    server.on('connection', websocket => {
+      websocket.on('pong', message => {
+        pongMessages.push(message)
+        websocket.close()
+      })
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+    websocket.on('open', () => {
+      websocket.sendPong('pong-message')
+      websocket.sendPong()
+    })
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    websocket.on('close', resolve)
+
+    await promise
+    assert.equal(pongMessages.length, 2)
+    assert(pongMessages.map(m => m.toString('utf8')).includes('pong-message'))
+    assert(pongMessages.map(m => m.toString('utf8')).includes(''))
+    server.close()
+
+    await sleep(100)
+  })
+
+  it('WebSocket.Server sends unsolicited pong', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const server = new WebSocket.Server()
+    server.on('connection', websocket => {
+      websocket.on('open', () => {
+        websocket.sendPong('pong-message')
+        websocket.sendPong()
+      })
+
+      websocket.on('close', resolve)
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    const pongMessages = []
+    websocket.on('pong', message => {
+      pongMessages.push(message)
+      if (pongMessages.length == 2) {
+        websocket.close()
+      }
+    })
+
+    await promise
+    assert.equal(pongMessages.length, 3) // one pong from server responding initial client ping
+    assert(pongMessages.map(m => m.toString('utf8')).includes('pong-message'))
+    assert(pongMessages.map(m => m.toString('utf8')).includes(''))
+    server.close()
+
+    await sleep(100)
+  })
+
+  it('WebSocket.Server sends ping', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const server = new WebSocket.Server()
+    server.on('connection', websocket => {
+      websocket.on('open', () => {
+        websocket.sendPing('ping-message')
+        websocket.sendPing()
+      })
+
+      websocket.on('close', resolve)
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    const pingMessages = []
+    websocket.on('ping', message => {
+      pingMessages.push(message)
+      if (pingMessages.length == 2) {
+        websocket.close()
+      }
+    })
+
+    await promise
+    assert.equal(pingMessages.length, 2)
+    assert(pingMessages.map(m => m.toString('utf8')).includes('ping-message'))
+    assert(pingMessages.map(m => m.toString('utf8')).includes(''))
+    server.close()
+
+    await sleep(100)
+  })
+
+  it('WebSocket.Server sends close', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const server = new WebSocket.Server()
+    server.on('connection', websocket => {
+      websocket.on('open', () => {
+        websocket.sendClose('close-message')
+        websocket.sendClose()
+      })
+
+      websocket.on('close', resolve)
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    const closeMessages = []
+    websocket.on('close', message => {
+      closeMessages.push(message)
+      if (closeMessages.length == 1) {
+        websocket.close()
+      }
+    })
+
+    await promise
+    assert.equal(closeMessages.length, 2)
+    assert(closeMessages.map(m => m.toString('utf8')).includes('close-message'))
+    assert(closeMessages.map(m => m.toString('utf8')).includes(''))
+    server.close()
+
+    await sleep(100)
+  })
 })
