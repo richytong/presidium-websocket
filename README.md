@@ -394,19 +394,28 @@ server.on('close', ()=>()) -> ()
 ```
 
 #### server.listen
-Starts the server listening on the port.
+Starts the server listening for connections.
 
 ```coffeescript [specscript]
 server.listen(port number) -> ()
-server.listen(port number, callback function) -> ()
+server.listen(port number, callback ()=>()) -> ()
+server.listen(port number, host string, callback ()=>()) -> ()
+server.listen(port number, backlog number, callback ()=>()) -> ()
+server.listen(port number, host string, backlog number, callback ()=>()) -> ()
 ```
+
+Arguments:
+  * `port` - the network port on which the server is listening.
+  * `host` - the ip address of the network device on which the server is running. Defaults to the [0.0.0.0](https://en.wikipedia.org/wiki/0.0.0.0).
+  * `backlog` - number that specifies the maximum length of the queue of pending connections. Defaults to 511.
+  * `callback` - function that is called when the server has started listening.
 
 #### server.close
 Stops the server from accepting new connections and closes all current connections.
 
 ```coffeescript [specscript]
 server.close() -> ()
-server.close(callback function) -> ()
+server.close(callback ()=>()) -> ()
 ```
 
 #### server.connections
