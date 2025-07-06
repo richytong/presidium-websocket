@@ -1,4 +1,6 @@
 # presidium-websocket
+![presidium](https://rubico.land/assets/wreath-logo-w256.png)
+
 **Presidium WebSocket**
 
 ![Node.js CI](https://github.com/richytong/presidium-websocket/workflows/Node.js%20CI/badge.svg)
