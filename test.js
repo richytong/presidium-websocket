@@ -707,7 +707,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(10000)
 
-  it('WebSocket.Server and WebSocket text exchange with permessage-deflate', async () => {
+  it('WebSocket.Server and WebSocket text exchange with permessage-deflate permessageDeflate', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -759,6 +759,7 @@ describe('WebSocket.Server, WebSocket', () => {
     })
 
     websocket.on('open', () => {
+      assert.strictEqual(websocket.perMessageDeflate, true)
       assert.strictEqual(websocket.readyState, 1)
       websocket.send('ping')
     })
@@ -1318,7 +1319,7 @@ describe('WebSocket.Server, WebSocket', () => {
       websocket.on('close', () => {
         server.close()
       })
-    })
+    }, { perMessageDeflate: true })
 
     server.on('request', () => {
       didRequest = true
