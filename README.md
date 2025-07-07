@@ -298,7 +298,7 @@ new WebSocket.Server(websocketHandler WebSocketHandler, options {
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
   passphrase: string,
-  perMessageDeflate: boolean,
+  supportPerMessageDeflate: boolean,
   maxMessageLength: number,
   socketBufferLength: number
 }) -> server WebSocket.Server
@@ -313,7 +313,7 @@ new WebSocket.Server(options {
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
   passphrase: string,
-  perMessageDeflate: boolean,
+  supportPerMessageDeflate: boolean,
   maxMessageLength: number,
   socketBufferLength: number
 }) -> server WebSocket.Server
@@ -445,7 +445,7 @@ new WebSocket.SecureServer(websocketHandler WebSocketHandler, options {
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
   passphrase: string,
-  perMessageDeflate: boolean,
+  supportPerMessageDeflate: boolean,
   maxMessageLength: number
   socketBufferLength: number
 }) -> server WebSocket.SecureServer
@@ -459,7 +459,7 @@ new WebSocket.SecureServer(options {
   }>,
   cert: string|Array<string>|Buffer|Array<Buffer>,
   passphrase: string,
-  perMessageDeflate: boolean,
+  supportPerMessageDeflate: boolean,
   maxMessageLength: number
   socketBufferLength: number
 }) -> server WebSocket.SecureServer
