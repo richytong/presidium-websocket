@@ -70,10 +70,10 @@ websocket.on('message', message => {
 })
 ```
 
-Supports compression with `perMessageDeflate` (uses zlib [default options](https://nodejs.org/api/zlib.html#class-options)).
+Supports [Compression Extensions for WebSocket](https://datatracker.ietf.org/doc/html/rfc7692#section-7) with `supportPerMessageDeflate` (uses zlib [default options](https://nodejs.org/api/zlib.html#class-options)).
 
 ```javascript
-const server = new WebSocket.Server({ perMessageDeflate: true })
+const server = new WebSocket.Server({ supportPerMessageDeflate: true })
 ```
 
 Initiate new connections on the same websocket instance.
@@ -112,7 +112,8 @@ new WebSocket(url string, options {
   rejectUnauthorized: boolean,
   autoConnect: boolean,
   maxMessageLength: number,
-  socketBufferLength: number
+  socketBufferLength: number,
+  requestPerMessageDeflate: boolean
 }) -> websocket WebSocket
 ```
 
@@ -121,6 +122,7 @@ Options:
   * `autoConnect` - if `true`, establishes the underlying TCP connection automatically upon construction. Defaults to `true`.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
   * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
+  * `requestPerMessageDeflate` - if `true`, requests the server for [Compression Extensions for WebSocket](https://datatracker.ietf.org/doc/html/rfc7692#section-7) by including the `Sec-WebSocket-Extensions: permessage-deflate` header in the initial WebSocket handshake. If the server supports compression extensions, all messages exchanged in the WebSocket connection will be compressed with [zlib](https://nodejs.org/api/zlib.html) default options. Defaults to `true`.
 
 Events:
   * [open](#websocket-open-event)
@@ -323,7 +325,7 @@ Options:
   * `key` - private key(s) in PEM format. Encrypted keys will be decrypted using the `passphrase` option. Multiple keys using different algorithms can be provided as an array of unencrypted key strings or buffers, or an array of objects in the form `{ pem: string|Buffer, passphrase: string }`.
   * `cert` - cert chain(s) in PEM format. One cert chain should be provided per private key.
   * `passphrase` - used to decrypt the private key(s).
-  * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
+  * `supportPerMessageDeflate` - if `true`, indicates to WebSocket clients that the server supports [compression extensions for WebSocket](https://datatracker.ietf.org/doc/html/rfc7692#section-7). If an incoming WebSocket connection has requested compression extensions via the `Sec-WebSocket-Extensions: permessage-deflate` header, all messages exchanged in the WebSocket connection will be compressed using [zlib](https://nodejs.org/api/zlib.html) default options. Defaults to `false`.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
   * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for all connections to the server.
 
@@ -468,7 +470,7 @@ Options:
   * `key` - private key(s) in PEM format. Encrypted keys will be decrypted using the `passphrase` option. Multiple keys using different algorithms can be provided as an array of unencrypted key strings or buffers, or an array of objects in the form `{ pem: string|Buffer, passphrase: string }`.
   * `cert` - cert chain(s) in PEM format. One cert chain should be provided per private key.
   * `passphrase` - used to decrypt the private key(s).
-  * `perMessageDeflate` - if `true`, turns on compression for all WebSocket connections. Messages are compressed using [zlib](https://nodejs.org/api/zlib.html) defaults.
+  * `supportPerMessageDeflate` - if `true`, indicates to WebSocket clients that the server supports [compression extensions for WebSocket](https://datatracker.ietf.org/doc/html/rfc7692#section-7). If an incoming WebSocket connection has requested compression extensions via the `Sec-WebSocket-Extensions: permessage-deflate` header, all messages exchanged in the WebSocket connection will be compressed using [zlib](https://nodejs.org/api/zlib.html) default options. Defaults to `false`.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
   * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for all connections to the server.
 
