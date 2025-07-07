@@ -707,6 +707,87 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(10000)
 
+  it('WebSocket.Server and WebSocket text exchange with permessage-deflate', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocket.Server(websocket => {
+      assert.strictEqual(websocket.perMessageDeflate, true)
+      assert.strictEqual(websocket.readyState, 0) // CONNECTING
+      websocket.on('open', () => {
+        assert.strictEqual(websocket.readyState, 1) // OPEN
+      })
+      websocket.on('message', message => {
+        assert.equal(server.connections.length, 1)
+        messages.push(message)
+        websocket.send('pong')
+      })
+
+      websocket.on('close', () => {
+        assert.strictEqual(websocket.readyState, 3)
+        server.close()
+      })
+    }, { perMessageDeflate: true })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+    assert.strictEqual(websocket.readyState, 0)
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+      assert.strictEqual(websocket.readyState, 2)
+    })
+
+    websocket.on('open', () => {
+      assert.strictEqual(websocket.readyState, 1)
+      websocket.send('ping')
+    })
+
+    let resolve2
+    const promise2 = new Promise(_resolve => {
+      resolve2 = _resolve
+    })
+
+    websocket.on('close', () => {
+      assert.strictEqual(websocket.readyState, 3)
+      resolve2()
+    })
+
+    await promise
+    await promise2
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 2)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0].toString('utf8'), 'ping')
+    assert.equal(messages[1].toString('utf8'), 'pong')
+    assert.equal(server.connections.length, 0)
+    server.close()
+
+    await sleep(100)
+  }).timeout(10000)
+
   it('WebSocket.Server and WebSocket buffer exchange', async () => {
     let resolve
     const promise = new Promise(_resolve => {
