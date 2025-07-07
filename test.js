@@ -707,7 +707,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(10000)
 
-  it('WebSocket.Server and WebSocket text exchange with permessageDeflate', async () => {
+  it('WebSocket.Server and WebSocket text exchange with supportPerMessageDeflate', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -733,7 +733,7 @@ describe('WebSocket.Server, WebSocket', () => {
         assert.strictEqual(websocket.readyState, 3)
         server.close()
       })
-    }, { perMessageDeflate: true })
+    }, { supportPerMessageDeflate: true })
 
     server.on('request', () => {
       didRequest = true
@@ -789,7 +789,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(10000)
 
-  it('WebSocket.Server and WebSocket text exchange with client permessageDeflate turned off', async () => {
+  it('WebSocket.Server and WebSocket text exchange with client compression extensions turned off via requestPerMessageDeflate', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -815,7 +815,7 @@ describe('WebSocket.Server, WebSocket', () => {
         assert.strictEqual(websocket.readyState, 3)
         server.close()
       })
-    }, { perMessageDeflate: true })
+    }, { supportPerMessageDeflate: true })
 
     server.on('request', () => {
       didRequest = true
@@ -1219,7 +1219,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('WebSocket.Server and WebSocket 3MB buffer exchange with perMessageDeflate', async () => {
+  it('WebSocket.Server and WebSocket 3MB buffer exchange with supportPerMessageDeflate', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -1240,7 +1240,7 @@ describe('WebSocket.Server, WebSocket', () => {
       websocket.on('close', () => {
         server.close()
       })
-    }, { perMessageDeflate: true })
+    }, { supportPerMessageDeflate: true })
 
     assert.strictEqual(server._supportPerMessageDeflate, true)
 
@@ -1283,7 +1283,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('WebSocket.Server and WebSocket with perMessageDeflate zlib stub perMessageDeflate tail', async () => {
+  it('WebSocket.Server and WebSocket with supportPerMessageDeflate, stub zlib', async () => {
     const originalZlibDeflateRawSync = zlib.deflateRawSync
     zlib.deflateRawSync = () => Buffer.from([0x00, 0x00, 0xff, 0xff])
 
@@ -1308,7 +1308,7 @@ describe('WebSocket.Server, WebSocket', () => {
       websocket.on('close', () => {
         server.close()
       })
-    }, { perMessageDeflate: true })
+    }, { supportPerMessageDeflate: true })
 
     assert.strictEqual(server._supportPerMessageDeflate, true)
 
@@ -1357,7 +1357,7 @@ describe('WebSocket.Server, WebSocket', () => {
       throw new Error('deflate')
     }
 
-    const server = new WebSocket.Server({ perMessageDeflate: true })
+    const server = new WebSocket.Server({ supportPerMessageDeflate: true })
     server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357')
@@ -1385,7 +1385,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
-  it('WebSocket.Server and WebSocket 3MB string exchange with perMessageDeflate', async () => {
+  it('WebSocket.Server and WebSocket 3MB string exchange with supportPerMessageDeflate', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -1405,7 +1405,7 @@ describe('WebSocket.Server, WebSocket', () => {
       websocket.on('close', () => {
         server.close()
       })
-    }, { perMessageDeflate: true })
+    }, { supportPerMessageDeflate: true })
 
     server.on('request', () => {
       didRequest = true
@@ -1888,7 +1888,7 @@ describe('WebSocket.Server, WebSocket', () => {
         0x1,
         false, // mask
         true, // fin
-        false, // perMessageDeflate
+        false, // permessage-deflate
       ))
     })
 
@@ -1924,7 +1924,7 @@ describe('WebSocket.Server, WebSocket', () => {
         0x1,
         true, // mask
         true, // fin
-        false, // perMessageDeflate
+        false, // permessage-deflate
       ))
 
       websocket.on('close', message => {
