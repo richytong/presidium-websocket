@@ -16,7 +16,7 @@ class ServerWebsocket extends events.EventEmitter {
   constructor(socket, options) {
     super()
     this._socket = socket
-    this.perMessageDeflate = socket._perMessageDeflate
+    this._perMessageDeflate = socket._perMessageDeflate
 
     this.on('error', unhandledErrorListener.bind(this))
 
@@ -77,7 +77,7 @@ class ServerWebsocket extends events.EventEmitter {
         opcode,
         false,
         true,
-        this.perMessageDeflate
+        this._perMessageDeflate
       ))
     } else { // fragmented
       let index = 0
@@ -88,7 +88,7 @@ class ServerWebsocket extends events.EventEmitter {
         opcode,
         false,
         false,
-        this.perMessageDeflate
+        this._perMessageDeflate
       ))
 
       // continuation frames
@@ -104,7 +104,7 @@ class ServerWebsocket extends events.EventEmitter {
           0x0,
           false,
           fin,
-          this.perMessageDeflate
+          this._perMessageDeflate
         ))
 
         index += this._maxMessageLength

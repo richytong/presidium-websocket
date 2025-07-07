@@ -34,7 +34,8 @@ const functionConcatSync = require('./_internal/functionConcatSync')
  * new WebSocket(url string, options {
  *   rejectUnauthorized: boolean,
  *   autoConnect: boolean,
- *   maxMessageLength: number
+ *   maxMessageLength: number,
+ *   requestPerMessageDeflate: boolean
  * }) -> websocket WebSocket
  *
  * websocket.on('open', ()=>()) -> ()
@@ -77,6 +78,7 @@ class WebSocket extends events.EventEmitter {
 
     this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
     this._socketBufferLength = options.socketBufferLength ?? 100 * 1024
+    this._requestPerMessageDeflate = options.requestPerMessageDeflate ?? true
 
     this.readyState = 3 // CLOSED
 
@@ -162,7 +164,7 @@ class WebSocket extends events.EventEmitter {
   _requestUpgrade() {
     const key = crypto.randomBytes(16).toString('base64')
     this._socket.write(
-      `GET ${this.url.pathname} HTTP/1.1\r\nHost: ${this.url.hostname}:${this.url.port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n\r\n`
+      `GET ${this.url.pathname} HTTP/1.1\r\nHost: ${this.url.hostname}:${this.url.port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\n${this._requestPerMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' : ''}\r\n`
     )
   }
 
@@ -221,8 +223,8 @@ class WebSocket extends events.EventEmitter {
       }
 
       if (perMessageDeflate) {
-        this.perMessageDeflate = true
-        this._socket.perMessageDeflate = true
+        this._perMessageDeflate = true
+        this._socket._perMessageDeflate = true
       }
 
       if (remaining.length > 0) {
@@ -240,10 +242,10 @@ class WebSocket extends events.EventEmitter {
     while (chunks.length > 0) {
 
       let chunk = chunks.shift()
-      let decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      let decodeResult = decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
       while (decodeResult == null && chunks.length > 0) {
         chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+        decodeResult = decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
       }
       if (decodeResult == null) {
         chunks.prepend(chunk)
@@ -347,7 +349,7 @@ class WebSocket extends events.EventEmitter {
         opcode,
         true,
         true,
-        this.perMessageDeflate
+        this._perMessageDeflate
       ))
     } else { // fragmented
       let index = 0
@@ -359,7 +361,7 @@ class WebSocket extends events.EventEmitter {
         opcode,
         true,
         false,
-        this.perMessageDeflate
+        this._perMessageDeflate
       ))
 
       // continuation frames
@@ -375,7 +377,7 @@ class WebSocket extends events.EventEmitter {
           0x0,
           true,
           fin,
-          this.perMessageDeflate
+          this._perMessageDeflate
         ))
 
         index += this._maxMessageLength
