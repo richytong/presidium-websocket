@@ -103,7 +103,7 @@ class WebSocketServer extends events.EventEmitter {
     this._httpHandler = options.httpHandler ?? defaultHttpHandler
 
     if (options.perMessageDeflate) {
-      this.perMessageDeflate = options.perMessageDeflate
+      this._supportPerMessageDeflate = true
     }
 
     this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
@@ -159,11 +159,6 @@ class WebSocketServer extends events.EventEmitter {
   _handleUpgrade(request, socket, head) {
     this._changeBuffer(socket)
 
-    if (this.perMessageDeflate) {
-      socket._perMessageDeflate = true
-    }
-    this.emit('upgrade', request, socket, head)
-
     if (
       request.headers['upgrade'] == 'websocket'
       && typeof request.headers['sec-websocket-key'] == 'string'
@@ -173,9 +168,18 @@ class WebSocketServer extends events.EventEmitter {
       hash.update(request.headers['sec-websocket-key'] + guid)
       const acceptKey = hash.digest('base64')
 
+      const clientRequestedPerMessageDeflate =
+        request.headers['sec-websocket-extensions']
+        ?.includes('permessage-deflate')
+
       socket.write(
-        `HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${acceptKey}\r\n${socket._perMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate\r\n' : ''}\r\n`
+        `HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${acceptKey}\r\n${clientRequestedPerMessageDeflate && this._supportPerMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate\r\n' : ''}\r\n`
       )
+
+      if (clientRequestedPerMessageDeflate && this._supportPerMessageDeflate) {
+        socket._perMessageDeflate = true
+      }
+      this.emit('upgrade', request, socket, head)
 
       this._handleUpgradedConnection(socket, request, head)
 
@@ -276,10 +280,10 @@ class WebSocketServer extends events.EventEmitter {
 
     while (chunks.length > 0) { // process data frames
       let chunk = chunks.shift()
-      let decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+      let decodeResult = decodeWebSocketFrame.call(this, chunk, websocket._perMessageDeflate)
       while (decodeResult == null && chunks.length > 0) {
         chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = decodeWebSocketFrame.call(this, chunk, this.perMessageDeflate)
+        decodeResult = decodeWebSocketFrame.call(this, chunk, websocket._perMessageDeflate)
       }
       if (decodeResult == null) {
         chunks.prepend(chunk)
