@@ -1,27 +1,26 @@
-const WebSocket = require('.')
+const WebSocketServer = require('./WebSocketServer')
 // const WebSocket = require('ws')
+const WebSocket = require('.')
+const http = require('http')
 const testPayload = require('./test-payload.json')
 
-/*
-const server = new WebSocket.Server(websocket => {
+const server = new WebSocketServer(websocket => {
   websocket.on('message', message => {
+    console.log('send')
     websocket.send(message)
   })
-}, { perMessageDeflate: true })
+}, { supportPerMessageDeflate: true })
 
 server.listen(7357)
-*/
 
-const websocket = new WebSocket('ws://localhost:7357/', {
-  // perMessageDeflate: false,
-})
+const websocket = new WebSocket('ws://localhost:7357/')
 
 websocket.on('open', () => {
-  // console.log(websocket)
+  console.log(websocket._perMessageDeflate)
   // websocket.send(testPayload)
   websocket.send('test-message')
 })
 
 websocket.on('message', message => {
-  console.log('message', message.toString('utf8'))
+  console.log(message.toString('utf8')) // *I-.��M-.NLO
 })

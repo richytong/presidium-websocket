@@ -39,5 +39,8 @@
     "nyc": "^17.1.0",
     "presidium": "^0.29.13",
     "ws": "^8.18.3"
+  },
+  "dependencies": {
+    "presidium-websocket": "^0.3.1"
   }
 }

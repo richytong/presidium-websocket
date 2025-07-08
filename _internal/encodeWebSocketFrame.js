@@ -59,7 +59,13 @@ function encodeWebSocketFrame(
     return Buffer.concat([Buffer.from(header), maskingKey, maskedPayload])
   }
 
-  return Buffer.concat([Buffer.from(header), payload])
+  {
+    const result = Buffer.concat([Buffer.from(header), payload])
+    const firstByte = result[0]
+    const fin = (firstByte & 0x80) !== 0
+    const rsv1 = (firstByte & 0x40) !== 0
+    const opcode = firstByte & 0x0f
+  }
 }
 
 module.exports = encodeWebSocketFrame
