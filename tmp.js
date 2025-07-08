@@ -18,7 +18,8 @@ const websocket = new WebSocket('ws://localhost:7357/', {
 
 websocket.on('open', () => {
   // console.log(websocket)
-  websocket.send(testPayload)
+  // websocket.send(testPayload)
+  websocket.send('test-message')
 })
 
 websocket.on('message', message => {

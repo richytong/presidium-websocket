@@ -1,6 +1,12 @@
 import os
 import asyncio
+import logging
 from websockets.server import serve
+
+logging.basicConfig(
+    format="%(asctime)s %(message)s",
+    level=logging.DEBUG,
+)
 
 async def echo(websocket):
     async for message in websocket:
