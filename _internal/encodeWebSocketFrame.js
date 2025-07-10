@@ -9,9 +9,9 @@ const zlib = require('zlib')
  * encodeWebSocketFrame(
  *   payload Buffer,
  *   opcode number,
- *   mask? boolean,
- *   fin? boolean,
- *   perMessageDeflate? boolean
+ *   mask boolean,
+ *   fin boolean,
+ *   compressed boolean
  * ) -> Buffer
  * ```
  */
@@ -21,31 +21,15 @@ function encodeWebSocketFrame(
   opcode,
   mask = false,
   fin = true,
-  perMessageDeflate = false
+  compressed = false
 ) {
-  let compressed = false
-
-  if (perMessageDeflate && payload.length > 0) {
-    try {
-      const compressedPayload = zlib.deflateRawSync(payload)
-      if (
-        compressedPayload.length >= 4 &&
-        compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))
-      ) {
-        payload = compressedPayload.slice(0, -4)
-      } else {
-        payload = compressedPayload
-      }
-      compressed = true
-    } catch (error) {
-      this.emit('error', error)
-    }
-  }
-
   const payloadLen = payload.length
   let header = []
 
-  let firstByte = (fin ? 0x80 : 0x00) | (compressed ? 0x40 : 0x00) | opcode
+  let firstByte =
+    (fin ? 0x80 : 0x00)
+    | (compressed && opcode !== 0x00 ? 0x40 : 0x00)
+    | opcode
   header.push(firstByte)
 
   let secondByte = mask ? 0x80 : 0x00

@@ -9,10 +9,10 @@ const net = require('net')
 const tls = require('tls')
 const events = require('events')
 const crypto = require('crypto')
+const zlib = require('zlib')
 const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const decodeWebSocketHandshakeResponse = require('./_internal/decodeWebSocketHandshakeResponse')
-const unhandledErrorListener = require('./_internal/unhandledErrorListener')
 const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
@@ -74,7 +74,9 @@ class WebSocket extends events.EventEmitter {
       servername: net.isIP(this.url.hostname) ? '' : this.url.hostname
     }
 
-    this.on('error', unhandledErrorListener.bind(this))
+    this.on('error', () => {
+      this.destroy()
+    })
 
     this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
     this._socketBufferLength = options.socketBufferLength ?? 100 * 1024
@@ -134,7 +136,6 @@ class WebSocket extends events.EventEmitter {
     this.readyState = 0 // CONNECTING
 
     this._socket.on('error', error => {
-      this.destroy()
       this.emit('error', error)
     })
 
@@ -342,6 +343,26 @@ class WebSocket extends events.EventEmitter {
       return undefined
     }
 
+    let compressed = false
+
+    if (this._perMessageDeflate && buffer.length > 0) {
+      try {
+        const compressedPayload = zlib.deflateRawSync(buffer)
+        if (
+          compressedPayload.length >= 4 &&
+          compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))
+        ) {
+          buffer = compressedPayload.slice(0, -4)
+        } else {
+          buffer = compressedPayload
+        }
+        compressed = true
+      } catch (error) {
+        this.emit('error', error)
+        return undefined
+      }
+    }
+
     if (buffer.length <= this._maxMessageLength) { // unfragmented
       this._socket.write(encodeWebSocketFrame.call(
         this,
@@ -349,7 +370,7 @@ class WebSocket extends events.EventEmitter {
         opcode,
         true,
         true,
-        this._perMessageDeflate
+        compressed
       ))
     } else { // fragmented
       let index = 0
@@ -361,7 +382,7 @@ class WebSocket extends events.EventEmitter {
         opcode,
         true,
         false,
-        this._perMessageDeflate
+        compressed
       ))
 
       // continuation frames
@@ -377,7 +398,7 @@ class WebSocket extends events.EventEmitter {
           0x0,
           true,
           fin,
-          this._perMessageDeflate
+          compressed
         ))
 
         index += this._maxMessageLength

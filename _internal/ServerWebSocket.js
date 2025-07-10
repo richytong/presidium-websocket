@@ -1,6 +1,6 @@
 const events = require('events')
+const zlib = require('zlib')
 const encodeWebSocketFrame = require('./encodeWebSocketFrame')
-const unhandledErrorListener = require('./unhandledErrorListener')
 
 /**
  * @name ServerWebsocket
@@ -18,7 +18,9 @@ class ServerWebsocket extends events.EventEmitter {
     this._socket = socket
     this._perMessageDeflate = socket._perMessageDeflate
 
-    this.on('error', unhandledErrorListener.bind(this))
+    this.on('error', () => {
+      this.destroy()
+    })
 
     this._socket.on('error', error => {
       this.emit('error', error)
@@ -70,6 +72,26 @@ class ServerWebsocket extends events.EventEmitter {
       return undefined
     }
 
+    let compressed = false
+
+    if (this._perMessageDeflate && buffer.length > 0) {
+      try {
+        const compressedPayload = zlib.deflateRawSync(buffer)
+        if (
+          compressedPayload.length >= 4 &&
+          compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))
+        ) {
+          buffer = compressedPayload.slice(0, -4)
+        } else {
+          buffer = compressedPayload
+        }
+        compressed = true
+      } catch (error) {
+        this.emit('error', error)
+        return undefined
+      }
+    }
+
     if (buffer.length <= this._maxMessageLength) { // unfragmented
       this._socket.write(encodeWebSocketFrame.call(
         this,
@@ -77,7 +99,7 @@ class ServerWebsocket extends events.EventEmitter {
         opcode,
         false,
         true,
-        this._perMessageDeflate
+        compressed
       ))
     } else { // fragmented
       let index = 0
@@ -88,7 +110,7 @@ class ServerWebsocket extends events.EventEmitter {
         opcode,
         false,
         false,
-        this._perMessageDeflate
+        compressed
       ))
 
       // continuation frames
@@ -104,7 +126,7 @@ class ServerWebsocket extends events.EventEmitter {
           0x0,
           false,
           fin,
-          this._perMessageDeflate
+          compressed
         ))
 
         index += this._maxMessageLength

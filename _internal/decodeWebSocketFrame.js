@@ -7,7 +7,7 @@ const zlib = require('zlib')
  * ```coffeescript [specscript]
  * decodeWebSocketFrame(
  *   buffer Buffer,
- *   perMessageDeflate? boolean
+ *   perMessageDeflate boolean
  * ) -> decodeResult? {
  *   fin: boolean,
  *   opcode: number,
@@ -29,6 +29,14 @@ function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
   const opcode = firstByte & 0x0f
   const secondByte = buffer[1]
   const masked = (secondByte & 0x80) !== 0
+
+  // An endpoint MUST NOT set the "Per-Message Compressed" bit of control
+  // frames and non-first fragments (continuation frames) of a data message.
+  if (rsv1 && opcode === 0x00) {
+    this.sendClose('RSV1 must not be set for continuation frames')
+    this.emit('error', new Error('RSV1 must not be set for continuation frames'))
+    return undefined
+  }
 
   let payloadLen = secondByte & 0x7f
   let offset = 2
@@ -66,7 +74,7 @@ function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
     }
   }
 
-  if (perMessageDeflate && rsv1 && payload.length > 0) {
+  if (perMessageDeflate && (rsv1 || opcode === 0x00) && payload.length > 0) {
     try {
       const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
       const compressed = Buffer.concat([payload, tail])
