@@ -1,5 +1,5 @@
-const WebSocket = require('./WebSocket')
-// const WebSocket = require('ws')
+// const WebSocket = require('./WebSocket')
+const WebSocket = require('ws')
 const WSWebSocket = require('ws')
 
 const server = new WSWebSocket.Server({

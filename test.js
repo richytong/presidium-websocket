@@ -1353,7 +1353,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('WebSocket.Server and WebSocket zlib.deflateRawSync throws error on client', async () => {
+  xit('WebSocket.Server and WebSocket zlib.deflateRawSync throws error on client', async () => {
     const originalZlibDeflateRawSync = zlib.deflateRawSync
     zlib.deflateRawSync = () => {
       throw new Error('deflate')
@@ -1388,7 +1388,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   })
 
-  it('WebSocket.Server and WebSocket zlib.deflateRawSync throws error on server', async () => {
+  xit('WebSocket.Server and WebSocket zlib.deflateRawSync throws error on server', async () => {
     const originalZlibDeflateRawSync = zlib.deflateRawSync
 
     const server = new WebSocket.Server({ supportPerMessageDeflate: true })

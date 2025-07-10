@@ -1,6 +1,7 @@
 const events = require('events')
 const zlib = require('zlib')
 const encodeWebSocketFrame = require('./encodeWebSocketFrame')
+const ReadStream = require('./ReadStream')
 
 /**
  * @name ServerWebsocket
@@ -54,7 +55,7 @@ class ServerWebsocket extends events.EventEmitter {
    * websocket.send(payload Buffer|string) -> ()
    * ```
    */
-  send(payload) {
+  async send(payload) {
     let buffer = null
     let opcode = null
 
@@ -76,7 +77,15 @@ class ServerWebsocket extends events.EventEmitter {
 
     if (this._perMessageDeflate && buffer.length > 0) {
       try {
-        const compressedPayload = zlib.deflateRawSync(buffer)
+        // const compressedPayload = zlib.deflateRawSync(buffer)
+
+        const deflate = zlib.createDeflateRaw({
+          // windowBits: 12
+        })
+        deflate.write(payload)
+        deflate.end()
+        const compressedPayload = await ReadStream.Buffer(deflate)
+
         if (
           compressedPayload.length >= 4 &&
           compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))

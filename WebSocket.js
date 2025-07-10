@@ -14,6 +14,7 @@ const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const decodeWebSocketHandshakeResponse = require('./_internal/decodeWebSocketHandshakeResponse')
 const LinkedList = require('./_internal/LinkedList')
+const ReadStream = require('./_internal/ReadStream')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
 const append = require('./_internal/append')
@@ -325,7 +326,7 @@ class WebSocket extends events.EventEmitter {
    * websocket.send(payload Buffer|string) -> ()
    * ```
    */
-  send(payload) {
+  async send(payload) {
     let buffer = null
     let opcode = null
 
@@ -347,7 +348,15 @@ class WebSocket extends events.EventEmitter {
 
     if (this._perMessageDeflate && buffer.length > 0) {
       try {
-        const compressedPayload = zlib.deflateRawSync(buffer)
+        // const compressedPayload = zlib.deflateRawSync(buffer)
+
+        const deflate = zlib.createDeflateRaw({
+          // windowBits: 12
+        })
+        deflate.write(payload)
+        deflate.end()
+        const compressedPayload = await ReadStream.Buffer(deflate)
+
         if (
           compressedPayload.length >= 4 &&
           compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))
