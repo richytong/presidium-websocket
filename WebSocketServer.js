@@ -11,7 +11,6 @@ const crypto = require('crypto')
 const events = require('events')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./_internal/ServerWebSocket')
-const unhandledErrorListener = require('./_internal/unhandledErrorListener')
 const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
@@ -123,8 +122,6 @@ class WebSocketServer extends events.EventEmitter {
     this._server.on('upgrade', this._handleUpgrade.bind(this))
 
     this.connections = []
-
-    this.on('error', unhandledErrorListener.bind(this))
 
   }
 
@@ -280,10 +277,10 @@ class WebSocketServer extends events.EventEmitter {
 
     while (chunks.length > 0) { // process data frames
       let chunk = chunks.shift()
-      let decodeResult = decodeWebSocketFrame.call(this, chunk, websocket._perMessageDeflate)
+      let decodeResult = decodeWebSocketFrame.call(websocket, chunk, websocket._perMessageDeflate)
       while (decodeResult == null && chunks.length > 0) {
         chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = decodeWebSocketFrame.call(this, chunk, websocket._perMessageDeflate)
+        decodeResult = decodeWebSocketFrame.call(websocket, chunk, websocket._perMessageDeflate)
       }
       if (decodeResult == null) {
         chunks.prepend(chunk)

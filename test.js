@@ -1283,9 +1283,8 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('WebSocket.Server and WebSocket with supportPerMessageDeflate, stub zlib', async () => {
+  it('WebSocket.Server and WebSocket with supportPerMessageDeflate, stub zlib for tail end 0x00, 0x00, 0xff, 0xff', async () => {
     const originalZlibDeflateRawSync = zlib.deflateRawSync
-    zlib.deflateRawSync = () => Buffer.from([0x00, 0x00, 0xff, 0xff])
 
     let resolve
     const promise = new Promise(_resolve => {
@@ -1336,6 +1335,9 @@ describe('WebSocket.Server, WebSocket', () => {
     websocket.on('open', () => {
       assert.strictEqual(websocket._perMessageDeflate, true)
       assert.strictEqual(websocket._socket._perMessageDeflate, true)
+
+      zlib.deflateRawSync = () => Buffer.from([0x00, 0x00, 0xff, 0xff])
+
       websocket.send(Buffer.from([0x00, 0x00, 0xff, 0xff]))
     })
 
@@ -1351,7 +1353,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('WebSocket.Server and WebSocket zlib.deflateRawSync throws error', async () => {
+  it('WebSocket.Server and WebSocket zlib.deflateRawSync throws error on client', async () => {
     const originalZlibDeflateRawSync = zlib.deflateRawSync
     zlib.deflateRawSync = () => {
       throw new Error('deflate')
@@ -1381,6 +1383,46 @@ describe('WebSocket.Server, WebSocket', () => {
     assert.equal(errors.length, 1)
     assert.equal(errors[0].message, 'deflate')
     server.close()
+    zlib.deflateRawSync = originalZlibDeflateRawSync
+
+    await sleep(100)
+  })
+
+  it('WebSocket.Server and WebSocket zlib.deflateRawSync throws error on server', async () => {
+    const originalZlibDeflateRawSync = zlib.deflateRawSync
+
+    const server = new WebSocket.Server({ supportPerMessageDeflate: true })
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const errors = []
+
+    server.on('connection', websocket => {
+      websocket.on('open', () => {
+        zlib.deflateRawSync = () => {
+          throw new Error('deflate')
+        }
+        websocket.send('test')
+      })
+
+      websocket.on('error', error => {
+        errors.push(error)
+        resolve()
+      })
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    await promise
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].message, 'deflate')
+    server.close()
+    zlib.deflateRawSync = originalZlibDeflateRawSync
 
     await sleep(100)
   })
@@ -1910,6 +1952,104 @@ describe('WebSocket.Server, WebSocket', () => {
     await promise0
     server.close()
   }).timeout(1000)
+
+  it('RSV1 must not be set for continuation frames on server', async () => {
+    let resolve0
+    const promise0 = new Promise(_resolve => {
+      resolve0 = _resolve
+    })
+
+    const server = new WebSocket.Server()
+
+    const errors = []
+
+    server.on('connection', websocket => {
+      websocket.on('error', error => {
+        errors.push(error)
+      })
+      websocket.on('close', () => {
+        resolve0()
+      })
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    // opcode=0x00, mask true, fin false, compressed true
+    const b = Buffer.from([0x40, 0x81, 0x0e, 0xfe, 0xb8, 0x0a, 0x3f])
+
+    websocket.on('open', () => {
+      websocket._socket.write(b)
+    })
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    websocket.on('close', message => {
+      assert.equal(message.toString('utf8'), 'RSV1 must not be set for continuation frames')
+      resolve()
+    })
+
+    await promise0
+    await promise
+
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].message, 'RSV1 must not be set for continuation frames')
+
+    server.close()
+  })
+
+  it('RSV1 must not be set for continuation frames on server', async () => {
+    let resolve0
+    const promise0 = new Promise(_resolve => {
+      resolve0 = _resolve
+    })
+
+    const server = new WebSocket.Server()
+
+    const errors = []
+
+    server.on('connection', websocket => {
+      // opcode=0x00, mask true, fin false, compressed true
+      const b = Buffer.from([0x40, 0x81, 0x0e, 0xfe, 0xb8, 0x0a, 0x3f])
+
+      websocket.on('open', () => {
+        websocket._socket.write(b)
+      })
+
+      websocket.on('close', message => {
+        assert.equal(message.toString('utf8'), 'RSV1 must not be set for continuation frames')
+        resolve0()
+      })
+    })
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('error', error => {
+      errors.push(error)
+    })
+
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    websocket.on('close', () => {
+      resolve()
+    })
+
+    await promise0
+    await promise
+
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].message, 'RSV1 must not be set for continuation frames')
+
+    server.close()
+  })
 
   it('The client must close the connection upon receiving a frame that is masked', async () => {
     let resolve0
