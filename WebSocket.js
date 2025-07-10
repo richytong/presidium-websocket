@@ -198,7 +198,7 @@ class WebSocket extends events.EventEmitter {
    * websocket._processChunk(chunks Array<Buffer>) -> ()
    * ```
    */
-  _processChunk(chunks) {
+  async _processChunk(chunks) {
     if (this.readyState === 0) { // process handshake
       let chunk = chunks.shift()
       let decodeResult = decodeWebSocketHandshakeResponse(chunk)
@@ -244,10 +244,10 @@ class WebSocket extends events.EventEmitter {
     while (chunks.length > 0) {
 
       let chunk = chunks.shift()
-      let decodeResult = decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
+      let decodeResult = await decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
       while (decodeResult == null && chunks.length > 0) {
         chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
+        decodeResult = await decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
       }
       if (decodeResult == null) {
         chunks.prepend(chunk)

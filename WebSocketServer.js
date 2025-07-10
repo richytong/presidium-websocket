@@ -273,14 +273,14 @@ class WebSocketServer extends events.EventEmitter {
    * ) -> ()
    * ```
    */
-  _processChunk(chunks, websocket) {
+  async _processChunk(chunks, websocket) {
 
     while (chunks.length > 0) { // process data frames
       let chunk = chunks.shift()
-      let decodeResult = decodeWebSocketFrame.call(websocket, chunk, websocket._perMessageDeflate)
+      let decodeResult = await decodeWebSocketFrame.call(websocket, chunk, websocket._perMessageDeflate)
       while (decodeResult == null && chunks.length > 0) {
         chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = decodeWebSocketFrame.call(websocket, chunk, websocket._perMessageDeflate)
+        decodeResult = await decodeWebSocketFrame.call(websocket, chunk, websocket._perMessageDeflate)
       }
       if (decodeResult == null) {
         chunks.prepend(chunk)
