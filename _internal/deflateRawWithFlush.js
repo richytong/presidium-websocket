@@ -9,9 +9,7 @@ const zlib = require('zlib')
  * ```
  */
 async function deflateRawWithFlush(payload) {
-  const deflate = zlib.createDeflateRaw({
-    // windowBits: 12
-  })
+  const deflate = zlib.createDeflateRaw()
   deflate.write(payload)
 
   const chunks = []

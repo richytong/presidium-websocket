@@ -9,9 +9,7 @@ const zlib = require('zlib')
  * ```
  */
 async function inflateRawWithFlush(compressed) {
-  const inflate = zlib.createInflateRaw({
-    // windowBits: 12
-  })
+  const inflate = zlib.createInflateRaw()
   inflate.write(compressed)
 
   const chunks = []
