@@ -791,7 +791,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(10000)
 
-  it('WebSocket.Server and WebSocket text exchange with client compression extensions turned off via requestPerMessageDeflate', async () => {
+  it('WebSocket.Server and WebSocket text exchange with client compression extensions turned off via offerPerMessageDeflate', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -834,7 +834,7 @@ describe('WebSocket.Server, WebSocket', () => {
     server.listen(7357)
 
     const websocket = new WebSocket('ws://localhost:7357', {
-      requestPerMessageDeflate: false
+      offerPerMessageDeflate: false
     })
     assert.strictEqual(websocket.readyState, 0)
 

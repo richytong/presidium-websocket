@@ -35,7 +35,7 @@ const functionConcatSync = require('./_internal/functionConcatSync')
  *   rejectUnauthorized: boolean,
  *   autoConnect: boolean,
  *   maxMessageLength: number,
- *   requestPerMessageDeflate: boolean
+ *   offerPerMessageDeflate: boolean
  * }) -> websocket WebSocket
  *
  * websocket.on('open', ()=>()) -> ()
@@ -80,7 +80,7 @@ class WebSocket extends events.EventEmitter {
 
     this._maxMessageLength = options.maxMessageLength ?? 4 * 1024
     this._socketBufferLength = options.socketBufferLength ?? 100 * 1024
-    this._requestPerMessageDeflate = options.requestPerMessageDeflate ?? true
+    this._offerPerMessageDeflate = options.offerPerMessageDeflate ?? true
 
     this.readyState = 3 // CLOSED
 
@@ -165,7 +165,7 @@ class WebSocket extends events.EventEmitter {
   _requestUpgrade() {
     const key = crypto.randomBytes(16).toString('base64')
     this._socket.write(
-      `GET ${this.url.pathname} HTTP/1.1\r\nHost: ${this.url.hostname}:${this.url.port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\n${this._requestPerMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' : ''}\r\n`
+      `GET ${this.url.pathname} HTTP/1.1\r\nHost: ${this.url.hostname}:${this.url.port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\n${this._offerPerMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' : ''}\r\n`
     )
   }
 

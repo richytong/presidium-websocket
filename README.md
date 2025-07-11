@@ -114,7 +114,7 @@ new WebSocket(url string, options {
   autoConnect: boolean,
   maxMessageLength: number,
   socketBufferLength: number,
-  requestPerMessageDeflate: boolean
+  offerPerMessageDeflate: boolean
 }) -> websocket WebSocket
 ```
 
@@ -123,7 +123,7 @@ Options:
   * `autoConnect` - if `true`, establishes the underlying TCP connection automatically upon construction. Defaults to `true`.
   * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
   * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
-  * `requestPerMessageDeflate` - if `true`, requests the server for [Compression Extensions for WebSocket](https://datatracker.ietf.org/doc/html/rfc7692) by including the `Sec-WebSocket-Extensions: permessage-deflate` header in the initial WebSocket handshake. If the server supports compression extensions, all messages exchanged in the WebSocket connection will be compressed with [zlib](https://nodejs.org/api/zlib.html) default options. Defaults to `true`.
+  * `offerPerMessageDeflate` - if `true`, offers to the server [Per-Message Compression Extensions](https://datatracker.ietf.org/doc/html/rfc7692#section-4) by including the `Sec-WebSocket-Extensions: permessage-deflate` header in the initial WebSocket handshake. If the server supports compression extensions, all messages exchanged in the WebSocket connection will be compressed with [zlib](https://nodejs.org/api/zlib.html) default options. Defaults to `true`.
 
 Events:
   * [open](#websocket-open-event)
