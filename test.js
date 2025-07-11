@@ -1,4 +1,5 @@
 const assert = require('assert')
+const sinon = require('sinon')
 const Http = require('presidium/Http')
 const net = require('net')
 const fs = require('fs')
@@ -8,6 +9,7 @@ const zlib = require('zlib')
 const crypto = require('crypto')
 const sleep = require('./_internal/sleep')
 const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
+const deflateRawWithFlush = require('./_internal/deflateRawWithFlush')
 const WebSocket = require('.')
 
 describe('WebSocket.Server, WebSocket', () => {
@@ -1283,7 +1285,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('WebSocket.Server and WebSocket with supportPerMessageDeflate, stub zlib for tail end 0x00, 0x00, 0xff, 0xff', async () => {
+  it('WebSocket.Server with supportPerMessageDeflate and WebSocket, stub zlib for tail end 0x00, 0x00, 0xff, 0xff', async () => {
     const originalZlibDeflateRawSync = zlib.deflateRawSync
 
     let resolve
@@ -1353,7 +1355,150 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('WebSocket.Server and WebSocket zlib.deflateRawSync throws error on client', async () => {
+  it('WebSocket.Server with supportPerMessageDeflate and WebSocket send compressed payload using zlib.createDeflateRaw with deflate.flush', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocket.Server(websocket => {
+      websocket.on('message', message => {
+        messages.push(message)
+        websocket.send(message)
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    }, { supportPerMessageDeflate: true })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', async () => {
+      const payload = Buffer.from('test', 'utf8')
+      const compressed = await deflateRawWithFlush(payload)
+      websocket._socket.write(encodeWebSocketFrame(
+        compressed,
+        0x1, // text
+        true, // mask
+        true, // fin
+        true, // compressed
+      ))
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 2)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0].toString('utf8'), 'test')
+    assert.equal(messages[1].toString('utf8'), 'test')
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
+  it('WebSocket.Server with supportPerMessageDeflate and WebSocket send compressed payload using zlib.createDeflateRaw with deflate.flush but zlib.createInflateRaw throws error', async () => {
+    const stub = sinon.stub(zlib, 'createInflateRaw')
+    stub.throws(new Error('test'))
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+    const errors = []
+
+    const server = new WebSocket.Server(websocket => {
+      websocket.on('message', message => {
+        messages.push(message)
+        websocket.send(message)
+      })
+
+      websocket.on('error', error => {
+        errors.push(error)
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    }, { supportPerMessageDeflate: true })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', async () => {
+      const payload = Buffer.from('test', 'utf8')
+      const compressed = await deflateRawWithFlush(payload)
+      websocket._socket.write(encodeWebSocketFrame(
+        compressed,
+        0x1, // text
+        true, // mask
+        true, // fin
+        true, // compressed
+      ))
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 0)
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].name, 'AggregateError')
+    assert.equal(errors[0].errors[0].message, 'unexpected end of file')
+    assert.equal(errors[0].errors[1].message, 'test')
+    server.close()
+    stub.restore()
+
+    await sleep(100)
+  }).timeout(5000)
+
+  it('WebSocket.Server and WebSocket zlib.deflateRawSync and zlib.createDeflateRaw throws error on client', async () => {
     const originalZlibDeflateRawSync = zlib.deflateRawSync
     zlib.deflateRawSync = () => {
       throw new Error('deflate')

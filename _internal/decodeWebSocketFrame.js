@@ -1,4 +1,5 @@
 const zlib = require('zlib')
+const inflateRawWithFlush = require('./inflateRawWithFlush')
 
 /**
  * @name decodeWebSocketFrame
@@ -18,7 +19,7 @@ const zlib = require('zlib')
  * ```
  */
 
-function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
+async function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
   if (buffer.length < 2) {
     return undefined
   }
@@ -79,8 +80,17 @@ function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
       const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
       const compressed = Buffer.concat([payload, tail])
       payload = zlib.inflateRawSync(compressed)
-    } catch (error) {
-      this.emit('error', error)
+
+    } catch (error0) {
+      try {
+        const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
+        const compressed = Buffer.concat([payload, tail])
+        payload = await inflateRawWithFlush(compressed)
+
+      } catch (error1) {
+        this.emit('error', new AggregateError([error0, error1]))
+        return undefined
+      }
     }
   }
 

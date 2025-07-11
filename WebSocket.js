@@ -197,7 +197,7 @@ class WebSocket extends events.EventEmitter {
    * websocket._processChunk(chunks Array<Buffer>) -> ()
    * ```
    */
-  _processChunk(chunks) {
+  async _processChunk(chunks) {
     if (this.readyState === 0) { // process handshake
       let chunk = chunks.shift()
       let decodeResult = decodeWebSocketHandshakeResponse(chunk)
@@ -243,10 +243,10 @@ class WebSocket extends events.EventEmitter {
     while (chunks.length > 0) {
 
       let chunk = chunks.shift()
-      let decodeResult = decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
+      let decodeResult = await decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
       while (decodeResult == null && chunks.length > 0) {
         chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
+        decodeResult = await decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
       }
       if (decodeResult == null) {
         chunks.prepend(chunk)
@@ -325,7 +325,7 @@ class WebSocket extends events.EventEmitter {
    * websocket.send(payload Buffer|string) -> ()
    * ```
    */
-  send(payload) {
+  async send(payload) {
     let buffer = null
     let opcode = null
 
@@ -348,6 +348,7 @@ class WebSocket extends events.EventEmitter {
     if (this._perMessageDeflate && buffer.length > 0) {
       try {
         const compressedPayload = zlib.deflateRawSync(buffer)
+
         if (
           compressedPayload.length >= 4 &&
           compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))
@@ -357,6 +358,7 @@ class WebSocket extends events.EventEmitter {
           buffer = compressedPayload
         }
         compressed = true
+
       } catch (error) {
         this.emit('error', error)
         return undefined
