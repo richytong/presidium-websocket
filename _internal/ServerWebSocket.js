@@ -78,29 +78,6 @@ class ServerWebsocket extends events.EventEmitter {
       try {
         const compressedPayload = zlib.deflateRawSync(buffer)
 
-        /*
-        const deflate = zlib.createDeflateRaw({
-          // chunkSize: 1024,
-          // memLevel: 7,
-          // level: 3,
-          windowBits: 15
-        })
-        console.log('deflate.write', buffer)
-        deflate.write(buffer)
-        const chunks = []
-        deflate.on('data', chunk => {
-          chunks.push(chunk)
-        })
-        let resolve
-        const p = new Promise(_resolve => {
-          resolve = _resolve
-        })
-        deflate.flush(() => {
-          resolve(Buffer.concat(chunks))
-        })
-        const compressedPayload = await p
-        */
-
         if (
           compressedPayload.length >= 4 &&
           compressedPayload.slice(-4).equals(Buffer.from([0x00, 0x00, 0xff, 0xff]))
