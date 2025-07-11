@@ -1,5 +1,4 @@
-// const WebSocket = require('./WebSocket')
-const WebSocket = require('ws')
+const WebSocket = require('presidium-websocket')
 const WSWebSocket = require('ws')
 
 const server = new WSWebSocket.Server({

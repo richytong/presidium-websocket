@@ -80,17 +80,34 @@ async function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
       const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
       const compressed = Buffer.concat([payload, tail])
 
-      // payload = zlib.inflateRawSync(compressed)
+      payload = zlib.inflateRawSync(compressed)
 
+      /*
       const inflate = zlib.createInflateRaw({
         // windowBits: 12
       })
+      console.log('inflate.write', compressed)
       inflate.write(compressed)
-      inflate.end()
-      payload = await ReadStream.Buffer(inflate)
+
+      const chunks = []
+      inflate.on('data', chunk => {
+        chunks.push(chunk)
+      })
+      let resolve
+      const p = new Promise(_resolve => {
+        resolve = _resolve
+      })
+      inflate.flush(() => {
+        resolve(Buffer.concat(chunks))
+      })
+
+      payload = await p
+      */
 
     } catch (error) {
+      console.error(error)
       this.emit('error', error)
+      return
     }
   }
 
