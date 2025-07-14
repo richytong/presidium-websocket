@@ -2407,4 +2407,33 @@ describe('WebSocket.Server, WebSocket', () => {
 
     await sleep(100)
   })
+
+  it('WebSocket connects to WebSocketServer at a path with query parameters and hash', async () => {
+    let didConnect = false
+    const server = new WebSocket.Server()
+    server.on('connection', (websocket, request) => {
+      assert.equal(request.url, '/test-path?a=1&b=%202#anchor')
+      didConnect = true
+      websocket.close()
+    })
+    server.listen(7357)
+
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    const websocket = new WebSocket('ws://localhost:7357/test-path?a=1&b=%202#anchor')
+
+    websocket.on('close', () => {
+      resolve()
+    })
+
+    await promise
+
+    assert(didConnect)
+    server.close()
+
+    await sleep(100)
+  })
 })

@@ -60,6 +60,8 @@ class WebSocket extends events.EventEmitter {
       hostname: parsedUrl.hostname,
       protocol: parsedUrl.protocol,
       pathname: parsedUrl.pathname,
+      search: parsedUrl.search,
+      hash: parsedUrl.hash
     }
     if (parsedUrl.port.length > 0) {
       this.url.port = Number(parsedUrl.port)
@@ -164,8 +166,9 @@ class WebSocket extends events.EventEmitter {
    */
   _requestUpgrade() {
     const key = crypto.randomBytes(16).toString('base64')
+
     this._socket.write(
-      `GET ${this.url.pathname} HTTP/1.1\r\nHost: ${this.url.hostname}:${this.url.port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\n${this._offerPerMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' : ''}\r\n`
+      `GET ${this.url.pathname}${this.url.search}${this.url.hash} HTTP/1.1\r\nHost: ${this.url.hostname}:${this.url.port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\n${this._offerPerMessageDeflate ? 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' : ''}\r\n`
     )
   }
 
