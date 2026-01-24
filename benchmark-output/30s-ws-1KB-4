@@ -1,0 +1,127 @@
+ws@8.19.0
+OS 6.1.159-182.297.amzn2023.x86_64
+Node.js v22.22.0
+
+Time: 0.05897708 seconds
+ws throughput:        0 messages/s
+ws messages:          0
+
+Time: 1.059013853 seconds
+ws throughput:        852.7159244565443 messages/s
+ws messages:          869
+
+Time: 2.059163499 seconds
+ws throughput:        861.2123963690842 messages/s
+ws messages:          1739
+
+Time: 3.059452899 seconds
+ws throughput:        871.6571704099877 messages/s
+ws messages:          2632
+
+Time: 4.0594851180000004 seconds
+ws throughput:        875.4672180898402 messages/s
+ws messages:          3519
+
+Time: 5.058955947 seconds
+ws throughput:        878.6542932196794 messages/s
+ws messages:          4410
+
+Time: 6.058945032 seconds
+ws throughput:        879.8763007294964 messages/s
+ws messages:          5296
+
+Time: 7.059381816 seconds
+ws throughput:        882.4034711315901 messages/s
+ws messages:          6194
+
+Time: 8.059465027 seconds
+ws throughput:        885.0873011283713 messages/s
+ws messages:          7098
+
+Time: 9.058941554999999 seconds
+ws throughput:        886.9030204932077 messages/s
+ws messages:          7999
+
+Time: 10.059852978999999 seconds
+ws throughput:        887.0316275849401 messages/s
+ws messages:          8888
+
+Time: 11.059964187 seconds
+ws throughput:        887.6550121648247 messages/s
+ws messages:          9782
+
+Time: 12.060195511 seconds
+ws throughput:        888.1657866856044 messages/s
+ws messages:          10676
+
+Time: 13.060805048 seconds
+ws throughput:        888.1882769648568 messages/s
+ws messages:          11565
+
+Time: 14.061331308000002 seconds
+ws throughput:        889.1399858943457 messages/s
+ws messages:          12467
+
+Time: 15.06157553 seconds
+ws throughput:        889.715346239572 messages/s
+ws messages:          13365
+
+Time: 16.061164611 seconds
+ws throughput:        889.7559332601373 messages/s
+ws messages:          14255
+
+Time: 17.0611361 seconds
+ws throughput:        890.0655135893788 messages/s
+ws messages:          15150
+
+Time: 18.061036101000003 seconds
+ws throughput:        890.6772121244537 messages/s
+ws messages:          16051
+
+Time: 19.060881718 seconds
+ws throughput:        890.5962642472999 messages/s
+ws messages:          16940
+
+Time: 20.061004679 seconds
+ws throughput:        890.2613287529211 messages/s
+ws messages:          17824
+
+Time: 21.061395240000003 seconds
+ws throughput:        890.2799273448139 messages/s
+ws messages:          18715
+
+Time: 22.061753666 seconds
+ws throughput:        890.7522300597718 messages/s
+ws messages:          19616
+
+Time: 23.062779242 seconds
+ws throughput:        890.9839230528646 messages/s
+ws messages:          20513
+
+Time: 24.062886901000002 seconds
+ws throughput:        891.3136139522875 messages/s
+ws messages:          21412
+
+Time: 25.063135043 seconds
+ws throughput:        890.9325763762997 messages/s
+ws messages:          22294
+
+Time: 26.063113128 seconds
+ws throughput:        890.7437812878636 messages/s
+ws messages:          23180
+
+Time: 27.062951092 seconds
+ws throughput:        890.6845929402094 messages/s
+ws messages:          24069
+
+Time: 28.06306857 seconds
+ws throughput:        890.9419077262322 messages/s
+ws messages:          24967
+
+Time: 29.062803941 seconds
+ws throughput:        891.1587662827892 messages/s
+ws messages:          25864
+
+Time: 30.063854716 seconds
+ws throughput:        891.0556760859394 messages/s
+ws messages:          26753
