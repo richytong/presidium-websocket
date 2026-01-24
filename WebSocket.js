@@ -115,7 +115,7 @@ class WebSocket extends events.EventEmitter {
           rejectUnauthorized: this._connectOptions.rejectUnauthorized,
           servername: this._connectOptions.servername,
           onread: {
-            buffer: Buffer.alloc(3 * 1024 * 1024),
+            buffer: Buffer.alloc(this._socketBufferLength),
             callback: this._onread.bind(this)
           }
         },
