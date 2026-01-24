@@ -11,6 +11,9 @@ const wsMessages = []
 
 const start = performance.now()
 
+const message = 'small-message-16'
+// const message = Buffer.alloc(1024)
+// const message = Buffer.alloc(3 * 1024 * 1024)
 
 { // ws
 
@@ -29,8 +32,7 @@ const start = performance.now()
 
   ws.on('open', async () => {
     while (true) {
-      ws.send('small-message-16')
-      // ws.send(Buffer.alloc(3 * 1024 * 1024))
+      ws.send(message)
       await sleep(0)
     }
   })

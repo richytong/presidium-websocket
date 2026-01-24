@@ -11,6 +11,10 @@ const presidiumMessages = []
 
 const start = performance.now()
 
+const message = 'small-message-16'
+// const message = Buffer.alloc(1024)
+// const message = Buffer.alloc(3 * 1024 * 1024)
+
 { // Presidium
 
   const server = new PresidiumWebSocketServer(websocket => {
@@ -18,14 +22,14 @@ const start = performance.now()
       websocket.send(message)
     })
   }, {
-    maxMessageLength: 3 * 1024 * 1024,
-    socketBufferLength: 3 * 1024 * 1024
+    maxMessageLength: message.length,
+    socketBufferLength: message.length,
   })
   server.listen(1337)
 
   const websocket = new PresidiumWebSocket('ws://localhost:1337', {
-    // maxMessageLength: 3 * 1024 * 1024,
-    // socketBufferLength: 3 * 1024 * 1024
+    maxMessageLength: message.length * 2,
+    socketBufferLength: message.length * 2,
   })
 
   websocket.on('message', message => {
@@ -34,8 +38,7 @@ const start = performance.now()
 
   websocket.on('open', async () => {
     while (true) {
-      websocket.send('small-message-16')
-      // websocket.send(Buffer.alloc(3 * 1024 * 1024))
+      websocket.send(message)
       await sleep(0)
     }
   })
