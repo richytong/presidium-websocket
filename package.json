@@ -15,7 +15,8 @@
     "WebSocket.js",
     "WebSocketServer.js",
     "WebSocketSecureServer.js",
-    "index.js"
+    "index.js",
+    "README.md"
   ],
   "keywords": [
     "compression",
