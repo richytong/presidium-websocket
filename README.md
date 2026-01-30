@@ -1,5 +1,5 @@
 # Presidium WebSocket
-![presidium](https://rubico.land/assets/presidium-logo-200.jpg)
+![presidium](https://rubico.land/assets/presidium-logo-2-w200.jpg)
 
 ![Node.js CI](https://github.com/richytong/presidium-websocket/workflows/Node.js%20CI/badge.svg)
 [![codecov](https://codecov.io/gh/richytong/presidium-websocket/branch/master/graph/badge.svg)](https://codecov.io/gh/richytong/presidium-websocket)
