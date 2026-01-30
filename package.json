@@ -1,6 +1,6 @@
 {
   "name": "presidium-websocket",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Presidium WebSocket client and server for Node.js",
   "author": "Richard Tong",
   "license": "MIT",
