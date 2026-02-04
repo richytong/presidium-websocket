@@ -27,13 +27,12 @@ const {
   kBufferCb
 } = require('./_internal/stream_base_commons')
 const _onread = require('./_internal/_onread')
+const defaultHttpHandler = require('./_internal/defaultHttpHandler')
 
 /**
  * @name WebSocketServer
  *
  * @docs
- * Presidium WebSocket server.
- *
  * ```coffeescript [specscript]
  * module http 'https://nodejs.org/api/http.html'
  * module net 'https://nodejs.org/api/net.html'
@@ -61,20 +60,30 @@ const _onread = require('./_internal/_onread')
  *   cert: string,
  *   passphrase: string
  * }) -> server WebSocketServer
+ * ```
  *
- * server.on('connection', websocketHandler) -> ()
- * server.on('request', httpHandler) -> ()
- * server.on('upgrade', upgradeHandler) -> ()
- * server.on('error', (error Error)=>()) -> ()
- * server.on('close', ()=>()) -> ()
+ * Presidium WebSocketServer client.
  *
- * server.on('connection', (websocket WebSocket) => {
- *   websocket.on('open', ()=>()) -> ()
- *   websocket.on('message', (message Buffer)=>()) -> ()
- *   websocket.on('ping', ()=>()) -> ()
- *   websocket.on('pong', ()=>()) -> ()
- *   websocket.on('error', (error Error)=>()) -> ()
- *   websocket.on('close', ()=>()) -> ()
+ * Arguments:
+ *   * `websocketHandler` - a handler function that expects an instance of a [`ServerWebSocket`](#ServerWebSocket).
+ *   * `options`
+ *     * `httpHandler` - function that processes incoming HTTP requests from clients. Defaults to an HTTP handler that responds with `200 OK`.
+ *     * `secure` - if `true`, starts an HTTPS server instead of an HTTP server. Clients must connect to the server using the `wss` protocol instead of the `ws` protocol. Requires `key` and `cert` options.
+ *     * `key` - private key(s) in PEM format. Encrypted keys will be decrypted using the `passphrase` option. Multiple keys using different algorithms can be provided as an array of unencrypted key strings or buffers, or an array of objects in the form `{ pem: string|Buffer, passphrase: string }`.
+ *     * `cert` - cert chain(s) in PEM format. One cert chain should be provided per private key.
+ *     * `passphrase` - used to decrypt the private key(s).
+ *     * `supportPerMessageDeflate` - if `true`, indicates to WebSocket clients that the server supports [Compression Extensions for WebSocket](https://datatracker.ietf.org/doc/html/rfc7692). If an incoming WebSocket connection has requested compression extensions via the `Sec-WebSocket-Extensions: permessage-deflate` header, all messages exchanged in the WebSocket connection will be compressed using [zlib](https://nodejs.org/api/zlib.html) default options. Defaults to `false`.
+ *     * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
+ *     * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for all connections to the server.
+ *
+ * Return:
+ *   * `server` - an instance of the WebSocketServer
+ *
+ * ```javascript
+ * const server = new WebSocketServer()
+ *
+ * server.listen(1337, () => {
+ *   console.log('WebSocket server listening on port 1337')
  * })
  * ```
  */
@@ -382,36 +391,6 @@ class WebSocketServer extends events.EventEmitter {
     })
     this.emit('close')
   }
-}
-
-/**
- * @name noop
- *
- * @docs
- * Function that doesn't do anything
- *
- * ```coffeescript [specscript]
- * noop() -> ()
- * ```
- */
-function noop() {
-}
-
-/**
- * @name defaultHttpHandler
- *
- * @docs
- * Default HTTP handler. Responds with `200 OK`.
- *
- * ```coffeescript [specscript]
- * defaultHttpHandler(request http.ClientRequest, response http.ServerResponse) -> ()
- * ```
- */
-function defaultHttpHandler(request, response) {
-  response.writeHead(200, {
-    'Content-Type': 'text/plain',
-  })
-  response.end('OK')
 }
 
 module.exports = WebSocketServer
