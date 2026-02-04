@@ -26,8 +26,6 @@ const functionConcatSync = require('./_internal/functionConcatSync')
  * @name WebSocket
  *
  * @docs
- * Creates a Presidium WebSocket client.
- *
  * ```coffeescript [specscript]
  * new WebSocket(url string) -> websocket WebSocket
  *
@@ -40,7 +38,7 @@ const functionConcatSync = require('./_internal/functionConcatSync')
  * }) -> websocket WebSocket
  * ```
  *
- * Presidium WebSocket client.
+ * Presidium WebSocket class.
  *
  * Arguments:
  *   * `options`
@@ -113,6 +111,8 @@ class WebSocket extends events.EventEmitter {
    * emit('open')
    * ```
    *
+   * The `open` event. Emitted when the WebSocket connection is open.
+   *
    * Event Data:
    *   * (none)
    *
@@ -132,6 +132,8 @@ class WebSocket extends events.EventEmitter {
    * ```coffeescript [specscript]
    * emit('message', message Buffer)
    * ```
+   *
+   * The `message` event. Emitted upon receipt and successful decoding (and reassembly, if applicable) of an incoming message.
    *
    * Event Data:
    *   * `message` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) of the received message.
@@ -153,8 +155,10 @@ class WebSocket extends events.EventEmitter {
    * emit('ping', payload Buffer)
    * ```
    *
+   * The `ping` event. Emitted upon receipt and successful decoding of an incoming "ping" message.
+   *
    * Event Data:
-   *   * payload - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) of the received payload.
+   *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) of the received payload.
    *
    * ```javascript
    * const websocket = new WebSocket('ws://localhost:1337/')
@@ -173,8 +177,10 @@ class WebSocket extends events.EventEmitter {
    * emit('pong', payload Buffer)
    * ```
    *
+   * The `pong` event. Emitted upon receipt and successful decoding of an incoming "pong" message.
+   *
    * Event Data:
-   *   * payload - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) of the received payload.
+   *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) of the received payload.
    *
    * ```javascript
    * const websocket = new WebSocket('ws://localhost:1337/')
@@ -193,8 +199,10 @@ class WebSocket extends events.EventEmitter {
    * emit('error', error Error)
    * ```
    *
+   * The `error` event. Emitted if an error occurs on the WebSocket instance or on its underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
+   *
    * Event Data:
-   *   * error - an instance of a JavaScript [Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error).
+   *   * `error` - an instance of a JavaScript [Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error).
    *
    * ```javascript
    * const websocket = new WebSocket('ws://localhost:1337/')
@@ -212,6 +220,8 @@ class WebSocket extends events.EventEmitter {
    * ```coffeescript [specscript]
    * emit('close')
    * ```
+   *
+   * The `close` event. Emitted when the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) is destroyed.
    *
    * Event Data:
    *   * (none)
@@ -574,12 +584,12 @@ class WebSocket extends events.EventEmitter {
    * @name sendClose
    *
    * @docs
-   * Sends a close frame to the WebSocket server.
-   *
    * ```coffeescript [specscript]
    * websocket.sendClose() -> undefined
    * websocket.sendClose(payload Buffer|string) -> undefined
    * ```
+   *
+   * Sends a close frame to the WebSocket server.
    *
    * Arguments:
    *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) or string of the payload to send.

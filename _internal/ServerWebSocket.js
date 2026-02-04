@@ -7,10 +7,24 @@ const encodeWebSocketFrame = require('./encodeWebSocketFrame')
  *
  * @docs
  * ```coffeescript [specscript]
+ * module net 'https://nodejs.org/api/net.html'
+ *
  * new ServerWebsocket(socket net.Socket, options {
  *   maxMessageLength: number
+ *   socketBufferLength: number,
  * }) -> websocket ServerWebsocket
  * ```
+ *
+ * Presidium ServerWebSocket class. Used by Presidium [WebSocketServer](/docs/WebSocketServer) and [WebSocketSecureServer](/docs/WebSocketSecureServer) classes.
+ *
+ * Arguments:
+ *   * `socket` - an instance of a [Node.js net.Socket](https://nodejs.org/docs/latest-v24.x/api/net.html#class-netsocket). Represents the server's underlying TCP connection to the client.
+ *   * `options`
+ *     * `maxMessageLength` - the maximum length in bytes of sent messages. If a message is longer than `maxMessageLength`, it is split into fragmented messages that are reassembled by the receiver.
+ *     * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
+ *
+ * Return:
+ *   * `websocket` - a ServerWebSocket instance. Represents the server's WebSocket connection to the client.
  */
 class ServerWebsocket extends events.EventEmitter {
   constructor(socket, options) {
@@ -35,11 +49,143 @@ class ServerWebsocket extends events.EventEmitter {
   }
 
   /**
+   * @name Event: open
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * emit('open')
+   * ```
+   *
+   * The `open` event. Emitted when the WebSocket connection is open.
+   *
+   * Event Data:
+   *   * (none)
+   *
+   * ```javascript
+   * websocket.on('open', () => {
+   *   console.log('Connection is open.')
+   * })
+   * ```
+   */
+
+  /**
+   * @name Event: message
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * emit('message', message Buffer)
+   * ```
+   *
+   * The `message` event. Emitted upon receipt and successful decoding (and reassembly, if applicable) of an incoming message.
+   *
+   * Event Data:
+   *   * `message` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) of the received message.
+   *
+   * ```javascript
+   * websocket.on('message', message => {
+   *   console.log('Message:', message.toString('utf8'))
+   * })
+   * ```
+   */
+
+  /**
+   * @name Event: ping
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * emit('ping', payload Buffer)
+   * ```
+   *
+   * The `ping` event. Emitted upon receipt and successful decoding of an incoming "ping" message.
+   *
+   * Event Data:
+   *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) of the received payload.
+   *
+   * ```javascript
+   * websocket.on('ping', () => {
+   *   console.log('Ping')
+   * })
+   * ```
+   */
+
+  /**
+   * @name Event: pong
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * emit('pong', payload Buffer)
+   * ```
+   *
+   * The `pong` event. Emitted upon receipt and successful decoding of an incoming "pong" message.
+   *
+   * Event Data:
+   *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) of the received payload.
+   *
+   * ```javascript
+   * websocket.on('pong', () => {
+   *   console.log('Pong')
+   * })
+   * ```
+   */
+
+  /**
+   * @name Event: error
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * emit('error', error Error)
+   * ```
+   *
+   * The `error` event. Emitted if an error occurs on the ServerWebSocket instance or on its underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
+   *
+   * Event Data:
+   *   * `error` - an instance of a JavaScript [Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error).
+   *
+   * ```javascript
+   * websocket.on('error', error => {
+   *   console.error('Error:', error)
+   * })
+   * ```
+   */
+
+  /**
+   * @name Event: close
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * emit('close')
+   * ```
+   *
+   * The `close` event. Emitted when the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) is destroyed.
+   *
+   * Event Data:
+   *   * (none)
+   *
+   * ```javascript
+   * websocket.on('close', () => {
+   *   console.log('Connection is closed.')
+   * })
+   * ```
+   */
+
+  /**
    * @name connect
    *
    * @docs
    * ```coffeescript [specscript]
-   * websocket.connect() -> ()
+   * websocket.connect() -> undefined
+   * ```
+   *
+   * Throws an error.
+   *
+   * Arguments:
+   *   * (none)
+   *
+   * Return:
+   *   * undefined
+   *
+   * ```javascript
+   * websocket.connect()
    * ```
    */
   connect() {
@@ -52,6 +198,18 @@ class ServerWebsocket extends events.EventEmitter {
    * @docs
    * ```coffeescript [specscript]
    * websocket.send(payload Buffer|string) -> ()
+   * ```
+   *
+   * Sends a message to the client.
+   *
+   * Arguments:
+   *   * `message` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) or string of the message to send.
+   *
+   * Return:
+   *   * undefined
+   *
+   * ```javascript
+   * websocket.send('Example')
    * ```
    */
   async send(payload) {
@@ -144,10 +302,21 @@ class ServerWebsocket extends events.EventEmitter {
    * @name sendClose
    *
    * @docs
-   * Sends close frame to client
-   *
    * ```coffeescript [specscript]
-   * websocket.sendClose(payload Buffer|string) -> ()
+   * websocket.sendClose() -> undefined
+   * websocket.sendClose(payload Buffer|string) -> undefined
+   * ```
+   *
+   * Sends a close frame to the client.
+   *
+   * Arguments:
+   *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) or string of the payload to send.
+   *
+   * Return:
+   *   * undefined
+   *
+   * ```javascript
+   * websocket.sendClose()
    * ```
    */
   sendClose(payload = Buffer.from([])) {
@@ -162,10 +331,21 @@ class ServerWebsocket extends events.EventEmitter {
    * @name sendPing
    *
    * @docs
-   * Sends "ping" to client
-   *
    * ```coffeescript [specscript]
-   * websocket.sendPing(payload Buffer|string) -> ()
+   * websocket.sendPing() -> undefined
+   * websocket.sendPing(payload Buffer|string) -> undefined
+   * ```
+   *
+   * Sends a ping frame to the client.
+   *
+   * Arguments:
+   *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) or string of the payload to send.
+   *
+   * Return:
+   *   * undefined
+   *
+   * ```javascript
+   * websocket.sendPing()
    * ```
    */
   sendPing(payload = Buffer.from([])) {
@@ -179,10 +359,21 @@ class ServerWebsocket extends events.EventEmitter {
    * @name sendPong
    *
    * @docs
-   * Sends "pong" back to client
-   *
    * ```coffeescript [specscript]
-   * websocket.sendPong(payload Buffer|string) -> ()
+   * websocket.sendPong() -> undefined
+   * websocket.sendPong(payload Buffer|string) -> undefined
+   * ```
+   *
+   * Sends a pong frame to the client.
+   *
+   * Arguments:
+   *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) or string of the payload to send.
+   *
+   * Return:
+   *   * undefined
+   *
+   * ```javascript
+   * websocket.sendPong()
    * ```
    */
   sendPong(payload = Buffer.from([])) {
@@ -196,11 +387,23 @@ class ServerWebsocket extends events.EventEmitter {
    * @name close
    *
    * @docs
-   * Closes the websocket
-   *
    * ```coffeescript [specscript]
-   * websocket.close() -> ()
+   * websocket.close() -> undefined
+   * websocket.close(payload Buffer|string) -> undefined
    * ```
+   *
+   * Closes the connection to the client.
+   *
+   * Arguments:
+   *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) or string of the payload to send.
+   *
+   * Return:
+   *   * undefined
+   *
+   * ```javascript
+   * websocket.close()
+   * ```
+   *
    */
   close(payload = Buffer.from([])) {
     this.readyState = 2 // CLOSING
@@ -211,10 +414,21 @@ class ServerWebsocket extends events.EventEmitter {
    * @name destroy
    *
    * @docs
-   * Closes the websocket
-   *
    * ```coffeescript [specscript]
-   * websocket.destroy(payload Buffer|string) -> ()
+   * websocket.destroy() -> undefined
+   * websocket.destroy(payload Buffer|string) -> undefined
+   * ```
+   *
+   * Destroys the underlying [socket](https://nodejs.org/api/net.html#class-netsocket).
+   *
+   * Arguments:
+   *   * `payload` - a [Node.js buffer](https://nodejs.org/docs/latest-v24.x/api/buffer.html) or string of the payload to send.
+   *
+   * Return:
+   *   * undefined
+   *
+   * ```javascript
+   * websocket.destroy()
    * ```
    */
   destroy(payload) {

@@ -37,9 +37,9 @@ const defaultHttpHandler = require('./_internal/defaultHttpHandler')
  * module http 'https://nodejs.org/api/http.html'
  * module net 'https://nodejs.org/api/net.html'
  *
- * websocketHandler (websocket WebSocket)=>()
- * httpHandler (request http.ClientRequest, response http.ServerResponse)=>()
- * upgradeHandler (request http.ClientRequest, socket net.Socket, head Buffer)=>()
+ * websocketHandler (websocket WebSocket)=>undefined
+ * httpHandler (request http.ClientRequest, response http.ServerResponse)=>undefined
+ * upgradeHandler (request http.ClientRequest, socket net.Socket, head Buffer)=>undefined
  *
  * new WebSocketServer() -> server WebSocketServer
  * new WebSocketServer(websocketHandler) -> server WebSocketServer
@@ -62,10 +62,10 @@ const defaultHttpHandler = require('./_internal/defaultHttpHandler')
  * }) -> server WebSocketServer
  * ```
  *
- * Presidium WebSocketServer client.
+ * Presidium WebSocketServer class.
  *
  * Arguments:
- *   * `websocketHandler` - a handler function that expects an instance of a [`ServerWebSocket`](#ServerWebSocket).
+ *   * `websocketHandler` - a handler function that expects an instance of a [`ServerWebSocket`](#ServerWebSocket). Represents the server's WebSocket connection to the client.
  *   * `options`
  *     * `httpHandler` - function that processes incoming HTTP requests from clients. Defaults to an HTTP handler that responds with `200 OK`.
  *     * `secure` - if `true`, starts an HTTPS server instead of an HTTP server. Clients must connect to the server using the `wss` protocol instead of the `ws` protocol. Requires `key` and `cert` options.
@@ -77,7 +77,7 @@ const defaultHttpHandler = require('./_internal/defaultHttpHandler')
  *     * `socketBufferLength` - length in bytes of the internal buffer of the underlying [socket](https://nodejs.org/api/net.html#class-netsocket) for all connections to the server.
  *
  * Return:
- *   * `server` - an instance of the WebSocketServer
+ *   * `server` - an instance of the WebSocketServer.
  *
  * ```javascript
  * const server = new WebSocketServer()
@@ -133,6 +133,94 @@ class WebSocketServer extends events.EventEmitter {
     this.connections = []
 
   }
+
+  /**
+   * @name Event: connection
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * emit('connection', websocket ServerWebSocket)
+   * ```
+   *
+   * Event Data:
+   *   * `websocket` - an instance of a [ServerWebSocket](#ServerWebSocket). Represents the server's WebSocket connection to the client.
+   *
+   * ```javascript
+   * const server = new WebSocketServer()
+   *
+   * server.on('connection', websocket => {
+   *   console.log('New WebSocket connection.')
+   * })
+   * ```
+   */
+
+  /**
+   * @name Event: request
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * module http 'https://nodejs.org/api/http.html'
+   *
+   * emit('request', request http.ClientRequest, response http.ServerResponse)
+   * ```
+   *
+   * Event Data:
+   *   * `request` - an instance of a [Node.js http.ClientRequest](https://nodejs.org/docs/latest-v24.x/api/http.html#class-httpclientrequest). Represents a client's HTTP request to the server.
+   *   * `response` - an instance of a [Node.js http.ServerResponse](https://nodejs.org/docs/latest-v24.x/api/http.html#class-httpserverresponse). Represents the server's HTTP response to the client.
+   *
+   * ```javascript
+   * const server = new WebSocketServer()
+   *
+   * server.on('request', (request, response) => {
+   *   console.log('New HTTP request.')
+   * })
+   * ```
+   */
+
+  /**
+   * @name Event: upgrade
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * module http 'https://nodejs.org/api/http.html'
+   * module net 'https://nodejs.org/api/net.html'
+   *
+   * emit('upgrade', request http.ClientRequest, socket net.Socket, head Buffer)
+   * ```
+   *
+   * Event Data:
+   *   * `request` - an instance of a [Node.js http.ClientRequest](https://nodejs.org/docs/latest-v24.x/api/http.html#class-httpclientrequest). Represents a client's HTTP request to the server.
+   *   * `socket` - an instance of a [Node.js net.Socket](https://nodejs.org/docs/latest-v24.x/api/net.html#class-netsocket). Represents the server's underlying TCP connection to the client.
+   *   * `head` - a [Node.js buffer](https://nodejs.org/api/buffer.html) containing the first packet of the upgraded data stream.
+   *
+   * ```javascript
+   * const server = new WebSocketServer()
+   *
+   * server.on('upgrade', (request, socket, heaad) => {
+   *   console.log('Upgrade')
+   * })
+   * ```
+   */
+
+  /**
+   * @name Event: close
+   *
+   * @docs
+   * ```coffeescript [specscript]
+   * emit('close')
+   * ```
+   *
+   * Event Data:
+   *   * (none)
+   *
+   * ```javascript
+   * const server = new WebSocketServer()
+   *
+   * server.on('close', websocket => {
+   *   console.log('WebSocket server closed.')
+   * })
+   * ```
+   */
 
   /**
    * @name _handleRequest
@@ -368,7 +456,30 @@ class WebSocketServer extends events.EventEmitter {
    *
    * @docs
    * ```coffeescript [specscript]
-   * server.listen(port number, callback? function) -> ()
+   * server.listen(port number) -> undefined
+   * server.listen(port number, callback ()=>()) -> undefined
+   * server.listen(port number, host string, callback ()=>()) -> undefined
+   * server.listen(port number, backlog number, callback ()=>()) -> undefined
+   * server.listen(port number, host string, backlog number, callback ()=>()) -> undefined
+   * ```
+   *
+   * Starts the WebSocket server listening for connections.
+   *
+   * Arguments:
+   *   * `port` - the network port on which the server is listening.
+   *   * `host` - the ip address of the network device on which the server is running. Defaults to the [0.0.0.0](https://en.wikipedia.org/wiki/0.0.0.0).
+   *   * `backlog` - a number that specifies the maximum length of the queue of pending connections. Defaults to 511.
+   *   * `callback` - a function that is called when the server has started listening.
+   *
+   * Return:
+   *   * undefined
+   *
+   * ```javascript
+   * const server = new WebSocketServer()
+   *
+   * server.listen(1337, () => {
+   *   console.log('WebSocket server listening on port 1337')
+   * })
    * ```
    */
   listen(...args) {
@@ -380,7 +491,24 @@ class WebSocketServer extends events.EventEmitter {
    *
    * @docs
    * ```coffeescript [specscript]
-   * server.close() -> ()
+   * server.close() -> undefined
+   * server.close(callback function) -> undefined
+   * ```
+   *
+   * Stops the server from accepting new connections and closes all current connections.
+   *
+   * Arguments:
+   *   * `callback` - a function that is called once the server has closed.
+   *
+   * Return:
+   *   * undefined
+   *
+   * ```javascript
+   * const server = new WebSocketServer()
+   *
+   * server.listen(1337, () => {
+   *   console.log('WebSocket server listening on port 1337')
+   * })
    * ```
    */
   close() {
