@@ -218,7 +218,7 @@ websocket.connect() -> ()
 ```
 
 #### websocket.send
-Sends a payload to the WebSocket server.
+Sends a message to the WebSocket server.
 
 ```coffeescript [specscript]
 websocket.send(payload Buffer|string) -> ()
