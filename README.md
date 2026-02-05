@@ -95,7 +95,13 @@ while (true) {
 ```
 
 ## Docs
-Please find the full documentation at [presidium.services/docs](https://presidium.services/docs).
+Please find the full documentation for the Presidium library at [presidium.services](https://presidium.services).
+
+Presidium WebSocket class documentation:
+  * [WebSocket](https://presidium.services/docs/WebSocket)
+  * [WebSocketServer](https://presidium.services/docs/WebSocketServer)
+  * [WebSocketSecureServer](https://presidium.services/docs/WebSocketSecureServer)
+  * [ServerWebSocket](https://presidium.services/docs/ServerWebSocket)
 
 ## Installation
 
