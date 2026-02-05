@@ -16,6 +16,7 @@
     "WebSocketServer.js",
     "WebSocketSecureServer.js",
     "index.js",
+    "LICENSE",
     "README.md"
   ],
   "keywords": [
