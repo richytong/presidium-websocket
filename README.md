@@ -6,7 +6,7 @@
 [![npm version](https://img.shields.io/npm/v/presidium-websocket.svg?style=flat)](https://www.npmjs.com/package/presidium-websocket)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-WebSocket client and server for [Node.js](https://nodejs.org/en). Implements [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455) and [RFC 7692](https://datatracker.ietf.org/doc/html/rfc7692).
+WebSocket client and server for Node.js. Implements [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455) and [RFC 7692](https://datatracker.ietf.org/doc/html/rfc7692).
 
 
 ```javascript
