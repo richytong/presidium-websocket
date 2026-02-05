@@ -15,6 +15,7 @@
     "WebSocket.js",
     "WebSocketServer.js",
     "WebSocketSecureServer.js",
+    "ServerWebSocket.js",
     "index.js",
     "LICENSE",
     "README.md"
