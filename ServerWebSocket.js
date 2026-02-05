@@ -3,16 +3,16 @@ const zlib = require('zlib')
 const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 
 /**
- * @name ServerWebsocket
+ * @name ServerWebSocket
  *
  * @docs
  * ```coffeescript [specscript]
  * module net 'https://nodejs.org/api/net.html'
  *
- * new ServerWebsocket(socket net.Socket, options {
+ * new ServerWebSocket(socket net.Socket, options {
  *   maxMessageLength: number
  *   socketBufferLength: number,
- * }) -> websocket ServerWebsocket
+ * }) -> websocket ServerWebSocket
  * ```
  *
  * Presidium ServerWebSocket class. Used by Presidium [WebSocketServer](/docs/WebSocketServer) and [WebSocketSecureServer](/docs/WebSocketSecureServer) classes.
@@ -26,7 +26,7 @@ const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
  * Return:
  *   * `websocket` - a ServerWebSocket instance. Represents the server's WebSocket connection to the client.
  */
-class ServerWebsocket extends events.EventEmitter {
+class ServerWebSocket extends events.EventEmitter {
   constructor(socket, options) {
     super()
     this._socket = socket
@@ -439,4 +439,4 @@ class ServerWebsocket extends events.EventEmitter {
   }
 }
 
-module.exports = ServerWebsocket
+module.exports = ServerWebSocket
