@@ -10,7 +10,7 @@ const https = require('https')
 const crypto = require('crypto')
 const events = require('events')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
-const ServerWebSocket = require('./_internal/ServerWebSocket')
+const ServerWebSocket = require('./ServerWebSocket')
 const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
@@ -65,7 +65,7 @@ const defaultHttpHandler = require('./_internal/defaultHttpHandler')
  * Presidium WebSocketServer class.
  *
  * Arguments:
- *   * `websocketHandler` - a handler function that expects an instance of a [`ServerWebSocket`](#ServerWebSocket). Represents the server's WebSocket connection to the client.
+ *   * `websocketHandler` - a handler function that expects an instance of a [`ServerWebSocket`](/docs/ServerWebSocket). Represents the server's WebSocket connection to the client.
  *   * `options`
  *     * `httpHandler` - function that processes incoming HTTP requests from clients. Defaults to an HTTP handler that responds with `200 OK`.
  *     * `secure` - if `true`, starts an HTTPS server instead of an HTTP server. Clients must connect to the server using the `wss` protocol instead of the `ws` protocol. Requires `key` and `cert` options.
@@ -143,7 +143,7 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    *
    * Event Data:
-   *   * `websocket` - an instance of a [ServerWebSocket](#ServerWebSocket). Represents the server's WebSocket connection to the client.
+   *   * `websocket` - an instance of a [ServerWebSocket](/docs/ServerWebSocket). Represents the server's WebSocket connection to the client.
    *
    * ```javascript
    * const server = new WebSocketServer()

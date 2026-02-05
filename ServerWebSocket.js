@@ -1,6 +1,6 @@
 const events = require('events')
 const zlib = require('zlib')
-const encodeWebSocketFrame = require('./encodeWebSocketFrame')
+const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 
 /**
  * @name ServerWebsocket
