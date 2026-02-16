@@ -1,3 +1,10 @@
+/**
+ * presidium-websocket v2.0.0
+ * https://github.com/richytong/presidium-websocket
+ * (c) 2026 Richard Tong
+ * presidium-websocket may be freely distributed under the MIT license.
+ */
+
 const events = require('events')
 const zlib = require('zlib')
 const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
