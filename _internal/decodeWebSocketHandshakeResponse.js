@@ -15,7 +15,7 @@ function decodeWebSocketHandshakeResponse(buffer) {
   if (s.includes('HTTP/1.1') && s.includes('\r\n\r\n')) {
     const index = s.indexOf('\r\n\r\n') + 4
     return {
-      handshakeSucceeded: s.includes('101 Switching Protocols'),
+      handshakeSucceeded: s.includes('HTTP/1.1 101'),
       perMessageDeflate: s.includes('permessage-deflate'),
       message: s.slice(0, index),
       remaining: buffer.slice(index)
