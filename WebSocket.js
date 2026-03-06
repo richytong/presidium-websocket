@@ -13,10 +13,9 @@ const zlib = require('zlib')
 const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const decodeWebSocketHandshakeResponse = require('./_internal/decodeWebSocketHandshakeResponse')
-const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
-const append = require('./_internal/append')
+const push = require('./_internal/push')
 const call = require('./_internal/call')
 const thunkify1 = require('./_internal/thunkify1')
 const thunkify3 = require('./_internal/thunkify3')
@@ -335,10 +334,10 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   async _handleDataFrames() {
-    const chunks = new LinkedList()
+    const chunks = []
 
     this._socket.on('data', functionConcatSync(
-      curry3(append, chunks, __, 'WebSocket'),
+      curry3(push, chunks, __, 'WebSocket'),
       thunkify1(
         process.nextTick,
         thunkify3(call, this._processChunk, this, chunks)
@@ -363,7 +362,7 @@ class WebSocket extends events.EventEmitter {
         decodeResult = decodeWebSocketHandshakeResponse(chunk)
       }
       if (decodeResult == null) {
-        chunks.prepend(chunk)
+        chunks.unshift(chunk)
         return undefined
       }
 
@@ -386,7 +385,7 @@ class WebSocket extends events.EventEmitter {
       }
 
       if (remaining.length > 0) {
-        chunks.prepend(remaining)
+        chunks.unshift(remaining)
       }
 
       this.readyState = 1 // OPEN
@@ -406,7 +405,7 @@ class WebSocket extends events.EventEmitter {
         decodeResult = await decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
       }
       if (decodeResult == null) {
-        chunks.prepend(chunk)
+        chunks.unshift(chunk)
         return undefined
       }
 
@@ -420,7 +419,7 @@ class WebSocket extends events.EventEmitter {
       }
 
       if (remaining.length > 0) {
-        chunks.prepend(remaining)
+        chunks.unshift(remaining)
       }
 
       this._handleDataFrame(payload, opcode, fin)

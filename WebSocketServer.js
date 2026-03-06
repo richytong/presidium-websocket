@@ -11,10 +11,10 @@ const crypto = require('crypto')
 const events = require('events')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./ServerWebSocket')
-const LinkedList = require('./_internal/LinkedList')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
 const append = require('./_internal/append')
+const push = require('./_internal/push')
 const call = require('./_internal/call')
 const remove = require('./_internal/remove')
 const thunkify1 = require('./_internal/thunkify1')
@@ -310,7 +310,7 @@ class WebSocketServer extends events.EventEmitter {
    * ```
    */
   _handleUpgradedConnection(socket, request, head) {
-    const chunks = new LinkedList()
+    const chunks = []
     const websocket = new ServerWebSocket(socket, {
       maxMessageLength: this._maxMessageLength,
       socketBufferLength: this._socketBufferLength
@@ -338,7 +338,8 @@ class WebSocketServer extends events.EventEmitter {
     ))
 
     socket.on('data', functionConcatSync(
-      curry3(append, chunks, __, 'WebSocketServer'),
+      // curry3(append, chunks, __, 'WebSocketServer'),
+      curry3(push, chunks, __, 'WebSocketServer'),
       thunkify1(
         process.nextTick,
         thunkify4(call, this._processChunk, this, chunks, websocket)
@@ -380,7 +381,7 @@ class WebSocketServer extends events.EventEmitter {
         decodeResult = await decodeWebSocketFrame.call(websocket, chunk, websocket._perMessageDeflate)
       }
       if (decodeResult == null) {
-        chunks.prepend(chunk)
+        chunks.unshift(chunk)
         return undefined
       }
 
@@ -394,7 +395,7 @@ class WebSocketServer extends events.EventEmitter {
       }
 
       if (remaining.length > 0) {
-        chunks.prepend(remaining)
+        chunks.unshift(remaining)
       }
 
       this._handleDataFrame(websocket, payload, opcode, fin)
