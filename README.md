@@ -1,13 +1,13 @@
 # Presidium WebSocket
 ![presidium](https://rubico.land/assets/presidium-logo-3-w200.jpg)
 
+License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
+
 ![Node.js CI](https://github.com/richytong/presidium-websocket/workflows/Node.js%20CI/badge.svg)
 [![codecov](https://codecov.io/gh/richytong/presidium-websocket/branch/master/graph/badge.svg)](https://codecov.io/gh/richytong/presidium-websocket)
 [![npm version](https://img.shields.io/npm/v/presidium-websocket.svg?style=flat)](https://www.npmjs.com/package/presidium-websocket)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 WebSocket client and server for Node.js. Implements [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455) and [RFC 7692](https://datatracker.ietf.org/doc/html/rfc7692).
-
 
 ```javascript
 const WebSocket = require('presidium-websocket')
