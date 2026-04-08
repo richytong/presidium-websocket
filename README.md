@@ -128,7 +128,7 @@ Pull requests should provide some basic context and link the relevant issue. Her
 For more information please see [CONTRIBUTING.md](/CONTRIBUTING.md)
 
 ## License
-Presidium WebSocket is [MIT Licensed](https://github.com/richytong/presidium-websocket/blob/master/LICENSE).
+Presidium WebSocket is distributed under the [CFOSS License](https://cloutsworld.com/en-us/legal/license/cfoss).
 
 ## Support
  * minimum Node.js version: 16
