@@ -1,6 +1,7 @@
 # Presidium WebSocket
 ![presidium](https://rubico.land/assets/presidium-logo-3-w200.jpg)
 
+Source code: [GitHub](https://github.com/richytong/presidium-websocket) |
 License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
 
 ![Node.js CI](https://github.com/richytong/presidium-websocket/workflows/Node.js%20CI/badge.svg)
