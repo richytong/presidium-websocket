@@ -8,7 +8,7 @@ License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
 [![codecov](https://codecov.io/gh/richytong/presidium-websocket/branch/master/graph/badge.svg)](https://codecov.io/gh/richytong/presidium-websocket)
 [![npm version](https://img.shields.io/npm/v/presidium-websocket.svg?style=flat)](https://www.npmjs.com/package/presidium-websocket)
 
-WebSocket client and server for Node.js. Implements [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455) and [RFC 7692](https://datatracker.ietf.org/doc/html/rfc7692).
+Presidium WebSocket client and server. Implements [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455) and [RFC 7692](https://datatracker.ietf.org/doc/html/rfc7692).
 
 ```javascript
 const WebSocket = require('presidium-websocket')
