@@ -114,6 +114,13 @@ npm i presidium-websocket
 ## Benchmarks
 Please find all of the published benchmark output inside the [benchmark-output](https://github.com/richytong/presidium-websocket/tree/master/benchmark-output) folder.
 
+v4.1.0 Small Message Bo10 Best Run:
+```
+Time: 30.086919502 seconds
+Presidium throughput: 822.4584191295062 messages/s
+Presidium messages:   24694
+```
+
 ### Running benchmarks on your own system
 
 Run benchmarks for presidium-websocket:

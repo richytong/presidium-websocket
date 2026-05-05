@@ -53,7 +53,7 @@ const message = 'small-message-16'
 
 setImmediate(async () => {
   const writeStream = fs.createWriteStream(
-    `${__dirname}/benchmark-output/latest/30s-presidium-10`,
+    `${__dirname}/benchmark-output/4.1.0/30s-presidium-10`,
     // `${__dirname}/benchmark-output/30s-3MB-presidium`,
     { flags: 'w' }
   )
