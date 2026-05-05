@@ -6,7 +6,7 @@
  * push(col { push: function }, element any) -> ()
  * ```
  */
-function push(col, element, source) {
+function push(col, element) {
   col.push(element)
 }
 

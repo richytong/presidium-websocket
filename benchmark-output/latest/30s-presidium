@@ -1,0 +1,20 @@
+presidium-websocket@4.0.0
+OS 6.18.21-1-lts
+Node.js v22.22.2
+
+Time: 0.06927024 seconds
+Presidium throughput: 0 messages/s
+Presidium messages:   0
+
+Time: 1.069226823 seconds
+Presidium throughput: 657.2264657663628 messages/s
+Presidium messages:   668
+
+Time: 2.069836327 seconds
+Presidium throughput: 684.6795640170948 messages/s
+Presidium messages:   1381
+
+Time: 3.070475043 seconds
+Presidium throughput: 684.6408318341304 messages/s
+Presidium messages:   2066
+

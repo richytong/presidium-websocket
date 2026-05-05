@@ -14,12 +14,9 @@ const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
 const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const decodeWebSocketHandshakeResponse = require('./_internal/decodeWebSocketHandshakeResponse')
 const __ = require('./_internal/placeholder')
-const curry3 = require('./_internal/curry3')
-const push = require('./_internal/push')
+const isPromise = require('./_internal/isPromise')
 const call = require('./_internal/call')
-const thunkify1 = require('./_internal/thunkify1')
-const thunkify3 = require('./_internal/thunkify3')
-const functionConcatSync = require('./_internal/functionConcatSync')
+const thunkify2 = require('./_internal/thunkify2')
 
 /**
  * @name WebSocket
@@ -334,35 +331,26 @@ class WebSocket extends events.EventEmitter {
    * ```
    */
   async _handleDataFrames() {
-    const chunks = []
-
-    this._socket.on('data', functionConcatSync(
-      curry3(push, chunks, __, 'WebSocket'),
-      thunkify1(
-        process.nextTick,
-        thunkify3(call, this._processChunk, this, chunks)
-      )
-    ))
+    this._chunks = Buffer.alloc(0)
+    this._socket.on('data', async chunk => {
+      this._chunks = Buffer.concat([this._chunks, chunk])
+      await this._processChunks()
+    })
   }
 
   /**
-   * @name _processChunk
+   * @name _processChunks
    *
    * @docs
    * ```coffeescript [specscript]
-   * websocket._processChunk(chunks Array<Buffer>) -> ()
+   * websocket._processChunks(chunks Array<Buffer>) -> ()
    * ```
    */
-  async _processChunk(chunks) {
+  async _processChunks() {
     if (this.readyState === 0) { // process handshake
-      let chunk = chunks.shift()
-      let decodeResult = decodeWebSocketHandshakeResponse(chunk)
-      while (decodeResult == null && chunks.length > 0) {
-        chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = decodeWebSocketHandshakeResponse(chunk)
-      }
+      const decodeResult = decodeWebSocketHandshakeResponse(this._chunks)
+
       if (decodeResult == null) {
-        chunks.unshift(chunk)
         return undefined
       }
 
@@ -370,7 +358,7 @@ class WebSocket extends events.EventEmitter {
         handshakeSucceeded,
         perMessageDeflate,
         message,
-        remaining
+        remaining,
       } = decodeResult
 
       if (!handshakeSucceeded) {
@@ -384,9 +372,7 @@ class WebSocket extends events.EventEmitter {
         this._socket._perMessageDeflate = true
       }
 
-      if (remaining.length > 0) {
-        chunks.unshift(remaining)
-      }
+      this._chunks = remaining
 
       this.readyState = 1 // OPEN
       this.sendPing()
@@ -396,19 +382,13 @@ class WebSocket extends events.EventEmitter {
     }
 
     // process data frames
-    while (chunks.length > 0) {
 
-      let chunk = chunks.shift()
-      let decodeResult = await decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
-      while (decodeResult == null && chunks.length > 0) {
-        chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = await decodeWebSocketFrame.call(this, chunk, this._perMessageDeflate)
-      }
-      if (decodeResult == null) {
-        chunks.unshift(chunk)
-        return undefined
-      }
+    let decodeResult = decodeWebSocketFrame.call(this, this._chunks, this._perMessageDeflate, 'client')
+    if (isPromise(decodeResult)) {
+      decodeResult = await decodeResult
+    }
 
+    while (decodeResult) {
       const { fin, opcode, payload, remaining, masked } = decodeResult
 
       // The client must close the connection upon receiving a frame that is masked
@@ -418,11 +398,14 @@ class WebSocket extends events.EventEmitter {
         break
       }
 
-      if (remaining.length > 0) {
-        chunks.unshift(remaining)
-      }
-
       this._handleDataFrame(payload, opcode, fin)
+
+      this._chunks = remaining
+
+      decodeResult = decodeWebSocketFrame.call(this, this._chunks, this._perMessageDeflate, 'client')
+      if (isPromise(decodeResult)) {
+        decodeResult = await decodeResult
+      }
     }
 
     return undefined

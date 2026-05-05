@@ -1,5 +1,9 @@
+const __ = require('./placeholder')
+const curryArgs2 = require('./curryArgs2')
 const zlib = require('zlib')
 const inflateRawWithFlush = require('./inflateRawWithFlush')
+const functionObjectAll = require('./functionObjectAll')
+const identity = require('./identity')
 
 /**
  * @name decodeWebSocketFrame
@@ -19,7 +23,7 @@ const inflateRawWithFlush = require('./inflateRawWithFlush')
  * ```
  */
 
-async function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
+function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
   if (buffer.length < 2) {
     return undefined
   }
@@ -43,15 +47,9 @@ async function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
   let offset = 2
 
   if (payloadLen === 126) {
-    if (buffer.length < offset + 2) {
-      return undefined
-    }
     payloadLen = buffer.readUInt16BE(offset)
     offset += 2
   } else if (payloadLen === 127) {
-    if (buffer.length < offset + 8) {
-      return undefined
-    }
     payloadLen = Number(buffer.readBigUInt64BE(offset))
     offset += 8
   }
@@ -80,27 +78,28 @@ async function decodeWebSocketFrame(buffer, perMessageDeflate = false) {
       const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
       const compressed = Buffer.concat([payload, tail])
       payload = zlib.inflateRawSync(compressed)
-
     } catch (error0) {
-      try {
-        const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
-        const compressed = Buffer.concat([payload, tail])
-        payload = await inflateRawWithFlush(compressed)
+      const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
+      const compressed = Buffer.concat([payload, tail])
 
-      } catch (error1) {
+      return inflateRawWithFlush(compressed).then(curryArgs2(functionObjectAll, {
+        fin,
+        opcode,
+        payload: identity,
+        remaining: buffer.slice(offset + payloadLen),
+        masked,
+        compressed: perMessageDeflate && rsv1,
+      }, __)).catch(error1 => {
         this.emit('error', new AggregateError([error0, error1]))
-        return undefined
-      }
+      })
     }
   }
-
-  const remaining = buffer.slice(offset + payloadLen)
 
   return {
     fin,
     opcode,
     payload,
-    remaining,
+    remaining: buffer.slice(offset + payloadLen),
     masked,
     compressed: perMessageDeflate && rsv1
   }

@@ -13,15 +13,11 @@ const decodeWebSocketFrame = require('./_internal/decodeWebSocketFrame')
 const ServerWebSocket = require('./ServerWebSocket')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
-const append = require('./_internal/append')
-const push = require('./_internal/push')
+const isPromise = require('./_internal/isPromise')
 const call = require('./_internal/call')
 const remove = require('./_internal/remove')
-const thunkify1 = require('./_internal/thunkify1')
 const thunkify2 = require('./_internal/thunkify2')
-const thunkify4 = require('./_internal/thunkify4')
 const thunkify5 = require('./_internal/thunkify5')
-const functionConcatSync = require('./_internal/functionConcatSync')
 const {
   kBuffer,
   kBufferCb
@@ -337,14 +333,11 @@ class WebSocketServer extends events.EventEmitter {
       websocket
     ))
 
-    socket.on('data', functionConcatSync(
-      // curry3(append, chunks, __, 'WebSocketServer'),
-      curry3(push, chunks, __, 'WebSocketServer'),
-      thunkify1(
-        process.nextTick,
-        thunkify4(call, this._processChunk, this, chunks, websocket)
-      )
-    ))
+    websocket._chunks = Buffer.alloc(0)
+    socket.on('data', async chunk => {
+      websocket._chunks = Buffer.concat([websocket._chunks, chunk])
+      await this._processChunks(websocket)
+    })
   }
 
   /**
@@ -361,30 +354,23 @@ class WebSocketServer extends events.EventEmitter {
   }
 
   /**
-   * @name _processChunk
+   * @name _processChunks
    *
    * @docs
    * ```coffeescript [specscript]
-   * server._processChunk(
-   *   chunks Array<Buffer>,
-   *   websocket ServerWebSocket
-   * ) -> ()
+   * server._processChunk(websocket ServerWebSocket) -> ()
    * ```
    */
-  async _processChunk(chunks, websocket) {
+  async _processChunks(websocket) {
 
-    while (chunks.length > 0) { // process data frames
-      let chunk = chunks.shift()
-      let decodeResult = await decodeWebSocketFrame.call(websocket, chunk, websocket._perMessageDeflate)
-      while (decodeResult == null && chunks.length > 0) {
-        chunk = Buffer.concat([chunk, chunks.shift()])
-        decodeResult = await decodeWebSocketFrame.call(websocket, chunk, websocket._perMessageDeflate)
-      }
-      if (decodeResult == null) {
-        chunks.unshift(chunk)
-        return undefined
-      }
+    let decodeResult = decodeWebSocketFrame.call(
+      websocket, websocket._chunks, websocket._perMessageDeflate, 'server'
+    )
+    if (isPromise(decodeResult)) {
+      decodeResult = await decodeResult
+    }
 
+    while (decodeResult) {
       const { fin, opcode, payload, remaining, masked } = decodeResult
 
       // The server must close the connection upon receiving a frame that is not masked
@@ -394,11 +380,17 @@ class WebSocketServer extends events.EventEmitter {
         break
       }
 
-      if (remaining.length > 0) {
-        chunks.unshift(remaining)
+      this._handleDataFrame(websocket, payload, opcode, fin)
+
+      websocket._chunks = remaining
+
+      decodeResult = decodeWebSocketFrame.call(
+        websocket, websocket._chunks, websocket._perMessageDeflate, 'server'
+      )
+      if (isPromise(decodeResult)) {
+        decodeResult = await decodeResult
       }
 
-      this._handleDataFrame(websocket, payload, opcode, fin)
     }
 
   }

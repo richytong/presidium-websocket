@@ -1152,6 +1152,66 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
+  it('WebSocket.Server and WebSocket 127 bytes buffer exchange', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocket.Server(websocket => {
+      websocket.on('message', message => {
+        assert.equal(server.connections.length, 1)
+        messages.push(message)
+        websocket.send(Buffer.alloc(127))
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', () => {
+      websocket.send(Buffer.alloc(127))
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 2)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0].length, 127)
+    assert.equal(messages[1].length, 127)
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
   it('WebSocket.Server and WebSocket 3MB buffer exchange with 3MB maxMessageLength', async () => {
     let resolve
     const promise = new Promise(_resolve => {
@@ -1206,6 +1266,95 @@ describe('WebSocket.Server, WebSocket', () => {
 
     websocket.on('open', () => {
       websocket.send(Buffer.alloc(3 * 1024 * 1024))
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 2)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert.equal(messages[0].length, 3 * 1024 * 1024)
+    assert.equal(messages[1].length, 3 * 1024 * 1024)
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
+  it('WebSocket.Server and WebSocket 3MB buffer exchange with 3MB maxMessageLength using zlib.createDeflateRaw with deflate.flush', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocket.Server(websocket => {
+      assert.equal(websocket._maxMessageLength, 3 * 1024 * 1024)
+
+      websocket.on('message', async message => {
+        assert.equal(server.connections.length, 1)
+        messages.push(message)
+
+        const payload = Buffer.alloc(3 * 1024 * 1024)
+        const compressed = await deflateRawWithFlush(payload)
+        websocket._socket.write(encodeWebSocketFrame(
+          compressed,
+          0x1, // text
+          false, // mask
+          true, // fin
+          true, // compressed
+        ))
+
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    }, {
+      maxMessageLength: 3 * 1024 * 1024,
+      socketBufferLength: 3 * 1024 * 1024,
+      supportPerMessageDeflate: true,
+    })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357', {
+      maxMessageLength: 1024 * 1024,
+      socketBufferLength: 3 * 1024 * 1024
+    })
+    assert.equal(websocket._maxMessageLength, 1024 * 1024)
+
+    websocket.on('message', message => {
+      console.log('client message', message)
+      messages.push(message)
+      websocket.close()
+    })
+
+    websocket.on('open', async () => {
+      const payload = Buffer.alloc(3 * 1024 * 1024)
+      const compressed = await deflateRawWithFlush(payload)
+      websocket._socket.write(encodeWebSocketFrame(
+        compressed,
+        0x1, // text
+        true, // mask
+        true, // fin
+        true, // compressed
+      ))
     })
 
     await promise
@@ -1417,6 +1566,86 @@ describe('WebSocket.Server, WebSocket', () => {
     assert(Buffer.isBuffer(messages[1]))
     assert.equal(messages[0].toString('utf8'), 'test')
     assert.equal(messages[1].toString('utf8'), 'test')
+    server.close()
+
+    await sleep(100)
+  }).timeout(5000)
+
+  it('WebSocket.Server with supportPerMessageDeflate and WebSocket send compressed payload using zlib.createDeflateRaw with deflate.flush multiple', async () => {
+    let resolve
+    const promise = new Promise(_resolve => {
+      resolve = _resolve
+    })
+
+    let didRequest = false
+    let didUpgrade = false
+    const messages = []
+
+    const server = new WebSocket.Server(websocket => {
+      websocket.on('message', message => {
+        messages.push(message)
+        websocket.send(message)
+      })
+
+      websocket.on('close', () => {
+        server.close()
+      })
+    }, { supportPerMessageDeflate: true })
+
+    server.on('request', () => {
+      didRequest = true
+    })
+
+    server.on('upgrade', () => {
+      didUpgrade = true
+    })
+
+    server.on('close', () => {
+      resolve()
+    })
+
+    server.listen(7357)
+
+    const websocket = new WebSocket('ws://localhost:7357')
+
+    websocket.on('message', message => {
+      messages.push(message)
+      if (message.toString('utf8') == 'test2') {
+        websocket.close()
+      }
+    })
+
+    websocket.on('open', async () => {
+
+      for (let i = 0; i < 3; i++) {
+        const payload = Buffer.from(`test${i}`, 'utf8')
+        const compressed = await deflateRawWithFlush(payload)
+        websocket._socket.write(encodeWebSocketFrame(
+          compressed,
+          0x1, // text
+          true, // mask
+          true, // fin
+          true, // compressed
+        ))
+      }
+    })
+
+    await promise
+    assert(!didRequest)
+    assert(didUpgrade)
+    assert.equal(messages.length, 6)
+    assert(Buffer.isBuffer(messages[0]))
+    assert(Buffer.isBuffer(messages[1]))
+    assert(Buffer.isBuffer(messages[2]))
+    assert(Buffer.isBuffer(messages[3]))
+    assert(Buffer.isBuffer(messages[4]))
+    assert(Buffer.isBuffer(messages[5]))
+    assert.equal(messages[0].toString('utf8'), 'test0')
+    assert.equal(messages[1].toString('utf8'), 'test0')
+    assert.equal(messages[2].toString('utf8'), 'test1')
+    assert.equal(messages[3].toString('utf8'), 'test1')
+    assert.equal(messages[4].toString('utf8'), 'test2')
+    assert.equal(messages[5].toString('utf8'), 'test2')
     server.close()
 
     await sleep(100)
