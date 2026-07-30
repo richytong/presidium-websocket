@@ -1,8 +1,5 @@
 /**
- * presidium-websocket
- * https://github.com/richytong/presidium-websocket
- * (c) Richard Tong
- * presidium-websocket may be freely distributed under the CFOSS license.
+ * Presidium Websocket may be freely distributed under the CFOSS license.
  */
 
 const net = require('net')
