@@ -72,7 +72,7 @@ websocket.on('message', message => {
 })
 ```
 
-Supports [Compression Extensions for WebSocket](https://datatracker.ietf.org/doc/html/rfc7692) with `supportPerMessageDeflate` (uses zlib [default options](https://nodejs.org/api/zlib.html#class-options)).
+Supports [Compression Extensions for WebSocket](https://datatracker.ietf.org/doc/html/rfc7692) with `supportPerMessageDeflate` and [zlib default options](https://nodejs.org/api/zlib.html#class-options).
 
 ```javascript
 const server = new WebSocket.Server({ supportPerMessageDeflate: true })

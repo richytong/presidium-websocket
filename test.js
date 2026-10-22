@@ -2119,7 +2119,7 @@ describe('WebSocket.Server, WebSocket', () => {
     await sleep(100)
   }).timeout(5000)
 
-  it('Server WebSocket error: Server WebSocket instances cannot use the connect method', async () => {
+  it('Server WebSocket error: Server WebSocket instances cannot call the connect method', async () => {
     let resolve
     const promise = new Promise(_resolve => {
       resolve = _resolve
@@ -2183,7 +2183,7 @@ describe('WebSocket.Server, WebSocket', () => {
     assert.equal(messages.length, 1)
     assert.equal(messages[0].toString('utf8'), 'abc')
     assert.equal(errors.length, 1)
-    assert.deepEqual(errors[0], new Error('server WebSocket instances cannot use the connect method'))
+    assert.deepEqual(errors[0], new Error('server WebSocket instances cannot call the connect method'))
     server.close()
 
     await sleep(100)

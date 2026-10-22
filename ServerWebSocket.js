@@ -22,7 +22,7 @@ const encodeWebSocketFrame = require('./_internal/encodeWebSocketFrame')
  * }) -> websocket ServerWebSocket
  * ```
  *
- * Presidium ServerWebSocket class. Used by Presidium [WebSocketServer](/docs/WebSocketServer) and [WebSocketSecureServer](/docs/WebSocketSecureServer) classes.
+ * Presidium ServerWebSocket class. Called by Presidium [WebSocketServer](/docs/WebSocketServer) and [WebSocketSecureServer](/docs/WebSocketSecureServer) classes.
  *
  * Arguments:
  *   * `socket` - an instance of a [Node.js net.Socket](https://nodejs.org/docs/latest-v24.x/api/net.html#class-netsocket). Represents the server's underlying TCP connection to the client.
@@ -196,7 +196,7 @@ class ServerWebSocket extends events.EventEmitter {
    * ```
    */
   connect() {
-    this.emit('error', new Error('server WebSocket instances cannot use the connect method'))
+    this.emit('error', new Error('server WebSocket instances cannot call the connect method'))
   }
 
   /**
