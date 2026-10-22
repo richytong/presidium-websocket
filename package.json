@@ -1,6 +1,6 @@
 {
   "name": "presidium-websocket",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "description": "Presidium WebSocket client and server",
   "author": "Richard Tong",
   "license": "CFOSS",
